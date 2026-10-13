@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - EcoBike - Nền Tảng Cho Thuê Xe Máy Điện Thông Minh</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        eco: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col justify-between">
+    <!-- Modern Sticky Navbar Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shadow-sm transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 gap-4">
+                <!-- Logo EcoBike -->
+                <a href="/" class="flex items-center gap-3 shrink-0 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/25 group-hover:scale-105 transition-transform">
+                        <i class="bi bi-lightning-charge-fill text-2xl"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl sm:text-2xl font-black tracking-tight text-gray-900 leading-none">ECO<span class="text-emerald-600">BIKE</span></span>
+                        <span class="text-[10px] uppercase tracking-wider font-extrabold text-emerald-600/80 mt-1">Xe Máy Điện Xanh</span>
+                    </div>
+                </a>
+
+                <!-- Navigation Links (Desktop) -->
+                <nav class="hidden lg:flex items-center gap-1 font-bold text-sm">
+                    <a href="/" class="px-3.5 py-2 rounded-xl text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/70 transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="bi bi-house-door text-base"></i> Trang chủ
+                    </a>
+                    <a href="/Vehicles" class="px-3.5 py-2 rounded-xl text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/70 transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="bi bi-search text-base"></i> Thuê xe máy điện
+                    </a>
+                    <a href="/Home/Stations" class="px-3.5 py-2 rounded-xl text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/70 transition flex items-center gap-2 whitespace-nowrap">
+                        <i class="bi bi-ev-station text-base text-emerald-600"></i> Trạm sạc & Pin
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="/Bookings/MyBookings" class="px-3.5 py-2 rounded-xl text-gray-700 hover:text-emerald-600 hover:bg-emerald-50/70 transition flex items-center gap-2 whitespace-nowrap">
+                            <i class="bi bi-clock-history text-base"></i> Lịch sử thuê
+                        </a>
+                    }
+                </nav>
+
+                <!-- Actions & User Profile -->
+                <div class="flex items-center gap-3 shrink-0">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Renter";
+                        var avatarUrl = User.FindFirst("AvatarUrl")?.Value ?? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100";
+
+                        <!-- Role-based Action Button -->
+                        @if (userRole == "Admin")
+                        {
+                            <a href="/Admin" 
+                               class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition shadow-sm whitespace-nowrap">
+                                <i class="bi bi-shield-lock-fill text-purple-600"></i> Quản trị sàn
+                            </a>
+                        }
+                        else if (userRole == "Host")
+                        {
+                            <a href="/Host" 
+                               class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition shadow-sm whitespace-nowrap">
+                                <i class="bi bi-speedometer2 text-blue-600"></i> Kênh chủ xe
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/Host/BecomeHost" 
+                               class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition shadow-sm whitespace-nowrap">
+                                <i class="bi bi-plus-circle-fill text-amber-600"></i> Đăng ký làm chủ xe
+                            </a>
+                        }
+
+                        <!-- Modern Unified User Profile Chip -->
+                        <div class="flex items-center bg-gray-50/80 hover:bg-gray-100/90 border border-gray-200/80 rounded-2xl p-1.5 pr-3.5 transition shadow-sm gap-2.5">
+                            <a href="/Account/Profile" class="flex items-center gap-2.5 min-w-0" title="Xem thông tin cá nhân">
+                                <div class="relative shrink-0">
+                                    <img src="@avatarUrl" alt="Avatar" class="w-9 h-9 rounded-xl object-cover ring-2 ring-emerald-500 shadow-sm" />
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                </div>
+                                <div class="hidden sm:flex flex-col text-left min-w-0">
+                                    <span class="text-xs font-bold text-gray-800 truncate max-w-[130px] leading-tight">@User.Identity.Name</span>
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wide leading-none mt-0.5
+                                          @(userRole == "Admin" ? "text-purple-600" : (userRole == "Host" ? "text-blue-600" : "text-emerald-600"))">
+                                        @(userRole == "Admin" ? "Admin" : (userRole == "Host" ? "Chủ xe" : "Khách thuê"))
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Sleek Logout Button -->
+                        <form action="/Account/Logout" method="post" class="inline m-0">
+                            <button type="submit" 
+                                    class="w-10 h-10 rounded-2xl bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 border border-gray-200/80 hover:border-red-200 flex items-center justify-center transition shadow-sm" 
+                                    title="Đăng xuất">
+                                <i class="bi bi-box-arrow-right text-base"></i>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="flex items-center gap-2">
+                            <a href="/Account/Login" 
+                               class="text-gray-700 hover:text-emerald-600 font-bold text-xs sm:text-sm px-4 py-2 rounded-xl hover:bg-gray-50 transition whitespace-nowrap">
+                                Đăng nhập
+                            </a>
+                            <a href="/Account/Register" 
+                               class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-md shadow-emerald-600/20 transition whitespace-nowrap">
+                                Đăng ký
+                            </a>
+                        </div>
+                    }
+
+                    <!-- Mobile Hamburger Button -->
+                    <button type="button" onclick="toggleMobileMenu()" class="lg:hidden w-10 h-10 rounded-2xl bg-gray-50 text-gray-700 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                        <i class="bi bi-list text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Dropdown Navigation -->
+            <div id="mobileMenu" class="hidden lg:hidden border-t border-gray-100 py-3 space-y-1">
+                <a href="/" class="block px-4 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                    <i class="bi bi-house-door mr-2"></i> Trang chủ
+                </a>
+                <a href="/Vehicles" class="block px-4 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                    <i class="bi bi-search mr-2"></i> Thuê xe máy điện
+                </a>
+                <a href="/Home/Stations" class="block px-4 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                    <i class="bi bi-ev-station mr-2 text-emerald-600"></i> Trạm sạc & Pin
+                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Bookings/MyBookings" class="block px-4 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-emerald-50 hover:text-emerald-600">
+                        <i class="bi bi-clock-history mr-2"></i> Lịch sử thuê
+                    </a>
+                    @if (User.IsInRole("Host") || User.IsInRole("Admin"))
+                    {
+                        <a href="/Host" class="block px-4 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50">
+                            <i class="bi bi-speedometer2 mr-2"></i> Kênh chủ xe
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Host/BecomeHost" class="block px-4 py-2 rounded-xl text-xs font-bold text-amber-700 bg-amber-50">
+                            <i class="bi bi-plus-circle mr-2"></i> Đăng ký làm chủ xe
+                        </a>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/Admin" class="block px-4 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50">
+                            <i class="bi bi-shield-lock-fill mr-2"></i> Quản trị sàn
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Alert / Notifications -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl mb-4 shadow-sm flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="bi bi-check-circle-fill text-emerald-500 text-xl mr-3"></i>
+                    <p class="text-sm font-semibold text-emerald-800">@TempData["SuccessMessage"]</p>
+                </div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl mb-4 shadow-sm flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="bi bi-exclamation-triangle-fill text-red-500 text-xl mr-3"></i>
+                    <p class="text-sm font-semibold text-red-800">@TempData["ErrorMessage"]</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 mt-20 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-white font-black text-2xl">
+                        <i class="bi bi-lightning-charge-fill text-emerald-500"></i>
+                        <span>ECOBIKE</span>
+                    </div>
+                    <p class="text-sm leading-relaxed text-gray-400">
+                        Nền tảng cho thuê và chia sẻ xe máy điện thông minh hàng đầu. Giải pháp di chuyển xanh, tiết kiệm năng lượng và giảm phát thải CO2 cho đô thị.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Chính sách & An toàn</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Bảo hiểm xe máy điện</a></li>
+                        <li><a href="#" class="hover:text-white transition">Chính sách thuê theo ngày/tháng</a></li>
+                        <li><a href="#" class="hover:text-white transition">Đổi pin & Sạc di động</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Các dòng xe điện</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/Vehicles?Category=Economy" class="hover:text-white transition">VinFast Evo200 / Evo Lite</a></li>
+                        <li><a href="/Vehicles?Category=Touring" class="hover:text-white transition">Dat Bike Quantum (270km/sạc)</a></li>
+                        <li><a href="/Vehicles?Category=MidRange" class="hover:text-white transition">VinFast Feliz S / Klara S</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4">Kiến Trúc Hệ Thống</h4>
+                    <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                        Dự án xây dựng bằng <strong>C# .NET 9 (Razor Pages MVVM & Minimal Web API)</strong> theo kiến trúc 3 tầng và <strong>Entity Framework Core</strong>.
+                    </p>
+                    <span class="inline-block bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs px-3 py-1 rounded-lg">
+                        3-Layer Architecture • Non-MVC
+                    </span>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-500">
+                &copy; 2026 EcoBike Platform. Mô hình Cho Thuê Xe Máy Điện Xanh.
+            </div>
+        </div>
+    </footer>
+    <script>
+        function toggleMobileMenu() {
+            var menu = document.getElementById('mobileMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

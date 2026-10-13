@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MiotoCarRental.Data;
+using MiotoCarRental.Endpoints;
 using MiotoCarRental.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// Cấu hình kiến trúc Razor Pages (MVVM PageModel) thay cho MVC truyền thống
+builder.Services.AddRazorPages();
 
-// Cấu hình Cookie Authentication
+// Cấu hình Cookie Authentication & Role-Based Authorization (RBAC)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -19,16 +20,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
-// Đăng ký Entity Framework Core với SQLite
-builder.Services.AddDbContext<MiotoDbContext>(options =>
-    options.UseSqlite("Data Source=mioto.db"));
+builder.Services.AddAuthorization();
 
-// Đăng ký Business Services
+// Tầng Data Access Layer: Entity Framework Core với SQLite
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=mioto.db";
+builder.Services.AddDbContext<MiotoDbContext>(options =>
+    options.UseSqlite(connectionString));
+
+// Tầng Business Logic Layer (Services)
 builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-// Tự động khởi tạo Database và nạp dữ liệu mẫu khi chạy ứng dụng
+// Tự động khởi tạo Database và nạp 12 xe điện mẫu khi chạy ứng dụng
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -44,10 +48,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
@@ -55,12 +57,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Thứ tự Middleware quan trọng: Authentication -> Authorization
+// Thứ tự Middleware: Authentication -> Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+// Ánh xạ Frontend Razor Pages (MVVM) & Backend Minimal Web APIs (Endpoints)
+app.MapRazorPages();
+app.MapEcoBikeEndpoints();
 
 app.Run();
