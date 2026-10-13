@@ -12,45 +12,104 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
-    <!-- Top Navbar -->
+    @{
+        var isAuthenticated = User.Identity?.IsAuthenticated == true;
+        var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Guest";
+    }
+    <!-- Top Navbar (Thay đổi chức năng theo đúng Vai trò: Khách thuê / Chủ xe / Admin) -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 gap-4">
                 <!-- Logo -->
-                <a href="/" class="flex items-center gap-2.5 shrink-0">
-                    <div class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
-                        <i class="bi bi-bicycle text-xl"></i>
-                    </div>
-                    <span class="text-xl font-bold text-gray-900 tracking-tight">Eco<span class="text-emerald-600">Bike</span></span>
-                </a>
+                <div class="flex items-center gap-3 shrink-0">
+                    <a href="@(currentRole == "Admin" ? "/Admin" : (currentRole == "Host" ? "/Host" : "/"))" class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg @(currentRole == "Admin" ? "bg-slate-800" : (currentRole == "Host" ? "bg-blue-600" : "bg-emerald-600")) text-white flex items-center justify-center">
+                            <i class="bi bi-bicycle text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900 tracking-tight">Eco<span class="text-emerald-600">Bike</span></span>
+                    </a>
 
-                <!-- Main Menu -->
-                <nav class="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-600">
-                    <a href="/" class="hover:text-emerald-600 transition whitespace-nowrap">Trang chủ</a>
-                    <a href="/Vehicles" class="hover:text-emerald-600 transition whitespace-nowrap">Thuê xe điện</a>
-                    <a href="/Home/Stations" class="hover:text-emerald-600 transition whitespace-nowrap">Trạm sạc & Đổi pin</a>
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (currentRole == "Admin")
                     {
-                        <a href="/Bookings/MyBookings" class="hover:text-emerald-600 transition whitespace-nowrap">Chuyến của tôi</a>
+                        <span class="hidden sm:inline-block px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold">
+                            Quản trị hệ thống
+                        </span>
+                    }
+                    else if (currentRole == "Host")
+                    {
+                        <span class="hidden sm:inline-block px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
+                            Kênh Chủ Xe
+                        </span>
+                    }
+                </div>
+
+                <!-- Main Menu theo từng Vai trò -->
+                <nav class="hidden lg:flex items-center gap-5 text-sm font-medium text-gray-600">
+                    @if (currentRole == "Admin")
+                    {
+                        <a href="/Admin" class="text-gray-900 hover:text-emerald-600 font-semibold transition whitespace-nowrap">
+                            <i class="bi bi-speedometer2 mr-1 text-emerald-600"></i> Tổng quan sàn
+                        </a>
+                        <a href="/Admin#kyc" class="hover:text-emerald-600 transition whitespace-nowrap">
+                            <i class="bi bi-person-vcard mr-1"></i> Duyệt GPLX
+                        </a>
+                        <a href="/Admin#vehicles" class="hover:text-emerald-600 transition whitespace-nowrap">
+                            <i class="bi bi-bicycle mr-1"></i> Kiểm duyệt xe
+                        </a>
+                        <a href="/Admin#bookings" class="hover:text-emerald-600 transition whitespace-nowrap">
+                            <i class="bi bi-receipt mr-1"></i> Quản lý đơn thuê
+                        </a>
+                        <a href="/Admin#users" class="hover:text-emerald-600 transition whitespace-nowrap">
+                            <i class="bi bi-people mr-1"></i> Phân quyền User
+                        </a>
+                        <a href="/Vehicles" class="text-gray-500 hover:text-emerald-600 transition whitespace-nowrap border-l border-gray-200 pl-4">
+                            Xem trang thuê xe
+                        </a>
+                    }
+                    else if (currentRole == "Host")
+                    {
+                        <a href="/Host" class="text-gray-900 hover:text-blue-600 font-semibold transition whitespace-nowrap">
+                            <i class="bi bi-grid mr-1 text-blue-600"></i> Bảng điều khiển
+                        </a>
+                        <a href="/Host#my-vehicles" class="hover:text-blue-600 transition whitespace-nowrap">
+                            <i class="bi bi-bicycle mr-1"></i> Đội xe của tôi
+                        </a>
+                        <a href="/Host#incoming-bookings" class="hover:text-blue-600 transition whitespace-nowrap">
+                            <i class="bi bi-inbox mr-1"></i> Đơn khách đặt
+                        </a>
+                        <a href="/Host/Create" class="hover:text-blue-600 transition whitespace-nowrap">
+                            <i class="bi bi-plus-circle mr-1"></i> Đăng xe mới
+                        </a>
+                        <a href="/Vehicles" class="text-gray-500 hover:text-emerald-600 transition whitespace-nowrap border-l border-gray-200 pl-4">
+                            Thuê xe (Khách)
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/" class="hover:text-emerald-600 transition whitespace-nowrap">Trang chủ</a>
+                        <a href="/Vehicles" class="hover:text-emerald-600 transition whitespace-nowrap">Thuê xe điện</a>
+                        <a href="/Home/Stations" class="hover:text-emerald-600 transition whitespace-nowrap">Trạm sạc & Đổi pin</a>
+                        @if (isAuthenticated)
+                        {
+                            <a href="/Bookings/MyBookings" class="hover:text-emerald-600 transition whitespace-nowrap">Chuyến của tôi</a>
+                        }
                     }
                 </nav>
 
                 <!-- User Area -->
-                <div class="flex items-center gap-3 shrink-0">
-                    @if (User.Identity?.IsAuthenticated == true)
+                <div class="flex items-center gap-2.5 shrink-0">
+                    @if (isAuthenticated)
                     {
-                        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Renter";
-
-                        @if (userRole == "Admin")
+                        @if (currentRole == "Admin")
                         {
-                            <a href="/Admin" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition whitespace-nowrap">
-                                <i class="bi bi-gear"></i> Quản trị
+                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition whitespace-nowrap">
+                                <i class="bi bi-plus-lg"></i> Thêm xe mới
                             </a>
                         }
-                        else if (userRole == "Host")
+                        else if (currentRole == "Host")
                         {
-                            <a href="/Host" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition whitespace-nowrap">
-                                <i class="bi bi-shop"></i> Kênh chủ xe
+                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition whitespace-nowrap">
+                                <i class="bi bi-plus-lg"></i> Đăng xe mới
                             </a>
                         }
                         else
@@ -60,9 +119,9 @@
                             </a>
                         }
 
-                        <a href="/Account/Profile" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition text-sm">
-                            <i class="bi bi-person-circle text-lg text-emerald-600"></i>
-                            <span class="hidden sm:inline font-medium text-gray-800 max-w-[140px] truncate">@User.Identity.Name</span>
+                        <a href="/Account/Profile" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition text-sm" title="Hồ sơ cá nhân & GPLX">
+                            <i class="bi bi-person-circle text-lg @(currentRole == "Admin" ? "text-slate-800" : (currentRole == "Host" ? "text-blue-600" : "text-emerald-600"))"></i>
+                            <span class="hidden sm:inline font-medium text-gray-800 max-w-[140px] truncate">@User.Identity?.Name</span>
                         </a>
 
                         <form action="/Account/Logout" method="post" class="inline m-0">
@@ -89,19 +148,31 @@
 
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="hidden lg:hidden border-t border-gray-100 py-3 space-y-1 text-sm">
-                <a href="/" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Trang chủ</a>
-                <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Thuê xe điện</a>
-                <a href="/Home/Stations" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Trạm sạc & Đổi pin</a>
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (currentRole == "Admin")
                 {
-                    <a href="/Bookings/MyBookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Chuyến của tôi</a>
-                    @if (User.IsInRole("Host") || User.IsInRole("Admin"))
+                    <a href="/Admin" class="block px-3 py-2 rounded-lg text-gray-900 font-semibold hover:bg-gray-50">Tổng quan quản trị</a>
+                    <a href="/Admin#kyc" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Duyệt GPLX A1</a>
+                    <a href="/Admin#vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Quản lý đội xe</a>
+                    <a href="/Admin#bookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Quản lý đơn thuê</a>
+                    <a href="/Admin#users" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Phân quyền người dùng</a>
+                    <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-gray-50">Xem trang thuê xe</a>
+                }
+                else if (currentRole == "Host")
+                {
+                    <a href="/Host" class="block px-3 py-2 rounded-lg text-gray-900 font-semibold hover:bg-gray-50">Bảng điều khiển Chủ xe</a>
+                    <a href="/Host#my-vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Đội xe của tôi</a>
+                    <a href="/Host#incoming-bookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Đơn khách đặt</a>
+                    <a href="/Host/Create" class="block px-3 py-2 rounded-lg text-blue-600 font-medium hover:bg-gray-50">Đăng xe mới</a>
+                    <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Thuê xe (Khách)</a>
+                }
+                else
+                {
+                    <a href="/" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Trang chủ</a>
+                    <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Thuê xe điện</a>
+                    <a href="/Home/Stations" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Trạm sạc & Đổi pin</a>
+                    @if (isAuthenticated)
                     {
-                        <a href="/Host" class="block px-3 py-2 rounded-lg text-emerald-700 font-medium">Kênh chủ xe</a>
-                    }
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a href="/Admin" class="block px-3 py-2 rounded-lg text-gray-800 font-medium">Quản trị hệ thống</a>
+                        <a href="/Bookings/MyBookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Chuyến của tôi</a>
                     }
                 }
             </div>
