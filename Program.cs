@@ -20,8 +20,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 // Đăng ký Entity Framework Core với SQLite
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=mioto.db";
 builder.Services.AddDbContext<MiotoDbContext>(options =>
-    options.UseSqlite("Data Source=mioto.db"));
+    options.UseSqlite(connectionString));
 
 // Đăng ký Business Services
 builder.Services.AddScoped<IBookingService, BookingService>();
