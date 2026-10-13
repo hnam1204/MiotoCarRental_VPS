@@ -1,0 +1,203 @@
+@model MiotoCarRental.Models.Entities.Booking
+@{
+    Layout = null;
+    var host = Model.Vehicle?.Host;
+    var renter = Model.Renter;
+    var vehicle = Model.Vehicle;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hợp Đồng Thuê Xe Máy Điện #@Model.BookingCode - EcoBike Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Times New Roman', serif; }
+        .no-print {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        @@media print {
+            .no-print { display: none !important; }
+            body { padding: 0; background: white; }
+            .contract-container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 py-8 px-4">
+    <!-- Action Bar (Hidden when printing) -->
+    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <a asp-action="Details" asp-route-id="@Model.Id" class="text-gray-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-1.5">
+            <i class="bi bi-arrow-left"></i> Quay lại chi tiết đơn đặt xe
+        </a>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-2 px-5 rounded-xl shadow-md transition flex items-center gap-2">
+                <i class="bi bi-printer-fill"></i> In Hợp Đồng / Lưu PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Contract Paper (A4 Style) -->
+    <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-xl border border-gray-200 contract-container leading-relaxed">
+        <!-- Header Quốc hiệu -->
+        <div class="text-center mb-8">
+            <p class="font-bold text-sm uppercase tracking-wider">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+            <p class="font-semibold text-xs italic">Độc lập - Tự do - Hạnh phúc</p>
+            <div class="w-24 h-0.5 bg-black mx-auto mt-1 mb-6"></div>
+
+            <h1 class="text-xl sm:text-2xl font-bold uppercase tracking-tight text-gray-900 mt-4">
+                HỢP ĐỒNG CHO THUÊ XE MÁY ĐIỆN VÀ BIÊN BẢN BÀN GIAO NGUỒN PIN LFP
+            </h1>
+            <p class="text-xs text-gray-500 font-sans mt-1">Mã hợp đồng điện tử: <strong>#EB-HD-@Model.BookingCode</strong> | Ngày lập: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+
+        <!-- Căn cứ pháp lý -->
+        <div class="text-xs italic text-gray-600 mb-6 space-y-1">
+            <p>- Căn cứ Bộ luật Dân sự số 91/2015/QH13 của Nước Cộng hòa Xã hội Chủ nghĩa Việt Nam;</p>
+            <p>- Căn cứ Luật Giao thông đường bộ và các quy định hiện hành về phương tiện giao thông thuần điện;</p>
+            <p>- Căn cứ nhu cầu và thỏa thuận tự nguyện giữa các bên tham gia giao dịch trên Nền tảng chia sẻ xe điện EcoBike.</p>
+        </div>
+
+        <!-- Đại diện các bên -->
+        <div class="space-y-6 text-sm">
+            <!-- Bên A -->
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">BÊN A: BÊN CHO THUÊ (CHỦ PHƯƠNG TIỆN / ĐỐI TÁC)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>• Họ và tên: <strong>@(host?.FullName ?? "Nguyễn Văn Chủ Xe")</strong></div>
+                    <div>• Số điện thoại: <strong>@(host?.Phone ?? "0902000002")</strong></div>
+                    <div>• Email: <strong>@(host?.Email ?? "chuxe@gmail.com")</strong></div>
+                    <div>• Địa chỉ bàn giao xe: <strong>@(vehicle?.Address), @(vehicle?.District), @(vehicle?.City)</strong></div>
+                </div>
+            </div>
+
+            <!-- Bên B -->
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">BÊN B: BÊN THUÊ (KHÁCH HÀNG SỬ DỤNG PHƯƠNG TIỆN)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>• Họ và tên: <strong>@(renter?.FullName ?? "Trần Khách Thuê")</strong></div>
+                    <div>• Số điện thoại: <strong>@(renter?.Phone ?? "0903000003")</strong></div>
+                    <div>• Email: <strong>@(renter?.Email ?? "khachthue@gmail.com")</strong></div>
+                    <div>• Giấy phép lái xe / CCCD: <strong>@(renter?.DriverLicenseNo ?? "GPLX-A1-XAC_THUC")</strong> (Đã xác minh eKYC)</div>
+                </div>
+            </div>
+
+            <!-- Điều 1 -->
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">ĐIỀU 1: ĐẶC TÍNH PHƯƠNG TIỆN & BỘ NGUỒN PIN LFP</h3>
+                <table class="w-full text-xs border border-gray-300 mb-2">
+                    <tr class="border-b border-gray-300 bg-gray-50">
+                        <td class="p-2 font-bold w-1/3">Dòng xe máy điện:</td>
+                        <td class="p-2"><strong>@(vehicle?.Brand) @(vehicle?.Model)</strong> (Năm SX: @(vehicle?.YearManufacture))</td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-2 font-bold">Biển số đăng ký:</td>
+                        <td class="p-2 font-mono font-bold">@(vehicle?.LicensePlate)</td>
+                    </tr>
+                    <tr class="border-b border-gray-300 bg-gray-50">
+                        <td class="p-2 font-bold">Công nghệ Pin:</td>
+                        <td class="p-2">@(vehicle?.BatteryType) | Quãng đường tối đa: <strong>@(vehicle?.BatteryRangeKm) km / lần sạc đầy</strong></td>
+                    </tr>
+                    <tr class="border-b border-gray-300">
+                        <td class="p-2 font-bold">Quy định bằng lái:</td>
+                        <td class="p-2">@(vehicle?.RequiresLicenseA1 == true ? "Bắt buộc có Giấy phép lái xe hạng A1" : "Miễn bằng lái A1 (Tốc độ tối đa ≤ 49km/h)")</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="p-2 font-bold">Trang bị bàn giao kèm theo:</td>
+                        <td class="p-2">• 01 Củ sạc di động chính hãng theo xe + 02 Nón bảo hiểm đạt chuẩn chất lượng</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Điều 2 -->
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">ĐIỀU 2: THỜI GIAN THUÊ & CHI PHÍ TÀI CHÍNH</h3>
+                <div class="text-xs space-y-1.5">
+                    <p>• <strong>Thời gian bắt đầu nhận xe:</strong> @Model.StartTime.ToString("HH:mm - dd/MM/yyyy")</p>
+                    <p>• <strong>Thời gian kết thúc trả xe:</strong> @Model.EndTime.ToString("HH:mm - dd/MM/yyyy") (Tổng thời gian: <strong>@Model.TotalDays ngày</strong>)</p>
+                    <p>• <strong>Tiền thuê phương tiện:</strong> @Model.RentalFee.ToString("N0") VNĐ (@((vehicle?.PricePerDay ?? 0).ToString("N0")) đ/ngày $\times$ @Model.TotalDays ngày)</p>
+                    <p>• <strong>Phí bảo hiểm trách nhiệm & Pin xe điện:</strong> @Model.InsuranceFee.ToString("N0") VNĐ (15.000 đ/ngày)</p>
+                    <p>• <strong>TỔNG GIÁ TRỊ GIAO DỊCH:</strong> <strong class="text-base text-gray-900">@Model.TotalAmount.ToString("N0") VNĐ</strong></p>
+                    <p>• <strong>Tiền cọc giữ chỗ (30%):</strong> <strong>@Model.DepositAmount.ToString("N0") VNĐ</strong> (Đã thanh toán xác thực qua VietQR Napas247).</p>
+                    <p>• <strong>Tài sản thế chấp bàn giao:</strong> <strong>@Model.CollateralType</strong> (Hoàn trả lại 100% cho Bên B khi hoàn tất nghiệm thu trả xe).</p>
+                </div>
+            </div>
+
+            <!-- Điều 3 -->
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">ĐIỀU 3: BIÊN BẢN BÀN GIAO SỐ HÓA (ODO & PIN LFP)</h3>
+                <table class="w-full text-xs border border-gray-300 mb-2 text-center">
+                    <thead class="bg-gray-100 font-bold">
+                        <tr class="border-b border-gray-300">
+                            <th class="p-2 text-left">Hạng mục kiểm tra</th>
+                            <th class="p-2">Thời điểm Bàn giao (Check-in)</th>
+                            <th class="p-2">Thời điểm Trả xe (Check-out)</th>
+                            <th class="p-2">Ghi chú & Phụ phí</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-300">
+                            <td class="p-2 text-left font-bold">Số công-tơ-mét (ODO)</td>
+                            <td class="p-2">@(Model.CheckinOdo?.ToString("N0") ?? "3.200") km</td>
+                            <td class="p-2">@(Model.CheckoutOdo?.ToString("N0") ?? "Chưa trả") km</td>
+                            <td class="p-2 text-gray-500">Giới hạn: @((vehicle?.LimitKmPerDay ?? 150) * Model.TotalDays) km</td>
+                        </tr>
+                        <tr class="border-b border-gray-300">
+                            <td class="p-2 text-left font-bold">Dung lượng Pin LFP (%)</td>
+                            <td class="p-2 font-bold text-emerald-600">@(Model.CheckinBatteryPercent ?? 100)%</td>
+                            <td class="p-2">@(Model.CheckoutBatteryPercent?.ToString() ?? "—")%</td>
+                            <td class="p-2 text-gray-500">Kèm củ sạc nguyên vẹn</td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 text-left font-bold">Phụ phí phát sinh vượt km</td>
+                            <td class="p-2">—</td>
+                            <td class="p-2 font-bold text-red-600">@(Model.ExtraKmFee > 0 ? Model.ExtraKmFee.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
+                            <td class="p-2">Đơn giá: @(vehicle?.OverKmFee.ToString("N0") ?? "1.000") đ/km</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Điều 4 & 5 -->
+            <div class="border-t border-gray-300 pt-4 text-xs space-y-2">
+                <h3 class="font-bold text-base uppercase">ĐIỀU 4: TRÁCH NHIỆM & NGUYÊN TẮC VẬN HÀNH XE ĐIỆN</h3>
+                <p>1. Bên B cam kết chỉ sử dụng củ sạc chính hãng được bàn giao để sạc pin, không tự ý can thiệp vào mạch BMS hay can thiệp phần mềm ECU của xe.</p>
+                <p>2. Không điều khiển xe vào các vùng ngập nước quá mức cho phép vượt qua trục bánh xe dù xe có tiêu chuẩn kháng nước IP67.</p>
+                <p>3. Trong trường hợp xảy ra sự cố va chạm hoặc mất mát phương tiện/pin, hai bên cùng phối hợp cơ quan chức năng và bảo hiểm để giải quyết theo quy định pháp luật.</p>
+            </div>
+
+            <!-- Ký tên -->
+            <div class="border-t border-gray-300 pt-8 grid grid-cols-2 gap-8 text-center text-xs">
+                <div>
+                    <p class="font-bold uppercase text-sm">ĐẠI DIỆN BÊN A (CHỦ XE)</p>
+                    <p class="italic text-gray-400 mt-1">(Ký, ghi rõ họ tên hoặc xác nhận số)</p>
+                    <div class="my-10 text-emerald-700 font-bold font-sans">
+                        <i class="bi bi-patch-check-fill text-2xl"></i><br>
+                        <span>[ĐÃ KÝ ĐIỆN TỬ BẰNG TÀI KHOẢN CHỦ XE]</span>
+                    </div>
+                    <p class="font-bold">@(host?.FullName ?? "Nguyễn Văn Chủ Xe")</p>
+                </div>
+
+                <div>
+                    <p class="font-bold uppercase text-sm">ĐẠI DIỆN BÊN B (KHÁCH THUÊ)</p>
+                    <p class="italic text-gray-400 mt-1">(Ký, ghi rõ họ tên hoặc xác nhận số)</p>
+                    <div class="my-10 text-emerald-700 font-bold font-sans">
+                        <i class="bi bi-patch-check-fill text-2xl"></i><br>
+                        <span>[ĐÃ KÝ ĐIỆN TỬ QUA XÁC THỰC VIETQR]</span>
+                    </div>
+                    <p class="font-bold">@(renter?.FullName ?? "Trần Khách Thuê")</p>
+                </div>
+            </div>
+
+            <!-- Dấu chứng thực sàn EcoBike -->
+            <div class="mt-8 pt-4 border-t border-dashed border-gray-300 text-center text-[11px] text-gray-400 font-sans">
+                <i class="bi bi-shield-fill-check text-emerald-600"></i> Hợp đồng điện tử được chứng thực và lưu vết bởi Nền tảng Cho thuê xe máy điện EcoBike Platform (Mã phiên: @Guid.NewGuid().ToString().ToUpper()).
+            </div>
+        </div>
+    </div>
+</body>
+</html>
