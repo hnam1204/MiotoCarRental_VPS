@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiotoCarRental", "MiotoCarRental.csproj", "{DCB3823D-992B-40FB-98C5-24EBD204A8E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiotoCarRental.Tests", "..\MiotoCarRental.Tests\MiotoCarRental.Tests.csproj", "{5B1FB49D-1308-456A-9DDD-DD857DBE3FE9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiotoCarRental.Tests", "MiotoCarRental.Tests\MiotoCarRental.Tests.csproj", "{5B1FB49D-1308-456A-9DDD-DD857DBE3FE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

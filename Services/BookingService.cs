@@ -16,6 +16,7 @@ namespace MiotoCarRental.Services
 
     public class BookingService : IBookingService
     {
+        private static readonly SemaphoreSlim BookingCreationGate = new(1, 1);
         private readonly MiotoDbContext _context;
 
         public BookingService(MiotoDbContext context)
@@ -36,22 +37,25 @@ namespace MiotoCarRental.Services
 
         public async Task<(bool Success, string Message, Booking? Booking)> CreateBookingAsync(int renterId, CreateBookingViewModel model)
         {
-            if (model.StartTime >= model.EndTime)
+            if (model.StartTime >= model.EndTime || model.StartTime < DateTime.UtcNow.AddMinutes(-5))
             {
-                return (false, "Thời gian trả xe phải sau thời gian nhận xe.", null);
+                return (false, "Khoảng thời gian thuê không hợp lệ.", null);
+            }
+
+            if (model.EndTime > model.StartTime.AddDays(30))
+            {
+                return (false, "Thời gian thuê tối đa là 30 ngày.", null);
+            }
+
+            if (model.NeedsDelivery && string.IsNullOrWhiteSpace(model.DeliveryAddress))
+            {
+                return (false, "Vui lòng nhập địa chỉ giao xe.", null);
             }
 
             var vehicle = await _context.Vehicles.FindAsync(model.VehicleId);
             if (vehicle == null || vehicle.Status != VehicleStatus.Active)
             {
                 return (false, "Xe máy điện không tồn tại hoặc tạm ngưng cho thuê.", null);
-            }
-
-            // Kiểm tra chống trùng lịch xe
-            var isAvailable = await IsVehicleAvailableAsync(model.VehicleId, model.StartTime, model.EndTime);
-            if (!isAvailable)
-            {
-                return (false, "Chiếc xe máy điện này đã có người đặt trong khoảng thời gian bạn chọn.", null);
             }
 
             // Tính toán tài chính
@@ -83,39 +87,54 @@ namespace MiotoCarRental.Services
                 Status = vehicle.InstantBooking ? BookingStatus.AwaitingPayment : BookingStatus.Pending
             };
 
-            // Khóa lịch
-            var blockedDate = new CalendarBlocked
-            {
-                VehicleId = model.VehicleId,
-                StartDate = model.StartTime,
-                EndDate = model.EndTime,
-                Reason = "BOOKED"
-            };
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await BookingCreationGate.WaitAsync();
             try
             {
-                _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Serialize the overlap check and insert for the single-process demo deployment.
+                    var isAvailable = await IsVehicleAvailableAsync(model.VehicleId, model.StartTime, model.EndTime);
+                    if (!isAvailable)
+                    {
+                        await transaction.RollbackAsync();
+                        return (false, "Chiếc xe máy điện này đã có người đặt trong khoảng thời gian bạn chọn.", null);
+                    }
 
-                blockedDate.BookingId = booking.Id;
-                _context.CalendarBlockeds.Add(blockedDate);
-                await _context.SaveChangesAsync();
+                    _context.Bookings.Add(booking);
+                    await _context.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-                return (true, "Đặt xe máy điện thành công!", booking);
+                    var blockedDate = new CalendarBlocked
+                    {
+                        VehicleId = model.VehicleId,
+                        StartDate = model.StartTime,
+                        EndDate = model.EndTime,
+                        Reason = "BOOKED",
+                        BookingId = booking.Id
+                    };
+
+                    _context.CalendarBlockeds.Add(blockedDate);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                    return (true, "Đặt xe máy điện thành công!", booking);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    return (false, "Không thể tạo đơn đặt xe lúc này. Vui lòng thử lại.", null);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                await transaction.RollbackAsync();
-                return (false, $"Lỗi hệ thống: {ex.Message}", null);
+                BookingCreationGate.Release();
             }
         }
 
         public async Task<bool> ConfirmDepositAsync(int bookingId, string transactionCode)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
-            if (booking == null) return false;
+            if (booking == null || booking.Status != BookingStatus.AwaitingPayment) return false;
 
             booking.Status = BookingStatus.Confirmed;
             await _context.SaveChangesAsync();
@@ -125,7 +144,10 @@ namespace MiotoCarRental.Services
         public async Task<bool> CheckinVehicleAsync(int bookingId, int odo, int batteryPercent)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
-            if (booking == null) return false;
+            if (booking == null || booking.Status != BookingStatus.Confirmed || odo < 0 || batteryPercent is < 0 or > 100)
+            {
+                return false;
+            }
 
             booking.CheckinOdo = odo;
             booking.CheckinBatteryPercent = batteryPercent;
@@ -139,7 +161,15 @@ namespace MiotoCarRental.Services
         public async Task<bool> CheckoutVehicleAsync(int bookingId, int odo, int batteryPercent)
         {
             var booking = await _context.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == bookingId);
-            if (booking == null) return false;
+            if (booking == null || booking.Status != BookingStatus.InProgress || odo < 0 || batteryPercent is < 0 or > 100)
+            {
+                return false;
+            }
+
+            if (!booking.CheckinOdo.HasValue || odo < booking.CheckinOdo.Value)
+            {
+                return false;
+            }
 
             booking.CheckoutOdo = odo;
             booking.CheckoutBatteryPercent = batteryPercent;

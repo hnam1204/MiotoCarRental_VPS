@@ -11,7 +11,6 @@ using MiotoCarRental.Models.Entities;
 namespace MiotoCarRental.ViewModels
 {
     [Authorize(Roles = "Host,Admin")]
-    [IgnoreAntiforgeryToken]
     public class CreateVehicleViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
@@ -151,7 +150,6 @@ namespace MiotoCarRental.ViewModels
     }
 
     [Authorize(Roles = "Host,Admin")]
-    [IgnoreAntiforgeryToken]
     public class HostDashboardViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;

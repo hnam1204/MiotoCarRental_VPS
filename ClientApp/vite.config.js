@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 // Cấu hình Vite cho ReactJS Frontend gọi sang Backend ASP.NET Core 9.0 Web API (/api)
 export default defineConfig({
   plugins: [react()],
+  base: '/react/',
   server: {
     port: 5173,
     proxy: {

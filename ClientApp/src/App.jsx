@@ -11,7 +11,7 @@ import VehicleCard from './components/VehicleCard';
 import BookingModal from './components/BookingModal';
 
 const CATEGORIES = [
-  { id: '', label: 'Tất cả dòng xe', badge: '16 xe' },
+  { id: '', label: 'Tất cả dòng xe', badge: '12 xe' },
   { id: '0', label: 'Học sinh / SV (<50km/h)', badge: 'Miễn bằng A1' },
   { id: '1', label: 'Tầm trung / Đi phố', badge: '100-120k/ngày' },
   { id: '2', label: 'Đi phượt / Pin trâu', badge: '200-270km/sạc' },

@@ -1,27 +1,31 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MiotoCarRental.Data;
 using MiotoCarRental.Endpoints;
 using MiotoCarRental.Models.Entities;
+using MiotoCarRental.Services;
 
 namespace MiotoCarRental.ViewModels
 {
-    [IgnoreAntiforgeryToken]
     public class LoginViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
+        private readonly IPasswordService? _passwordService;
 
         public LoginViewModel() { }
 
         [ActivatorUtilitiesConstructor]
-        public LoginViewModel(MiotoDbContext context)
+        public LoginViewModel(MiotoDbContext context, IPasswordService passwordService)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         [BindProperty]
@@ -53,16 +57,28 @@ namespace MiotoCarRental.ViewModels
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid || _context == null)
+            if (!ModelState.IsValid || _context == null || _passwordService == null)
             {
                 return Page();
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == Email.ToLower().Trim());
-            if (user == null || (user.PasswordHash != Password && user.PasswordHash != $"{Password}_hash_123" && user.PasswordHash != $"{Password.ToLower()}123"))
+            if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không chính xác.");
                 return Page();
+            }
+
+            var verification = _passwordService.VerifyAndUpgrade(user, Password);
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không chính xác.");
+                return Page();
+            }
+
+            if (verification == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                await _context.SaveChangesAsync();
             }
 
             await EcoBikeEndpoints.SignInUserAsync(HttpContext, user, RememberMe);
@@ -79,17 +95,18 @@ namespace MiotoCarRental.ViewModels
         }
     }
 
-    [IgnoreAntiforgeryToken]
     public class RegisterViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
+        private readonly IPasswordService? _passwordService;
 
         public RegisterViewModel() { }
 
         [ActivatorUtilitiesConstructor]
-        public RegisterViewModel(MiotoDbContext context)
+        public RegisterViewModel(MiotoDbContext context, IPasswordService passwordService)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         [BindProperty]
@@ -108,6 +125,7 @@ namespace MiotoCarRental.ViewModels
         public string Phone { get; set; } = string.Empty;
 
         [BindProperty]
+        [BindNever]
         [Required(ErrorMessage = "Vui lòng chọn vai trò")]
         public UserRole Role { get; set; } = UserRole.Renter;
 
@@ -134,8 +152,14 @@ namespace MiotoCarRental.ViewModels
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid || _context == null)
+            if (!ModelState.IsValid || _context == null || _passwordService == null)
             {
+                return Page();
+            }
+
+            if (Role == UserRole.Admin)
+            {
+                ModelState.AddModelError(nameof(Role), "Không thể đăng ký tài khoản Admin.");
                 return Page();
             }
 
@@ -156,13 +180,15 @@ namespace MiotoCarRental.ViewModels
                 FullName = FullName.Trim(),
                 Email = Email.ToLower().Trim(),
                 Phone = Phone.Trim(),
-                PasswordHash = Password,
-                Role = Role,
+                PasswordHash = string.Empty,
+                Role = UserRole.Renter,
                 AvatarUrl = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
                 DriverLicenseStatus = DriverLicenseStatus.Approved,
                 DriverLicenseNo = "GPLX-" + Random.Shared.Next(10000000, 99999999).ToString(),
                 CreatedAt = DateTime.UtcNow
             };
+
+            newUser.PasswordHash = _passwordService.HashPassword(newUser, Password);
 
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
@@ -174,7 +200,6 @@ namespace MiotoCarRental.ViewModels
     }
 
     [Authorize]
-    [IgnoreAntiforgeryToken]
     public class ProfileViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;

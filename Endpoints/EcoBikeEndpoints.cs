@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiotoCarRental.Data;
 using MiotoCarRental.Models.Entities;
+using MiotoCarRental.Models;
 using MiotoCarRental.Services;
 using MiotoCarRental.ViewModels;
 
@@ -25,7 +26,6 @@ namespace MiotoCarRental.Endpoints
             // =========================================================================
             // 1. RESTful JSON APIs (.NET Core 9 Web API Layer cho ReactJS Frontend)
             // =========================================================================
-            app.MapGet("/swagger", () => Results.Redirect("/swagger/index.html"));
             app.MapGet("/api-docs", () => Results.Redirect("/swagger/index.html"));
             app.MapGet("/react", () => Results.Redirect("/react/index.html"));
 
@@ -45,15 +45,13 @@ namespace MiotoCarRental.Endpoints
                     query = query.Where(v => v.Brand.ToLower().Contains(kw) || v.Model.ToLower().Contains(kw) || v.City.ToLower().Contains(kw));
                 }
 
-                var list = await query.Select(v => new
-                {
+                var list = await query.Select(v => new PublicVehicleDto(
                     v.Id,
                     v.Brand,
                     v.Model,
-                    v.LicensePlate,
                     v.YearManufacture,
-                    Category = v.Category.ToString(),
-                    CategoryId = (int)v.Category,
+                    v.Category.ToString(),
+                    (int)v.Category,
                     v.BatteryRangeKm,
                     v.MaxSpeedKmH,
                     v.BatteryType,
@@ -61,27 +59,23 @@ namespace MiotoCarRental.Endpoints
                     v.PricePerDay,
                     v.City,
                     v.District,
-                    v.Address,
                     v.InstantBooking,
                     v.ThumbnailUrl,
-                    v.LimitKmPerDay
-                }).ToListAsync();
+                    v.LimitKmPerDay)).ToListAsync();
 
                 return Results.Ok(list.OrderBy(v => v.PricePerDay));
             });
 
             api.MapGet("/vehicles/{id:int}", async (int id, MiotoDbContext db) =>
             {
-                var v = await db.Vehicles.Include(x => x.Host).FirstOrDefaultAsync(x => x.Id == id);
+                var v = await db.Vehicles.FirstOrDefaultAsync(x => x.Id == id && x.Status == VehicleStatus.Active);
                 if (v is null) return Results.NotFound(new { message = "Không tìm thấy phương tiện" });
-                return Results.Ok(new
-                {
+                return Results.Ok(new PublicVehicleDetailsDto(
                     v.Id,
                     v.Brand,
                     v.Model,
-                    v.LicensePlate,
                     v.YearManufacture,
-                    Category = v.Category.ToString(),
+                    v.Category.ToString(),
                     v.BatteryRangeKm,
                     v.MaxSpeedKmH,
                     v.BatteryType,
@@ -89,35 +83,27 @@ namespace MiotoCarRental.Endpoints
                     v.PricePerDay,
                     v.City,
                     v.District,
-                    v.Address,
                     v.InstantBooking,
                     v.ThumbnailUrl,
                     v.Description,
-                    HostName = v.Host?.FullName ?? "Đối tác EcoBike"
-                });
+                    "Đối tác EcoBike"));
             });
 
             api.MapGet("/stats", async (MiotoDbContext db) =>
             {
-                var vehicles = await db.Vehicles.ToListAsync();
-                var bookings = await db.Bookings.ToListAsync();
-                var totalGmv = bookings.Where(b => b.Status != BookingStatus.Cancelled).Sum(b => b.TotalAmount);
-                return Results.Ok(new
-                {
-                    Architecture = "ReactJS Frontend (ClientApp) + ASP.NET Core 9.0 Web API + 3-Layer Services",
-                    TotalVehicles = vehicles.Count,
-                    TotalUsers = await db.Users.CountAsync(),
-                    TotalBookings = bookings.Count,
-                    TotalGMV = totalGmv,
-                    PlatformCommission = Math.Round(totalGmv * 0.15m, 0),
-                    Categories = new
-                    {
-                        Economy = vehicles.Count(v => v.Category == VehicleCategory.Economy),
-                        MidRange = vehicles.Count(v => v.Category == VehicleCategory.MidRange),
-                        Touring = vehicles.Count(v => v.Category == VehicleCategory.Touring),
-                        SportPremium = vehicles.Count(v => v.Category == VehicleCategory.SportPremium)
-                    }
-                });
+                var vehicles = await db.Vehicles
+                    .Where(v => v.Status == VehicleStatus.Active)
+                    .ToListAsync();
+                return Results.Ok(new PublicStatsDto(
+                    "ReactJS Frontend (ClientApp) + ASP.NET Core 9.0 Web API + 3-Layer Services",
+                    vehicles.Count,
+                    await db.Users.CountAsync(),
+                    await db.Bookings.CountAsync(b => b.Status != BookingStatus.Cancelled),
+                    new PublicCategoryStatsDto(
+                        vehicles.Count(v => v.Category == VehicleCategory.Economy),
+                        vehicles.Count(v => v.Category == VehicleCategory.MidRange),
+                        vehicles.Count(v => v.Category == VehicleCategory.Touring),
+                        vehicles.Count(v => v.Category == VehicleCategory.SportPremium))));
             });
 
             api.MapGet("/coupons", () =>
@@ -131,28 +117,30 @@ namespace MiotoCarRental.Endpoints
                 return Results.Ok(coupons);
             });
 
-            api.MapGet("/bookings", async (MiotoDbContext db) =>
+            api.MapGet("/bookings", [Authorize(Roles = "Admin,Host")] async (HttpContext http, MiotoDbContext db) =>
             {
-                var list = await db.Bookings
+                var query = db.Bookings.AsQueryable();
+                if (!http.User.IsInRole("Admin"))
+                {
+                    var hostId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (!int.TryParse(hostId, out var currentHostId))
+                    {
+                        return Results.Forbid();
+                    }
+
+                    query = query.Where(b => b.Vehicle != null && b.Vehicle.HostId == currentHostId);
+                }
+
+                var list = await query
                     .Include(b => b.Vehicle)
-                    .Include(b => b.Renter)
                     .OrderByDescending(b => b.CreatedAt)
                     .Take(20)
-                    .Select(b => new
-                    {
-                        b.Id,
-                        b.BookingCode,
-                        VehicleName = b.Vehicle != null ? b.Vehicle.Brand + " " + b.Vehicle.Model : "Xe máy điện",
-                        RenterName = b.Renter != null ? b.Renter.FullName : "Khách thuê",
-                        PickupDate = b.StartTime,
-                        ReturnDate = b.EndTime,
+                    .Select(b => new BookingSummaryDto(
+                        b.Vehicle != null ? b.Vehicle.Brand + " " + b.Vehicle.Model : "Xe máy điện",
+                        b.StartTime,
+                        b.EndTime,
                         b.TotalDays,
-                        b.RentalFee,
-                        b.InsuranceFee,
-                        b.DepositAmount,
-                        b.TotalAmount,
-                        Status = b.Status.ToString()
-                    })
+                        b.Status.ToString()))
                     .ToListAsync();
                 return Results.Ok(list);
             });
@@ -160,9 +148,17 @@ namespace MiotoCarRental.Endpoints
             api.MapPost("/bookings/calculate", async (MiotoDbContext db, int vehicleId, int days, string? couponCode) =>
             {
                 var vehicle = await db.Vehicles.FindAsync(vehicleId);
-                if (vehicle == null) return Results.NotFound(new { message = "Không tìm thấy xe" });
+                if (vehicle == null || vehicle.Status != VehicleStatus.Active)
+                {
+                    return Results.NotFound(new { message = "Không tìm thấy xe" });
+                }
 
-                int validDays = Math.Max(1, days);
+                if (days is < 1 or > 30)
+                {
+                    return Results.BadRequest(new { message = "Số ngày thuê phải từ 1 đến 30." });
+                }
+
+                int validDays = days;
                 decimal rentalFee = vehicle.PricePerDay * validDays;
                 decimal insuranceFee = 15000m * validDays;
                 decimal discount = 0m;
@@ -191,7 +187,7 @@ namespace MiotoCarRental.Endpoints
                     TotalAmount = totalAmount,
                     DepositRequired = deposit
                 });
-            }).DisableAntiforgery();
+            });
 
             api.MapGet("/stations", () =>
             {
@@ -209,11 +205,23 @@ namespace MiotoCarRental.Endpoints
             // =========================================================================
             // 2. ACCOUNT & AUTHENTICATION ENDPOINTS
             // =========================================================================
-            app.MapPost("/Account/QuickLogin", async (HttpContext http, MiotoDbContext db, [FromForm] string email, [FromForm] string? returnUrl) =>
+            app.MapPost("/Account/QuickLogin", async (HttpContext http, MiotoDbContext db, IPasswordService passwordService, [FromForm] string email, [FromForm] string password, [FromForm] string? returnUrl) =>
             {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (user != null)
+                if (!app.Environment.IsDevelopment() || !app.Configuration.GetValue<bool>("Demo:EnableQuickLogin"))
                 {
+                    return Results.NotFound();
+                }
+
+                var allowedDemoEmails = new[] { "admin@mioto.vn", "chuxe@gmail.com", "khachthue@gmail.com" };
+                if (!allowedDemoEmails.Contains(email.Trim(), StringComparer.OrdinalIgnoreCase))
+                {
+                    return Results.BadRequest(new { message = "Tài khoản demo không hợp lệ." });
+                }
+
+                var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email.Trim().ToLower());
+                if (user != null && passwordService.VerifyAndUpgrade(user, password) != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                {
+                    await db.SaveChangesAsync();
                     await SignInUserAsync(http, user, true);
                     SetTempMessage(http, "SuccessMessage", $"Đã đăng nhập nhanh với vai trò [{user.Role}]: {user.FullName}!");
 
@@ -226,14 +234,14 @@ namespace MiotoCarRental.Endpoints
                     if (user.Role == UserRole.Host) return Results.Redirect("/Host");
                 }
                 return Results.Redirect("/");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Account/Logout", async (HttpContext http) =>
             {
                 await http.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 SetTempMessage(http, "SuccessMessage", "Bạn đã đăng xuất khỏi hệ thống an toàn.");
                 return Results.Redirect("/");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Account/UpdateLicense", [Authorize] async (HttpContext http, MiotoDbContext db, [FromForm] string licenseNo, [FromForm] string? licenseImageUrl) =>
             {
@@ -252,7 +260,7 @@ namespace MiotoCarRental.Endpoints
                     }
                 }
                 return Results.Redirect("/Account/Profile");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Account/UpgradeToHost", [Authorize] async (HttpContext http, MiotoDbContext db) =>
             {
@@ -270,21 +278,15 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", "Chúc mừng bạn đã nâng cấp thành công thành Đối Tác Chủ Xe (Host)!");
                 }
                 return Results.Redirect("/Host");
-            }).DisableAntiforgery();
+            });
 
             // =========================================================================
             // 3. BOOKING WORKFLOW ENDPOINTS
             // =========================================================================
-            app.MapPost("/Bookings/Create", async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] CreateBookingViewModel model) =>
+            app.MapPost("/Bookings/Create", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] CreateBookingViewModel model) =>
             {
-                if (http.User.Identity?.IsAuthenticated != true)
-                {
-                    SetTempMessage(http, "ErrorMessage", "Vui lòng đăng nhập trước khi tiến hành đặt xe.");
-                    return Results.Redirect($"/Account/Login?returnUrl=/Vehicles/Details/{model.VehicleId}");
-                }
-
                 var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!int.TryParse(userIdStr, out int renterId)) return Results.Redirect("/Account/Login");
+                if (!int.TryParse(userIdStr, out int renterId)) return Results.Forbid();
 
                 var user = await db.Users.FindAsync(renterId);
                 if (user != null && user.DriverLicenseStatus != DriverLicenseStatus.Approved)
@@ -302,7 +304,7 @@ namespace MiotoCarRental.Endpoints
 
                 SetTempMessage(http, "SuccessMessage", "Tạo đơn đặt xe thành công! Vui lòng thanh toán cọc giữ chỗ.");
                 return Results.Redirect($"/Bookings/Details/{result.Booking.Id}");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Bookings/ConfirmPayment", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id) =>
             {
@@ -316,33 +318,55 @@ namespace MiotoCarRental.Endpoints
 
                 if (!isAdmin && !isRenter) return Results.Redirect("/Account/AccessDenied");
 
-                var success = await bookingService.ConfirmDepositAsync(id, $"PAY-{Guid.NewGuid().ToString()[..8].ToUpper()}");
+                var success = await bookingService.ConfirmDepositAsync(id, $"SIM-PAY-{Guid.NewGuid().ToString()[..8].ToUpper()}");
                 if (success)
                 {
-                    SetTempMessage(http, "SuccessMessage", "Thanh toán cọc 30% thành công! Chuyến xe của bạn đã được xác nhận.");
+                    SetTempMessage(http, "SuccessMessage", "Thanh toán mô phỏng cọc 30% thành công! Chuyến xe của bạn đã được xác nhận.");
                 }
                 return Results.Redirect($"/Bookings/Details/{id}");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Bookings/Checkin", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id, [FromForm] int odo, [FromForm] int fuelLevel) =>
             {
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
                 if (booking == null) return Results.NotFound();
 
-                await bookingService.CheckinVehicleAsync(id, odo, fuelLevel);
+                var currentUserId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(currentUserId, out var userId)
+                    || (!http.User.IsInRole("Admin") && booking.RenterId != userId && booking.Vehicle?.HostId != userId))
+                {
+                    return Results.Forbid();
+                }
+
+                if (!await bookingService.CheckinVehicleAsync(id, odo, fuelLevel))
+                {
+                    SetTempMessage(http, "ErrorMessage", "Không thể bàn giao xe ở trạng thái hiện tại hoặc thông số không hợp lệ.");
+                    return Results.Redirect($"/Bookings/Details/{id}");
+                }
                 SetTempMessage(http, "SuccessMessage", "Bàn giao xe thành công! Chúc bạn có một hành trình an toàn.");
                 return Results.Redirect($"/Bookings/Details/{id}");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Bookings/Checkout", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id, [FromForm] int odo, [FromForm] int fuelLevel) =>
             {
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
                 if (booking == null) return Results.NotFound();
 
-                await bookingService.CheckoutVehicleAsync(id, odo, fuelLevel);
+                var currentUserId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(currentUserId, out var userId)
+                    || (!http.User.IsInRole("Admin") && booking.RenterId != userId && booking.Vehicle?.HostId != userId))
+                {
+                    return Results.Forbid();
+                }
+
+                if (!await bookingService.CheckoutVehicleAsync(id, odo, fuelLevel))
+                {
+                    SetTempMessage(http, "ErrorMessage", "Không thể nghiệm thu trả xe ở trạng thái hiện tại hoặc thông số không hợp lệ.");
+                    return Results.Redirect($"/Bookings/Details/{id}");
+                }
                 SetTempMessage(http, "SuccessMessage", "Nghiệm thu trả xe thành công! Cảm ơn bạn đã sử dụng dịch vụ.");
                 return Results.Redirect($"/Bookings/Details/{id}");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Bookings/AddReview", [Authorize] async (HttpContext http, MiotoDbContext db, [FromForm] int bookingId, [FromForm] int rating, [FromForm] string? comment) =>
             {
@@ -364,7 +388,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", "Cảm ơn bạn đã gửi đánh giá và nhận xét!");
                 }
                 return Results.Redirect($"/Bookings/Details/{bookingId}");
-            }).DisableAntiforgery();
+            });
 
             // =========================================================================
             // 4. HOST MANAGEMENT ENDPOINTS
@@ -385,7 +409,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", "Chúc mừng bạn đã kích hoạt tài khoản Đối Tác Chủ Xe (Host) thành công!");
                 }
                 return Results.Redirect("/Host");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Host/ToggleStatus", [Authorize(Roles = "Host,Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int id) =>
             {
@@ -399,19 +423,22 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Đã cập nhật trạng thái xe [{vehicle.Model}].");
                 }
                 return Results.Redirect("/Host");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Host/ApproveBooking", [Authorize(Roles = "Host,Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int id) =>
             {
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
-                if (booking != null && booking.Status == BookingStatus.Pending)
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out var hostId);
+                var canManage = http.User.IsInRole("Admin") || booking?.Vehicle?.HostId == hostId;
+                if (canManage && booking != null && booking.Status == BookingStatus.Pending)
                 {
                     booking.Status = BookingStatus.AwaitingPayment;
                     await db.SaveChangesAsync();
                     SetTempMessage(http, "SuccessMessage", $"Đã chấp nhận đơn đặt xe #{booking.BookingCode}.");
                 }
                 return Results.Redirect("/Host");
-            }).DisableAntiforgery();
+            });
 
             // =========================================================================
             // 5. ADMIN PORTAL ENDPOINTS
@@ -427,7 +454,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Đã phê duyệt Giấy phép lái xe A1 cho khách hàng {user.FullName}.");
                 }
                 return Results.Redirect("/Admin");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Admin/RejectLicense", [Authorize(Roles = "Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int userId, [FromForm] string? reason) =>
             {
@@ -440,7 +467,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Đã từ chối hồ sơ GPLX của khách hàng {user.FullName}.");
                 }
                 return Results.Redirect("/Admin");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Admin/ToggleVehicleStatus", [Authorize(Roles = "Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int vehicleId) =>
             {
@@ -452,7 +479,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Đã chuyển trạng thái xe {vehicle.Model} ({vehicle.LicensePlate}).");
                 }
                 return Results.Redirect("/Admin");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Admin/CancelBooking", [Authorize(Roles = "Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int bookingId, [FromForm] string? reason) =>
             {
@@ -467,10 +494,16 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Đã hủy chuyến thuê #{booking.BookingCode} và giải phóng lịch xe.");
                 }
                 return Results.Redirect("/Admin");
-            }).DisableAntiforgery();
+            });
 
             app.MapPost("/Admin/UpdateUserRole", [Authorize(Roles = "Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int userId, [FromForm] UserRole newRole) =>
             {
+                if (!Enum.IsDefined(newRole))
+                {
+                    SetTempMessage(http, "ErrorMessage", "Vai trò không hợp lệ.");
+                    return Results.Redirect("/Admin");
+                }
+
                 var user = await db.Users.FindAsync(userId);
                 if (user != null)
                 {
@@ -487,7 +520,7 @@ namespace MiotoCarRental.Endpoints
                     SetTempMessage(http, "SuccessMessage", $"Phân quyền thành công! [{user.FullName}] đã chuyển từ [{oldRole}] sang [{newRole}].");
                 }
                 return Results.Redirect("/Admin");
-            }).DisableAntiforgery();
+            });
         }
 
         public static async Task SignInUserAsync(HttpContext http, User user, bool isPersistent)

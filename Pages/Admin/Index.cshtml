@@ -105,10 +105,12 @@
                                 </td>
                                 <td class="py-4 px-6 text-right space-x-2">
                                     <form action="/Admin/ApproveLicense" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="userId" value="@u.Id" />
                                         <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-xl transition text-[11px]">Duyệt</button>
                                     </form>
                                     <form action="/Admin/RejectLicense" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="userId" value="@u.Id" />
                                         <input type="hidden" name="reason" value="Ảnh chụp bị mờ" />
                                         <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-1.5 px-3 rounded-xl transition text-[11px] border border-red-200">Từ chối</button>
@@ -173,6 +175,7 @@
                             </td>
                             <td class="py-4 px-6 text-right">
                                 <form action="/Admin/ToggleVehicleStatus" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="vehicleId" value="@v.Id" />
                                     <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-1.5 px-3 rounded-xl transition text-[11px]">
                                         @(v.Status == MiotoCarRental.Models.Entities.VehicleStatus.Active ? "Khóa xe" : "Mở khóa")
@@ -215,6 +218,7 @@
                             <td class="py-4 px-4 font-bold text-indigo-700">@u.Role</td>
                             <td class="py-4 px-6 text-right">
                                 <form action="/Admin/UpdateUserRole" method="post" class="inline-flex items-center gap-2">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="userId" value="@u.Id" />
                                     <select name="newRole" class="text-xs bg-gray-50 border border-gray-300 rounded-xl px-2 py-1.5 font-semibold text-gray-700">
                                         <!option value="Renter" @(u.Role == MiotoCarRental.Models.Entities.UserRole.Renter ? "selected" : "")>Renter</!option>

@@ -99,6 +99,7 @@
 
                                 <div class="flex items-center gap-2">
                                     <form action="/Host/ToggleStatus" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@v.Id" />
                                         <button type="submit" class="text-xs font-bold px-3 py-1.5 rounded-xl border transition @(v.Status == VehicleStatus.Active ? "border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100" : "border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100")">
                                             @(v.Status == VehicleStatus.Active ? "Tạm ngưng" : "Kích hoạt")
@@ -174,6 +175,7 @@
                                         @if (b.Status == BookingStatus.Pending)
                                         {
                                             <form action="/Host/ApproveBooking" method="post" class="inline">
+                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@b.Id" />
                                                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
                                                     Duyệt đơn

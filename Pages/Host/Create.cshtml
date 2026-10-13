@@ -41,6 +41,7 @@
         </div>
 
         <form action="/Host/Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-semibold"></div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

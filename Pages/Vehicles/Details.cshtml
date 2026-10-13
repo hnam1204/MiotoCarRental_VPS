@@ -146,6 +146,7 @@
                 <h3 class="text-xl font-black text-gray-900 mb-6">Đặt thuê xe máy điện</h3>
 
                 <form action="/Bookings/Create" method="post" class="space-y-4">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="VehicleId" value="@v.Id" />
 
                     <div>

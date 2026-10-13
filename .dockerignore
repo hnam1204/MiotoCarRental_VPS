@@ -1,0 +1,13 @@
+.git
+.github
+.vs
+bin
+obj
+artifacts
+ClientApp/node_modules
+wwwroot/react
+mioto.db
+*.db-wal
+*.db-shm
+Dockerfile
+docker-compose.yml

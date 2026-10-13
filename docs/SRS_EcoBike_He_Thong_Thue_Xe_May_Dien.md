@@ -91,10 +91,10 @@ flowchart TD
 
 | Vai trò | Quyền hạn truy cập | Tài khoản kiểm thử (Seed Data) |
 | :--- | :--- | :--- |
-| **Khách vãng lai (`Guest`)** | Xem Trang chủ (`/`), xem Danh sách 16 mẫu xe theo 4 nhóm (`/Vehicles`), xem Chi tiết xe (`/Vehicles/Details/{id}`), xem Mạng lưới Trạm sạc & Đổi pin (`/Stations`). | Không cần đăng nhập |
-| **Khách thuê (`Renter`)** | Toàn bộ quyền của Guest + Đặt thuê xe, xem Lịch sử chuyến thuê (`/Bookings/MyBookings`), xem Hợp đồng điện tử (`/Bookings/Contract/{id}`), Đánh giá sao, Cập nhật GPLX (`/Account/Profile`), Nâng cấp lên Chủ xe. | `khachthue@gmail.com` / `123456` |
-| **Chủ xe (`Host`)** | Toàn bộ quyền của Renter + Truy cập **Kênh Chủ Xe** (`/Host`), Đăng xe máy điện mới (`/Host/Create`), Duyệt/Từ chối yêu cầu thuê, Xác nhận bàn giao & hoàn thành chuyến đi. | `chuxe@gmail.com` / `123456` |
-| **Quản trị sàn (`Admin`)** | Toàn quyền hệ thống + Truy cập **Quản trị sàn** (`/Admin`), Phê duyệt/Từ chối GPLX người dùng, Phê duyệt/Khóa xe đăng mới, Giám sát doanh thu hoa hồng toàn sàn. | `admin@mioto.vn` / `123456` |
+| **Khách vãng lai (`Guest`)** | Xem Trang chủ (`/`), xem danh sách xe theo 4 nhóm (`/Vehicles`), xem chi tiết xe (`/Vehicles/Details/{id}`), xem mạng lưới trạm sạc & đổi pin (`/Stations`). | Không cần đăng nhập |
+| **Khách thuê (`Renter`)** | Toàn bộ quyền của Guest + Đặt thuê xe, xem lịch sử chuyến thuê (`/Bookings/MyBookings`), xem hợp đồng điện tử (`/Bookings/Contract/{id}`), đánh giá sao, cập nhật GPLX (`/Account/Profile`), nâng cấp lên Chủ xe. | `khachthue@gmail.com` / `renter123` |
+| **Chủ xe (`Host`)** | Toàn bộ quyền của Renter + Truy cập **Kênh Chủ Xe** (`/Host`), đăng xe máy điện mới (`/Host/Create`), duyệt yêu cầu thuê, xác nhận bàn giao & hoàn thành chuyến đi. | `chuxe@gmail.com` / `host123` |
+| **Quản trị sàn (`Admin`)** | Toàn quyền hệ thống + Truy cập **Quản trị sàn** (`/Admin`), phê duyệt/từ chối GPLX người dùng, khóa xe, giám sát dữ liệu toàn sàn. | `admin@mioto.vn` / `admin123` |
 
 ### 2.3. Phân loại 4 nhóm phương tiện xe máy điện (`VehicleCategory`)
 
@@ -115,8 +115,8 @@ Hệ thống chuẩn hóa danh mục phương tiện thành **04 phân khúc nhu
 
 | Mã YC | Tên chức năng | Mô tả chi tiết nghiệp vụ | Độ ưu tiên |
 | :--- | :--- | :--- | :---: |
-| **FR-01** | Đăng ký tài khoản (`RegisterViewModel`) | Cho phép người dùng tạo tài khoản mới tại `/Account/Register` với Họ tên, Email, Số điện thoại, Mật khẩu và tùy chọn vai trò khởi tạo. Kiểm tra trùng lặp Email và Số điện thoại. | Cao |
-| **FR-02** | Đăng nhập & Demo 1 chạm (`LoginViewModel`) | Xác thực thông tin đăng nhập tại `/Account/Login`, khởi tạo phiên Cookie chứa Claims (`NameIdentifier`, `Name`, `Email`, `Role`, `DriverLicenseStatus`). Hỗ trợ Endpoint `/Account/QuickLogin` chuyển đổi nhanh 1 chạm giữa 3 vai trò. | Cao |
+| **FR-01** | Đăng ký tài khoản (`RegisterViewModel`) | Cho phép người dùng tạo tài khoản mới tại `/Account/Register` với Họ tên, Email, Số điện thoại và Mật khẩu. Tài khoản mới luôn bắt đầu ở vai trò Renter; kiểm tra trùng Email và Số điện thoại. | Cao |
+| **FR-02** | Đăng nhập & tài khoản demo (`LoginViewModel`) | Xác thực thông tin đăng nhập tại `/Account/Login`, khởi tạo phiên Cookie chứa Claims (`NameIdentifier`, `Name`, `Email`, `Role`, `DriverLicenseStatus`). QuickLogin chỉ có trong Development, bị giới hạn ở tài khoản demo và vẫn yêu cầu mật khẩu hợp lệ. | Cao |
 | **FR-03** | Quản lý Hồ sơ & Xác thực GPLX (`ProfileViewModel`) | Cho phép người dùng cập nhật số GPLX A1 tại `/Account/Profile`. Khi cập nhật mới, trạng thái chuyển về `Pending` chờ Admin duyệt. | Trung bình |
 | **FR-04** | Nâng cấp tài khoản lên Chủ xe (`BecomeHostPageModel`) | Khách thuê (`Renter`) có thể đăng ký trở thành Chủ xe tại `/Host/BecomeHost`, hệ thống nâng cấp quyền lên `Host` và làm mới phiên đăng nhập ngay lập tức. | Trung bình |
 | **FR-05** | Kiểm soát truy cập (`AccessDeniedPageModel`) | Tự động chặn và chuyển hướng tới `/Account/AccessDenied` khi người dùng truy cập trái phép vào các Razor Pages của `Host` hoặc `Admin`. | Cao |
@@ -154,7 +154,7 @@ Hệ thống chuẩn hóa danh mục phương tiện thành **04 phân khúc nhu
 
 | Mã YC | Tên chức năng | Mô tả chi tiết nghiệp vụ | Độ ưu tiên |
 | :--- | :--- | :--- | :---: |
-| **FR-21** | Dashboard Thống kê toàn sàn (`AdminDashboardViewModel`) | Trang `/Admin` hiển thị các chỉ số KPI toàn sàn: Tổng doanh thu GMV, Doanh thu phí nền tảng (15%), Tổng số chuyến hoàn tất, Danh sách người dùng và phương tiện. | Cao |
+| **FR-21** | Dashboard Thống kê toàn sàn (`AdminDashboardViewModel`) | Trang `/Admin` hiển thị các chỉ số nội bộ như doanh thu mô phỏng, số chuyến, danh sách người dùng và phương tiện; API công khai không trả dữ liệu GMV hay hoa hồng. | Cao |
 | **FR-22** | Phê duyệt / Từ chối GPLX | Admin kiểm tra thông tin GPLX A1 của người dùng và bấm Duyệt (`/Admin/ApproveLicense`) hoặc Từ chối (`/Admin/RejectLicense`). | Cao |
 | **FR-23** | Kiểm duyệt phương tiện & Quản lý User | Admin duyệt/tạm khóa xe (`/Admin/ToggleVehicleStatus`), hủy đơn vi phạm (`/Admin/CancelBooking`) và phân quyền người dùng (`/Admin/UpdateUserRole`). | Trung bình |
 
@@ -229,10 +229,12 @@ erDiagram
 2. **Bảo mật & Phân quyền:**
    * Sử dụng Cookie-based Authentication của ASP.NET Core kết hợp thuộc tính `[Authorize(Roles = "...")]` trực tiếp trên các lớp `PageModel` và kiểm tra quyền tại các Minimal API Endpoints.
 3. **Hiệu năng & Khởi tạo tự động:**
-   * Tự động khởi tạo schema và nạp sẵn **16 mẫu xe máy điện** thuộc 4 nhóm phân khúc cùng **03 tài khoản phân quyền mẫu** ngay khi khởi chạy lần đầu (`DbInitializer.Initialize`).
+   * Trong Development, khi `Database:SeedDemoData=true`, có thể khởi tạo schema và nạp **12 mẫu xe máy điện** thuộc 4 nhóm phân khúc cùng **03 tài khoản phân quyền mẫu**. Production không tự seed database.
 
 ### 5.2. Tổng hợp Kết quả Kiểm thử Tự động (Unit Testing - xUnit)
-Dự án đi kèm bộ kiểm thử tự động `MiotoCarRental.Tests` gồm **46 kịch bản kiểm thử (Test Cases)** đạt tỷ lệ **Pass 100% (46/46)**:
-* **Kiểm thử Nghiệp vụ Đặt xe & Mã giảm giá (`BookingAndCouponTests`):** Kiểm tra tính ngày thuê, phí bảo hiểm, tiền cọc, mã giảm giá và chống đặt trùng lịch.
-* **Kiểm thử Phân loại 4 nhóm xe & Xe học sinh (`VehicleCategoryTests`):** Kiểm tra đủ 4 phân khúc `Economy`, `MidRange`, `Touring`, `SportPremium` và kiểm tra xe học sinh miễn bằng A1.
-* **Kiểm thử Phân quyền trên Razor Pages `PageModel` (`AuthorizationTests`, `ValidationTests`):** Kiểm tra thuộc tính `[Authorize]` trên `AdminDashboardViewModel`, `HostDashboardViewModel`, `CreateVehicleViewModel`, `BookingDetailsPageModel`, `MyBookingsPageModel`, `ProfileViewModel`.
+Dự án hiện đi kèm bộ kiểm thử tự động `MiotoCarRental.Tests` gồm **5 test cases** chạy trên SQLite in-memory cô lập:
+* Kiểm tra xác thực và nâng cấp mật khẩu plaintext cũ.
+* Kiểm tra hash mật khẩu mới và từ chối mật khẩu sai.
+* Kiểm tra đăng ký không thể tự cấp vai trò Admin.
+* Kiểm tra chống đặt trùng lịch và các chuyển trạng thái check-in/check-out.
+* Kiểm tra người dùng không liên quan không thể xem chi tiết booking.
