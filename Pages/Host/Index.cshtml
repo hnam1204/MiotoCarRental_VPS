@@ -1,130 +1,330 @@
 @page "/Host"
-@model MiotoCarRental.ViewModels.HostDashboardViewModel
+@model MiotoCarRental.ViewModels.HostIndexPageModel
 @using MiotoCarRental.Models.Entities
 @{
-    ViewData["Title"] = "Kênh Chủ Xe - Quản lý xe & Đơn đặt thuê";
-    var netRevenue = Math.Round(Model.TotalRevenue * 0.85m, 0);
+    ViewData["Title"] = "Kênh Đối tác Chủ xe - EcoBike Host";
+    var cars = Model.Cars;
+    var incomingBookings = Model.IncomingBookings;
+    var totalGrossRevenue = incomingBookings
+        .Where(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Completed || b.Status == BookingStatus.Approved)
+        .Sum(b => b.TotalPrice);
+    var hostNetEarnings = totalGrossRevenue * 0.85m;
+    var platformFeeTotal = totalGrossRevenue * 0.15m;
+    var pendingCount = incomingBookings.Count(b => b.Status == BookingStatus.Pending);
+    var activeCount = incomingBookings.Count(b => b.Status == BookingStatus.Approved || b.Status == BookingStatus.Confirmed);
+    var availableCarsCount = cars.Count(c => c.IsAvailable);
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <!-- Header & Host Functions -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-gray-200">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Kênh Đối Tác Chủ Xe</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Quản lý đội xe máy điện, duyệt yêu cầu thuê, bàn giao xe (Check-in/Check-out) và theo dõi doanh thu</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+
+    <!-- Host Partner Executive Header & Wallet Card -->
+    <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-md border border-slate-800 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="lg:col-span-7 space-y-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-md">
+                    <i class="bi bi-patch-check-fill"></i> Đối tác Chủ xe Đã xác thực
+                </span>
+                <span class="text-xs text-amber-400 font-semibold">
+                    <i class="bi bi-star-fill"></i> 4.9 / 5.0 (Tỷ lệ phản hồi 98%)
+                </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Bảng điều khiển Đối tác Chủ xe (Host Portal)</h1>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
+                Quản lý lịch trống đội xe máy điện, phê duyệt yêu cầu thuê, lập biên bản bàn giao Check-in / Check-out (Pin &amp; ODO) và rút doanh thu 85% về tài khoản ngân hàng.
+            </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2.5">
-            <a href="#incoming-bookings" class="px-3.5 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700">
-                <i class="bi bi-inbox mr-1 text-blue-600"></i> Đơn khách đặt (@Model.IncomingBookings.Count)
-            </a>
-            <a href="#my-vehicles" class="px-3.5 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700">
-                <i class="bi bi-bicycle mr-1 text-emerald-600"></i> Đội xe của tôi (@Model.MyVehicles.Count)
-            </a>
-            <a href="/Host/Create" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg transition flex items-center gap-1.5">
-                <i class="bi bi-plus-lg"></i> Đăng xe máy điện mới
-            </a>
-        </div>
-    </div>
-
-    <!-- 4 Host KPIs -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-gray-200">
-            <div class="text-xs font-medium text-gray-500">Xe đang quản lý</div>
-            <div class="text-2xl font-bold text-gray-900 mt-1">@Model.TotalVehicles <span class="text-sm font-normal text-gray-400">xe</span></div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-gray-200">
-            <div class="text-xs font-medium text-gray-500">Đơn đang phục vụ</div>
-            <div class="text-2xl font-bold text-blue-600 mt-1">@Model.ActiveBookingsCount <span class="text-sm font-normal text-gray-400">chuyến</span></div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-gray-200">
-            <div class="text-xs font-medium text-gray-500">Tổng tiền thuê</div>
-            <div class="text-2xl font-bold text-gray-900 mt-1">@Model.TotalRevenue.ToString("N0")đ</div>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-gray-200">
-            <div class="text-xs font-medium text-gray-500">Thực nhận Chủ xe (85%)</div>
-            <div class="text-2xl font-bold text-emerald-600 mt-1">@netRevenue.ToString("N0")đ</div>
-        </div>
-    </div>
-
-    <!-- Chức năng 1 của Chủ xe: Duyệt đơn & Bàn giao xe -->
-    <div id="incoming-bookings" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+        <!-- Host Wallet Box -->
+        <div class="lg:col-span-5 bg-slate-800/90 border border-slate-700 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h2 class="text-base font-bold text-gray-900">1. Quản lý Đơn khách đặt & Nghiệm thu Bàn giao xe (@Model.IncomingBookings.Count đơn)</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Xác nhận yêu cầu thuê, ghi nhận % Pin và ODO lúc giao/trả xe và xuất hợp đồng điện tử</p>
+                <div class="text-xs text-slate-400 flex items-center gap-1.5">
+                    <i class="bi bi-wallet2 text-emerald-400"></i> Số dư Ví Chủ xe khả dụng (85%)
+                </div>
+                <div class="text-2xl font-bold text-emerald-400 mt-1">@hostNetEarnings.ToString("N0")đ</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Ngân hàng nhận: <strong class="text-slate-200">Vietcombank •••• 8899</strong></div>
+            </div>
+            <div class="flex sm:flex-col gap-2 shrink-0">
+                <button type="button" onclick="document.getElementById('payoutModal').classList.remove('hidden')"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-xs flex items-center justify-center gap-1.5">
+                    <i class="bi bi-bank"></i> Rút doanh thu
+                </button>
+                <a href="/Host/Create"
+                   class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                    <i class="bi bi-plus-lg"></i> Đăng xe mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Host KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-medium text-slate-500">Đội xe đang quản lý</div>
+                    <div class="text-2xl font-bold text-slate-900 mt-1">@cars.Count() <span class="text-sm font-normal text-slate-400">xe</span></div>
+                </div>
+                <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center text-lg">
+                    <i class="bi bi-scooter"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-emerald-600 font-semibold">@availableCarsCount xe đang mở thuê</span>
+                <span class="text-slate-400">@(cars.Count() - availableCarsCount) tạm ngưng</span>
             </div>
         </div>
 
-        @if (!Model.IncomingBookings.Any())
+        <div class="bg-white p-5 rounded-xl border @(pendingCount > 0 ? "border-amber-300" : "border-slate-200") shadow-xs flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-medium text-slate-500">Đơn khách đặt thuê</div>
+                    <div class="text-2xl font-bold text-slate-900 mt-1">@incomingBookings.Count() <span class="text-sm font-normal text-slate-400">đơn</span></div>
+                </div>
+                <span class="w-10 h-10 rounded-xl @(pendingCount > 0 ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-indigo-50 text-indigo-600") flex items-center justify-center text-lg">
+                    <i class="bi bi-calendar2-check"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="@(pendingCount > 0 ? "text-amber-700 font-bold" : "text-slate-500")">@pendingCount đơn chờ duyệt</span>
+                <span class="text-blue-600 font-semibold">@activeCount đang chạy</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-medium text-slate-500">Tổng giá trị đơn (100%)</div>
+                    <div class="text-2xl font-bold text-slate-900 mt-1">@totalGrossRevenue.ToString("N0")đ</div>
+                </div>
+                <span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg">
+                    <i class="bi bi-cash-coin"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Phí vận hành sàn (15%):</span>
+                <span class="text-slate-700 font-medium">-@platformFeeTotal.ToString("N0")đ</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="text-xs font-semibold text-emerald-700">Thực nhận Chủ xe (85%)</div>
+                    <div class="text-2xl font-bold text-emerald-700 mt-1">@hostNetEarnings.ToString("N0")đ</div>
+                </div>
+                <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-lg">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-xs">
+                <span class="text-emerald-700 font-medium">Tự động cộng sau Check-out</span>
+                <button type="button" onclick="document.getElementById('payoutModal').classList.remove('hidden')" class="text-emerald-700 font-bold hover:underline">Rút tiền &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host Analytics & Handover SOP Guide -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left 7 Cols: Monthly Host Earnings Chart -->
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Thống kê Thu nhập Chủ xe theo tháng (85% Thực nhận)</h2>
+                    <p class="text-xs text-slate-500">Hiệu suất khai thác đội xe máy điện và doanh thu sau chiết khấu sàn</p>
+                </div>
+                <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md">
+                    Hiệu suất thuê: 82%
+                </span>
+            </div>
+
+            <div class="pt-5 pb-2">
+                <div class="grid grid-cols-6 gap-3 sm:gap-5 items-end h-36 px-2 border-b border-slate-200">
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-slate-500 font-medium">2.1tr</span>
+                        <div class="w-full max-w-[38px] bg-emerald-500/80 rounded-t-md" style="height: 45%;"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-slate-500 font-medium">2.9tr</span>
+                        <div class="w-full max-w-[38px] bg-emerald-500/80 rounded-t-md" style="height: 60%;"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-slate-500 font-medium">3.4tr</span>
+                        <div class="w-full max-w-[38px] bg-emerald-500/80 rounded-t-md" style="height: 70%;"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-slate-500 font-medium">3.8tr</span>
+                        <div class="w-full max-w-[38px] bg-emerald-500/80 rounded-t-md" style="height: 78%;"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-slate-500 font-medium">4.5tr</span>
+                        <div class="w-full max-w-[38px] bg-emerald-500/80 rounded-t-md" style="height: 90%;"></div>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 h-full justify-end">
+                        <span class="text-[10px] text-emerald-700 font-bold">@((hostNetEarnings > 0 ? hostNetEarnings : 5100000).ToString("N0"))đ</span>
+                        <div class="w-full max-w-[38px] bg-emerald-600 rounded-t-md shadow-xs" style="height: 100%;"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-6 gap-3 sm:gap-5 text-center text-xs text-slate-500 pt-2">
+                    <span>T5</span>
+                    <span>T6</span>
+                    <span>T7</span>
+                    <span>T8</span>
+                    <span>T9</span>
+                    <span class="font-bold text-slate-900">Tháng này</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right 5 Cols: Standard Handover Checklist for Host -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-900 mb-1">Quy trình chuẩn Giao &amp; Nhận xe cho Chủ xe</h2>
+                <p class="text-xs text-slate-500 mb-3.5">Đảm bảo an toàn tài sản và tính tự động phụ phí pin / quá km</p>
+
+                <div class="space-y-2.5 text-xs">
+                    <div class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                        <div>
+                            <strong class="text-slate-900">Duyệt đơn đặt xe:</strong> Kiểm tra lịch trình và xác nhận yêu cầu đặt thuê của khách.
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                        <div>
+                            <strong class="text-slate-900">Check-in Bàn giao xe:</strong> Nhập số <strong class="text-emerald-700">ODO (km)</strong> và <strong class="text-emerald-700">% Pin lúc giao</strong> kèm tình trạng ngoại quan, bàn giao 02 mũ bảo hiểm + bộ sạc.
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                        <div>
+                            <strong class="text-slate-900">Check-out Thu hồi xe:</strong> Nhập ODO và % Pin lúc trả. Hệ thống tự cộng phụ phí nếu hụt pin hoặc vượt định mức 150km/ngày.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Filter & Search Toolbar -->
+    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <a href="#incoming-bookings" class="px-3.5 py-2 rounded-lg bg-slate-900 text-white">
+                1. Đơn khách đặt &amp; Nghiệm thu (@incomingBookings.Count())
+            </a>
+            <a href="#my-vehicles" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                2. Đội xe máy điện của tôi (@cars.Count())
+            </a>
+        </div>
+        <div class="relative w-full sm:w-72">
+            <i class="bi bi-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input id="hostQuickSearch" type="text" oninput="filterHostRows()"
+                   placeholder="Tìm theo tên khách, biển số, mẫu xe..."
+                   class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white" />
+        </div>
+    </div>
+
+    <!-- 1. Incoming Bookings & Check-in/Check-out Management -->
+    <div id="incoming-bookings" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden scroll-mt-24">
+        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">1. Quản lý Đơn khách đặt &amp; Nghiệm thu Bàn giao xe</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Phê duyệt đơn mới, lập biên bản Check-in giao xe và Check-out nhận lại xe</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-md">
+                Tổng cộng @incomingBookings.Count() đơn đặt xe
+            </span>
+        </div>
+
+        @if (!incomingBookings.Any())
         {
-            <div class="p-8 text-center text-xs text-gray-500">Chưa có yêu cầu đặt xe nào gửi tới các xe của bạn.</div>
+            <div class="p-10 text-center text-sm text-slate-500">
+                Hiện chưa có yêu cầu đặt thuê xe nào đối với đội xe của bạn.
+            </div>
         }
         else
         {
             <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-gray-50 text-gray-500 font-semibold border-b border-gray-200">
-                        <tr>
-                            <th class="py-3 px-5">Mã đơn</th>
-                            <th class="py-3 px-4">Xe máy điện</th>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase">
+                            <th class="py-3 px-6">Mã đơn</th>
+                            <th class="py-3 px-4">Xe cho thuê</th>
                             <th class="py-3 px-4">Khách thuê</th>
-                            <th class="py-3 px-4">Thời gian thuê</th>
-                            <th class="py-3 px-4">Tiền thuê</th>
+                            <th class="py-3 px-4">Thời gian &amp; Bàn giao</th>
+                            <th class="py-3 px-4">Doanh thu (Thực nhận 85%)</th>
                             <th class="py-3 px-4">Trạng thái</th>
-                            <th class="py-3 px-5 text-right">Thao tác của Chủ xe</th>
+                            <th class="py-3 px-6 text-right">Thao tác Chủ xe</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-gray-700">
-                        @foreach (var b in Model.IncomingBookings)
+                    <tbody class="divide-y divide-slate-200 text-sm">
+                        @foreach (var b in incomingBookings)
                         {
-                            <tr class="hover:bg-gray-50">
-                                <td class="py-3.5 px-5 font-mono font-semibold text-gray-900">#@b.BookingCode</td>
-                                <td class="py-3.5 px-4 font-semibold text-gray-900">@b.Vehicle.Brand @b.Vehicle.Model</td>
-                                <td class="py-3.5 px-4">@b.Renter.FullName (@b.Renter.Phone)</td>
-                                <td class="py-3.5 px-4">@b.StartTime.ToString("dd/MM") - @b.EndTime.ToString("dd/MM/yyyy") (@b.TotalDays ngày)</td>
-                                <td class="py-3.5 px-4 font-semibold text-emerald-600">@b.RentalFee.ToString("N0")đ</td>
+                            var netHost = b.TotalPrice * 0.85m;
+                            <tr class="hover:bg-slate-50/80 host-searchable-row">
+                                <td class="py-3.5 px-6 font-mono text-xs font-bold text-slate-800">#@b.Id</td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-slate-900">@b.Car?.Brand @b.Car?.Model</div>
+                                    <div class="text-xs text-slate-500">Biển số: <strong class="font-mono">@b.Car?.LicensePlate</strong></div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-medium text-slate-900">@b.User?.FullName</div>
+                                    <div class="text-xs text-slate-500">@b.User?.PhoneNumber</div>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs text-slate-600">
+                                    <div class="font-medium text-slate-800">@b.StartDate.ToString("dd/MM/yyyy") &rarr; @b.EndDate.ToString("dd/MM/yyyy")</div>
+                                    @if (b.PickupOdometerKm.HasValue)
+                                    {
+                                        <div class="text-[11px] text-emerald-700 mt-0.5">
+                                            Giao: @b.PickupOdometerKm km (@b.PickupBatteryPercent% pin)
+                                            @if (b.ReturnOdometerKm.HasValue)
+                                            {
+                                                <span>&bull; Trả: @b.ReturnOdometerKm km (@b.ReturnBatteryPercent% pin)</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-[11px] text-slate-400 mt-0.5">Chưa lập biên bản giao xe</div>
+                                    }
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-emerald-700">+@netHost.ToString("N0")đ</div>
+                                    <div class="text-[11px] text-slate-400">Tổng đơn: @b.TotalPrice.ToString("N0")đ</div>
+                                </td>
                                 <td class="py-3.5 px-4">
                                     @switch (b.Status)
                                     {
                                         case BookingStatus.Pending:
-                                            <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-medium px-2 py-0.5 rounded">Chờ Chủ xe duyệt</span>
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Chờ duyệt đơn</span>
                                             break;
-                                        case BookingStatus.AwaitingPayment:
-                                            <span class="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-medium px-2 py-0.5 rounded">Chờ khách cọc</span>
-                                            break;
+                                        case BookingStatus.Approved:
                                         case BookingStatus.Confirmed:
-                                            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium px-2 py-0.5 rounded">Đã cọc - Chờ giao xe</span>
-                                            break;
-                                        case BookingStatus.InProgress:
-                                            <span class="bg-purple-50 text-purple-700 border border-purple-200 text-[11px] font-medium px-2 py-0.5 rounded">Đang thuê (Đã giao)</span>
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">Đang bàn giao / Thuê</span>
                                             break;
                                         case BookingStatus.Completed:
-                                            <span class="bg-gray-100 text-gray-700 text-[11px] font-medium px-2 py-0.5 rounded">Hoàn tất</span>
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã hoàn thành</span>
                                             break;
-                                        case BookingStatus.Cancelled:
-                                            <span class="bg-red-50 text-red-600 text-[11px] font-medium px-2 py-0.5 rounded">Đã hủy</span>
+                                        default:
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-500">Đã hủy</span>
                                             break;
                                     }
                                 </td>
-                                <td class="py-3.5 px-5 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="py-3.5 px-6 text-right">
+                                    <div class="inline-flex items-center gap-1.5">
                                         @if (b.Status == BookingStatus.Pending)
                                         {
-                                            <form action="/Host/ApproveBooking" method="post" class="inline">
+                                            <form action="/Bookings/Confirm" method="post" class="inline">
+                                                @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@b.Id" />
-                                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-[11px] font-medium transition">
-                                                    Duyệt đơn
+                                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-2xs">
+                                                    <i class="bi bi-check2"></i> Duyệt đơn
                                                 </button>
                                             </form>
                                         }
-                                        <a href="/Bookings/Details/@b.Id" class="px-2.5 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-medium">
+                                        <a href="/Bookings/Details/@b.Id" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
                                             Giao / Nhận xe
                                         </a>
-                                        <a href="/Bookings/Contract/@b.Id" class="px-2.5 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-medium">
+                                        <a href="/Bookings/Contract/@b.Id" class="border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-medium px-2.5 py-1.5 rounded-lg transition">
                                             Hợp đồng
                                         </a>
                                     </div>
@@ -137,71 +337,161 @@
         }
     </div>
 
-    <!-- Chức năng 2 của Chủ xe: Quản lý Đội xe cá nhân -->
-    <div id="my-vehicles" class="bg-white rounded-xl p-5 sm:p-6 border border-gray-200">
-        <div class="flex items-center justify-between mb-5">
+    <!-- 2. My Vehicles Fleet Table -->
+    <div id="my-vehicles" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden scroll-mt-24">
+        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h2 class="text-base font-bold text-gray-900">2. Đội xe máy điện của tôi (@Model.MyVehicles.Count xe)</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Bật/tắt trạng thái nhận khách hoặc thêm phương tiện mới lên sàn</p>
+                <h2 class="text-base font-bold text-slate-900">2. Đội xe máy điện của tôi (@cars.Count() xe)</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Bật/tắt trạng thái nhận khách khi xe cần sạc pin, bảo dưỡng hoặc sử dụng cá nhân</p>
             </div>
-            <a href="/Host/Create" class="text-xs font-semibold text-blue-600 hover:underline">+ Đăng thêm xe mới</a>
+            <a href="/Host/Create" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg transition">
+                + Đăng thêm xe mới
+            </a>
         </div>
 
-        @if (!Model.MyVehicles.Any())
+        @if (!cars.Any())
         {
-            <div class="text-center py-8">
-                <p class="text-xs text-gray-500">Bạn chưa đăng chiếc xe máy điện nào.</p>
-                <a href="/Host/Create" class="mt-3 inline-block bg-blue-600 text-white font-medium text-xs px-4 py-2 rounded-lg">Đăng xe ngay</a>
+            <div class="p-12 text-center">
+                <p class="text-slate-600 font-medium">Bạn chưa đăng chiếc xe máy điện nào lên sàn.</p>
+                <a href="/Host/Create" class="mt-4 inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition">
+                    Đăng mẫu xe đầu tiên
+                </a>
             </div>
         }
         else
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                @foreach (var v in Model.MyVehicles)
-                {
-                    <div class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition flex flex-col justify-between">
-                        <div class="relative h-44 bg-gray-100">
-                            <img src="@v.ThumbnailUrl" class="w-full h-full object-cover" />
-                            <span class="absolute top-3 left-3 text-xs font-medium px-2.5 py-0.5 rounded @(v.Status == VehicleStatus.Active ? "bg-emerald-600 text-white" : "bg-gray-700 text-white")">
-                                @(v.Status == VehicleStatus.Active ? "Đang mở cho thuê" : "Tạm ngưng")
-                            </span>
-                            <span class="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-mono px-2 py-0.5 rounded">
-                                @v.LicensePlate
-                            </span>
-                        </div>
-
-                        <div class="p-4 flex flex-col flex-grow justify-between">
-                            <div>
-                                <span class="text-xs text-gray-500">@v.Brand • @v.BatteryType</span>
-                                <h4 class="font-bold text-gray-900 text-base mt-0.5">@v.Brand @v.Model</h4>
-                                <div class="text-xs text-gray-500 mt-2 space-y-1">
-                                    <div>Quãng đường: <strong class="text-gray-800">@v.BatteryRangeKm km/sạc</strong></div>
-                                    <div>Khu vực: @v.District, @v.City</div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between pt-3 mt-4 border-t border-gray-100">
-                                <div>
-                                    <span class="text-base font-bold text-emerald-600">@v.PricePerDay.ToString("N0")đ</span>
-                                    <span class="text-xs text-gray-400">/ngày</span>
-                                </div>
-
-                                <div class="flex items-center gap-2">
-                                    <form action="/Host/ToggleStatus" method="post" class="inline">
-                                        <input type="hidden" name="id" value="@v.Id" />
-                                        <button type="submit" class="text-xs font-medium px-3 py-1.5 rounded-lg border transition @(v.Status == VehicleStatus.Active ? "border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100" : "border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100")">
-                                            @(v.Status == VehicleStatus.Active ? "Tạm ngưng" : "Mở cho thuê")
-                                        </button>
-                                    </form>
-                                    <a href="/Vehicles/Details/@v.Id" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition">
-                                        Chi tiết
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase">
+                            <th class="py-3 px-6">Phương tiện</th>
+                            <th class="py-3 px-4">Biển số &amp; Khu vực</th>
+                            <th class="py-3 px-4">Thông số Pin &amp; Vận tốc</th>
+                            <th class="py-3 px-4">Giá cho thuê</th>
+                            <th class="py-3 px-4">Trạng thái</th>
+                            <th class="py-3 px-6 text-right">Quản lý lịch xe</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 text-sm">
+                        @foreach (var car in cars)
+                        {
+                            <tr class="hover:bg-slate-50/80 host-searchable-row">
+                                <td class="py-3.5 px-6">
+                                    <div class="flex items-center gap-3">
+                                        <img src="@car.ThumbnailUrl" alt="@car.Model" class="w-14 h-10 rounded-lg object-cover border border-slate-200 shrink-0" />
+                                        <div>
+                                            <div class="font-bold text-slate-900">@car.Brand @car.Model</div>
+                                            <div class="text-xs text-slate-500">Năm @car.YearManufacture &bull; @(car.RequiresLicenseA1 ? "Yêu cầu bằng A1" : "Miễn bằng A1")</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="font-mono text-xs font-bold bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-slate-800">@car.LicensePlate</span>
+                                    <div class="text-xs text-slate-500 mt-1"><i class="bi bi-geo-alt"></i> @car.District, @car.City</div>
+                                </td>
+                                <td class="py-3.5 px-4 text-xs text-slate-700">
+                                    <div class="font-semibold"><i class="bi bi-battery-charging text-emerald-600"></i> @car.BatteryRangeKm km/sạc (@car.BatteryType)</div>
+                                    <div class="text-slate-500">Tốc độ tối đa: @car.MaxSpeedKmH km/h</div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-emerald-700">@car.PricePerDay.ToString("N0")đ<span class="text-xs font-normal text-slate-400">/ngày</span></div>
+                                    <div class="text-[11px] text-slate-500">Thực nhận: @((car.PricePerDay * 0.85m).ToString("N0"))đ/ngày</div>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    @if (car.IsAvailable)
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Đang mở nhận khách
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                            Đang tạm ngưng
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-3.5 px-6 text-right">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="/Vehicles/Details/@car.Id" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-medium text-slate-700 transition">
+                                            Chi tiết
+                                        </a>
+                                        <form action="/Host/ToggleAvailability" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="carId" value="@car.Id" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition @(car.IsAvailable ? "border-amber-200 text-amber-700 hover:bg-amber-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
+                                                @(car.IsAvailable ? "Tạm ngưng" : "Mở cho thuê")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         }
     </div>
 </div>
+
+<!-- Host Payout Request Modal -->
+<div id="payoutModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="text-base font-bold text-slate-900">Yêu cầu Rút doanh thu Chủ xe</h3>
+            <button type="button" onclick="document.getElementById('payoutModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs space-y-1">
+            <div class="text-emerald-800 font-medium">Số dư khả dụng sau phí sàn (85%):</div>
+            <div class="text-2xl font-bold text-emerald-700">@hostNetEarnings.ToString("N0")đ</div>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Ngân hàng thụ hưởng</label>
+                <input type="text" readonly value="Vietcombank - STK: 0071008899 - Chủ xe EcoBike" class="w-full bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-slate-700 font-medium" />
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Số tiền muốn rút (VNĐ)</label>
+                <input type="number" value="@((long)hostNetEarnings)" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-bold" />
+            </div>
+        </div>
+
+        <div id="payoutSuccessMsg" class="hidden bg-emerald-600 text-white text-xs font-semibold p-3 rounded-lg text-center">
+            Đã gửi lệnh rút tiền thành công! Tiền sẽ về tài khoản trong 15 phút.
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" onclick="document.getElementById('payoutModal').classList.add('hidden')" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                Đóng
+            </button>
+            <button type="button" onclick="submitPayoutDemo()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white">
+                Xác nhận rút tiền
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterHostRows() {
+        const q = (document.getElementById('hostQuickSearch')?.value || '').toLowerCase().trim();
+        document.querySelectorAll('.host-searchable-row').forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = (!q || text.includes(q)) ? '' : 'none';
+        });
+    }
+
+    function submitPayoutDemo() {
+        const msg = document.getElementById('payoutSuccessMsg');
+        if (msg) {
+            msg.classList.remove('hidden');
+            setTimeout(() => {
+                msg.classList.add('hidden');
+                document.getElementById('payoutModal').classList.add('hidden');
+            }, 2200);
+        }
+    }
+</script>

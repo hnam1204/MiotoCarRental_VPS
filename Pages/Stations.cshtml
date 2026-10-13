@@ -1,148 +1,309 @@
 @page "/Home/Stations"
 @{
-    ViewData["Title"] = "Trạm sạc & Đổi pin - EcoBike";
+    ViewData["Title"] = "Bản đồ Trạm sạc & Tủ đổi pin - EcoBike";
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Danh sách trạm sạc & tủ đổi pin</h1>
-        <p class="mt-1 text-sm text-gray-500">
-            Hệ thống điểm sạc nhanh V-GREEN, Dat Bike Charge và tủ đổi pin tự động hỗ trợ khách thuê xe
-        </p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
+    <!-- Top Banner -->
+    <div class="bg-slate-900 rounded-2xl p-6 text-white border border-slate-800 shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+            <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-md mb-2">
+                <i class="bi bi-ev-station-fill"></i> Mạng lưới hỗ trợ năng lượng 24/7
+            </span>
+            <h1 class="text-2xl sm:text-3xl font-bold">Hệ thống Trạm sạc nhanh &amp; Tủ đổi pin</h1>
+            <p class="mt-1 text-xs sm:text-sm text-slate-300 max-w-2xl">
+                Tra cứu vị trí trạm sạc V-GREEN (VinFast), trạm sạc siêu tốc Dat Bike Charge và tủ đổi pin tự động Selex Motors tại TP.HCM, Hà Nội và Đà Nẵng.
+            </p>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center shrink-0">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
+                <div class="text-lg font-bold text-emerald-400">150+</div>
+                <div class="text-[11px] text-slate-400">Điểm sạc &amp; Đổi pin</div>
+            </div>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
+                <div class="text-lg font-bold text-blue-400">2 phút</div>
+                <div class="text-[11px] text-slate-400">Đổi pin đầy 100%</div>
+            </div>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
+                <div class="text-lg font-bold text-amber-400">24/7</div>
+                <div class="text-[11px] text-slate-400">Hoạt động liên tục</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Station Cards Grid -->
-    <div id="stationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Trạm sạc V-GREEN
-                    </span>
-                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
-                </div>
-                <h3 class="font-bold text-gray-900 text-base">Trạm sạc VinFast Landmark 81</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> Tầng hầm B2, Vinhomes Central Park, Bình Thạnh, TP.HCM
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">12 cổng (Trống 8)</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
-                </div>
-            </div>
-            <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
+    <!-- Filter Toolbar -->
+    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+            <button type="button" onclick="filterStations('all', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-emerald-600 text-white transition">
+                Tất cả trạm (6)
+            </button>
+            <button type="button" onclick="filterStations('TP.HCM', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                TP. Hồ Chí Minh
+            </button>
+            <button type="button" onclick="filterStations('Hà Nội', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                Hà Nội
+            </button>
+            <button type="button" onclick="filterStations('Đà Nẵng', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                Đà Nẵng
+            </button>
+            <button type="button" onclick="filterStations('Đổi pin', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                Tủ đổi pin 2 phút
+            </button>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Tủ đổi pin tự động
-                    </span>
-                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+        <div class="relative w-full md:w-72">
+            <i class="bi bi-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input id="stationSearchInput" type="text" oninput="searchStations()"
+                   placeholder="Tìm tên đường, quận, thương hiệu..."
+                   class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white" />
+        </div>
+    </div>
+
+    <!-- Main Content: Station Cards + Interactive Map Preview -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left 7 Cols: Station Cards -->
+        <div id="stationsGrid" class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Card 1 -->
+            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">VinFast Landmark 81 Central Park</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> Hầm B2, Vinhomes Central Park, Bình Thạnh, TP.HCM
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 8 / 12 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Dòng xe hỗ trợ:</span> <strong class="text-slate-800">Evo200, Feliz S, Theon S</strong></div>
+                    </div>
                 </div>
-                <h3 class="font-bold text-gray-900 text-base">Tủ đổi pin EcoBike Bến Thành</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 45 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Pin sạc đầy có sẵn:</span> <strong class="text-gray-800">6 viên pin</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Thời gian thao tác:</span> <strong class="text-gray-800">Khoảng 1 phút</strong></div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('Landmark 81 Vinhomes Central Park Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
                 </div>
             </div>
-            <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
+
+            <!-- Card 2 -->
+            <div data-city="TP.HCM" data-type="Đổi pin" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Tủ đổi pin tự động
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Tủ đổi pin EcoBike Chợ Bến Thành</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 45 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin đầy sẵn sàng:</span> <strong class="text-blue-700">6 hộc pin đầy 100%</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Thời gian thao tác:</span> <strong class="text-slate-800">Chỉ ~90 giây</strong></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('45 Le Loi Ben Thanh Quan 1 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Dat Bike SuperCharge
+                        </span>
+                        <span class="text-slate-600 font-semibold text-xs">07:30 - 22:00</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Dat Bike Hub Điện Biên Phủ</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 234 Điện Biên Phủ, Phường 15, Bình Thạnh, TP.HCM
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Số trụ sạc nhanh:</span> <strong class="text-amber-700">4 trụ (Trống 3)</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Tốc độ sạc:</span> <strong class="text-slate-800">Đi 100 km chỉ 20 phút sạc</strong></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('234 Dien Bien Phu Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Trạm sạc V-GREEN Royal City</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 72A Nguyễn Trãi, Thượng Đình, Thanh Xuân, Hà Nội
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 14 / 20 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất:</span> <strong class="text-slate-800">1.2 kW - 3.5 kW</strong></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('Royal City 72A Nguyen Trai Thanh Xuan Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Tủ đổi pin Selex
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Trạm đổi pin Selex Cầu Giấy</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 144 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin sạc đầy có sẵn:</span> <strong class="text-blue-700">9 viên pin LFP</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Dòng xe hỗ trợ:</span> <strong class="text-slate-800">Selex Camel 1 &amp; 2</strong></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('144 Xuan Thuy Cau Giay Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
+                            Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Vincom Plaza Ngô Quyền Đà Nẵng</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 910A Ngô Quyền, An Hải Bắc, Sơn Trà, Đà Nẵng
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 11 / 16 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Hỗ trợ du lịch:</span> <strong class="text-slate-800">Gần cầu Rồng &amp; Sơn Trà</strong></div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="focusStationMap('Vincom Plaza 910A Ngo Quyen Son Tra Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Trạm sạc nhanh Dat Bike
-                    </span>
-                    <span class="text-gray-600 font-medium text-xs">08:00 - 21:00</span>
+        <!-- Right 5 Cols: Interactive Embedded Map & Charging Guide -->
+        <div class="lg:col-span-5 space-y-4">
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs sticky top-20">
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Bản đồ định vị Trạm sạc</h3>
+                        <p id="selectedStationLabel" class="text-xs text-emerald-700 font-medium">Đang xem: VinFast Landmark 81 Central Park</p>
+                    </div>
+                    <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded">Trực tuyến</span>
                 </div>
-                <h3 class="font-bold text-gray-900 text-base">Dat Bike Hub Điện Biên Phủ</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 234 Điện Biên Phủ, Phường 15, Bình Thạnh, TP.HCM
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Số trụ sạc nhanh:</span> <strong class="text-gray-800">4 trụ sạc</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Tốc độ sạc:</span> <strong class="text-gray-800">100 km / 20 phút</strong></div>
-                </div>
-            </div>
-            <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
-        </div>
 
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Trạm sạc V-GREEN
-                    </span>
-                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                <div class="h-72 bg-slate-100">
+                    <iframe id="stationMapFrame"
+                            src="https://www.google.com/maps?q=Landmark+81+Vinhomes+Central+Park+TPHCM&output=embed"
+                            class="w-full h-full border-0"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
-                <h3 class="font-bold text-gray-900 text-base">Trạm sạc V-GREEN Royal City</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 72A Nguyễn Trãi, Thượng Đình, Thanh Xuân, Hà Nội
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">20 cổng (Trống 14)</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
-                </div>
-            </div>
-            <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
-        </div>
 
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Tủ đổi pin Selex
-                    </span>
-                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
-                </div>
-                <h3 class="font-bold text-gray-900 text-base">Trạm đổi pin Selex Cầu Giấy</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 144 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Pin sạc đầy có sẵn:</span> <strong class="text-gray-800">9 viên pin</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Hỗ trợ dòng xe:</span> <strong class="text-gray-800">Selex Camel, Yadea</strong></div>
+                <div class="p-4 bg-slate-50 text-xs space-y-2">
+                    <div class="font-bold text-slate-800">Lưu ý về chính sách Pin khi trả xe tại EcoBike:</div>
+                    <p class="text-slate-600 leading-relaxed">
+                        &bull; Mỗi xe khi bàn giao đều đi kèm <strong>01 bộ sạc tiêu chuẩn theo xe</strong> trong cốp để bạn có thể sạc tại nhà/khách sạn qua ổ điện 220V.<br />
+                        &bull; Nếu trả xe bị hụt mức % pin so với lúc nhận ban đầu, hệ thống chỉ thu phụ phí sạc hộ <strong>5.000đ / 1% pin thiếu</strong>.
+                    </p>
                 </div>
             </div>
-            <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
-                        Trạm sạc V-GREEN
-                    </span>
-                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
-                </div>
-                <h3 class="font-bold text-gray-900 text-base">Trạm sạc Vincom Plaza Ngô Quyền</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 910A Ngô Quyền, An Hải Bắc, Sơn Trà, Đà Nẵng
-                </p>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
-                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">16 cổng (Trống 11)</strong></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
-                </div>
-            </div>
-            <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
-                Xem chỉ đường Google Maps
-            </a>
         </div>
     </div>
 </div>
+
+<script>
+    function focusStationMap(query) {
+        const frame = document.getElementById('stationMapFrame');
+        const label = document.getElementById('selectedStationLabel');
+        if (frame) {
+            frame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(query) + '&output=embed';
+        }
+        if (label) {
+            label.textContent = 'Đang xem: ' + query;
+        }
+    }
+
+    function filterStations(criteria, btn) {
+        document.querySelectorAll('.station-filter-btn').forEach(b => {
+            b.classList.remove('bg-emerald-600', 'text-white');
+            b.classList.add('bg-slate-100', 'text-slate-700');
+        });
+        if (btn) {
+            btn.classList.remove('bg-slate-100', 'text-slate-700');
+            btn.classList.add('bg-emerald-600', 'text-white');
+        }
+        document.querySelectorAll('.station-card').forEach(card => {
+            const city = card.getAttribute('data-city') || '';
+            const type = card.getAttribute('data-type') || '';
+            if (criteria === 'all' || city === criteria || type === criteria) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function searchStations() {
+        const q = (document.getElementById('stationSearchInput')?.value || '').toLowerCase().trim();
+        document.querySelectorAll('.station-card').forEach(card => {
+            const text = card.innerText.toLowerCase();
+            card.style.display = (!q || text.includes(q)) ? '' : 'none';
+        });
+    }
+</script>
