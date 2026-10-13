@@ -6,69 +6,62 @@
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="text-center max-w-3xl mx-auto mb-6">
-        <span class="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 mb-2">
-            <i class="bi bi-ev-station-fill"></i> 100% Xe Máy Điện Xanh
-        </span>
-        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-            Danh Sách Xe Máy Điện Cho Thuê
-        </h1>
-        <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1.5">
-            Tìm thấy <span class="font-bold text-emerald-600">@Model.TotalCount</span> xe máy điện sẵn sàng phục vụ • Pin LFP sạc đầy • Tiết kiệm 70% chi phí xăng
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Danh sách xe máy điện cho thuê</h1>
+        <p class="text-sm text-gray-500 mt-1">
+            Hiện có <span class="font-semibold text-emerald-600">@Model.TotalCount</span> xe đang sẵn sàng cho thuê
         </p>
     </div>
 
-    <div class="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+    <div class="flex flex-wrap items-center gap-2 mb-6">
         <a href="/Vehicles?City=@Model.City&Brand=@Model.Brand"
-           class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 border shadow-sm
-                  @(!Model.Category.HasValue ? "bg-gray-900 text-white border-gray-900 shadow-gray-900/20" : "bg-white text-gray-700 border-gray-200 hover:border-gray-400 hover:bg-gray-50")">
-            <i class="bi bi-grid-fill"></i> Tất cả các dòng xe (@Model.TotalCount)
+           class="px-3.5 py-2 rounded-lg text-xs font-medium transition border
+                  @(!Model.Category.HasValue ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+            Tất cả (@Model.TotalCount)
         </a>
 
         <a href="/Vehicles?Category=@VehicleCategory.Economy&City=@Model.City&Brand=@Model.Brand"
-           class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 border shadow-sm
-                  @(Model.Category == VehicleCategory.Economy ? "bg-emerald-600 text-white border-emerald-600 shadow-emerald-600/20" : "bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50")">
-            <i class="bi bi-mortarboard-fill"></i> Phổ Thông (Miễn bằng A1 - Học sinh/SV)
+           class="px-3.5 py-2 rounded-lg text-xs font-medium transition border
+                  @(Model.Category == VehicleCategory.Economy ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+            Phổ thông / Học sinh (Miễn bằng A1)
         </a>
 
         <a href="/Vehicles?Category=@VehicleCategory.MidRange&City=@Model.City&Brand=@Model.Brand"
-           class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 border shadow-sm
-                  @(Model.Category == VehicleCategory.MidRange ? "bg-blue-600 text-white border-blue-600 shadow-blue-600/20" : "bg-white text-blue-800 border-blue-200 hover:bg-blue-50")">
-            <i class="bi bi-briefcase-fill"></i> Đô Thị & Đi Làm (Tầm trung)
+           class="px-3.5 py-2 rounded-lg text-xs font-medium transition border
+                  @(Model.Category == VehicleCategory.MidRange ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+            Đô thị & Đi làm
         </a>
 
         <a href="/Vehicles?Category=@VehicleCategory.Touring&City=@Model.City&Brand=@Model.Brand"
-           class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 border shadow-sm
-                  @(Model.Category == VehicleCategory.Touring ? "bg-purple-600 text-white border-purple-600 shadow-purple-600/20" : "bg-white text-purple-800 border-purple-200 hover:bg-purple-50")">
-            <i class="bi bi-compass-fill"></i> Đường Dài & Phượt (Pin 200 - 270km)
+           class="px-3.5 py-2 rounded-lg text-xs font-medium transition border
+                  @(Model.Category == VehicleCategory.Touring ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+            Đường dài & Đi phượt
         </a>
 
         <a href="/Vehicles?Category=@VehicleCategory.SportPremium&City=@Model.City&Brand=@Model.Brand"
-           class="px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2 border shadow-sm
-                  @(Model.Category == VehicleCategory.SportPremium ? "bg-rose-600 text-white border-rose-600 shadow-rose-600/20" : "bg-white text-rose-800 border-rose-200 hover:bg-rose-50")">
-            <i class="bi bi-lightning-charge-fill"></i> Thể Thao & Cao Cấp (ABS, 7000W)
+           class="px-3.5 py-2 rounded-lg text-xs font-medium transition border
+                  @(Model.Category == VehicleCategory.SportPremium ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50")">
+            Thể thao & Cao cấp
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div class="lg:col-span-1">
-            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-28 space-y-6">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h3 class="font-black text-gray-900 text-base flex items-center gap-2">
-                        <i class="bi bi-funnel-fill text-emerald-600"></i> Bộ lọc chi tiết
-                    </h3>
-                    <a href="/Vehicles" class="text-[11px] font-bold text-gray-400 hover:text-emerald-600 transition">Xóa lọc</a>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 sticky top-20 space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h3 class="font-bold text-gray-900 text-sm">Bộ lọc tìm kiếm</h3>
+                    <a href="/Vehicles" class="text-xs text-gray-500 hover:text-emerald-600">Đặt lại</a>
                 </div>
 
-                <form action="/Vehicles" method="get" class="space-y-5">
+                <form action="/Vehicles" method="get" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Nhóm xe</label>
-                        <select name="Category" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-3.5 py-2.5 text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Phân khúc xe</label>
+                        <select name="Category" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-800">
                             <option value="">Tất cả các nhóm xe</option>
-                            <option value="Economy" selected="@(Model.Category == VehicleCategory.Economy)">🟢 Phổ thông (Học sinh/SV - Miễn bằng A1)</option>
-                            <option value="MidRange" selected="@(Model.Category == VehicleCategory.MidRange)">🔵 Đô thị & Đi làm (Tầm trung)</option>
-                            <option value="Touring" selected="@(Model.Category == VehicleCategory.Touring)">🟣 Đường dài - Pin khủng (Phượt)</option>
-                            <option value="SportPremium" selected="@(Model.Category == VehicleCategory.SportPremium)">🔴 Thể thao & Cao cấp (ABS)</option>
+                            <option value="Economy" selected="@(Model.Category == VehicleCategory.Economy)">Phổ thông (Miễn bằng A1)</option>
+                            <option value="MidRange" selected="@(Model.Category == VehicleCategory.MidRange)">Đô thị & Đi làm</option>
+                            <option value="Touring" selected="@(Model.Category == VehicleCategory.Touring)">Đường dài & Đi phượt</option>
+                            <option value="SportPremium" selected="@(Model.Category == VehicleCategory.SportPremium)">Thể thao & Cao cấp</option>
                         </select>
                     </div>
 

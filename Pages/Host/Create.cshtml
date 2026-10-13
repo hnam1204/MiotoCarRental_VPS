@@ -12,30 +12,30 @@
             <p class="text-xs text-gray-500 mt-1">Gia tăng thu nhập từ phương tiện xe máy điện nhàn rỗi của bạn</p>
         </div>
 
-        <div class="p-5 bg-emerald-50/70 rounded-3xl border border-emerald-200">
-            <span class="text-xs font-black text-emerald-900 block text-center mb-3">
-                <i class="bi bi-magic text-emerald-600 mr-1"></i> [DEMO] Chọn nhanh mẫu xe máy điện để điền tự động form:
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <span class="text-xs font-semibold text-gray-600 block mb-2.5">
+                Điền nhanh thông số theo dòng xe phổ biến:
             </span>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                 <button type="button" onclick="fillModel('VinFast', 'Evo200 (Pin LFP 203km)', 'MidRange', 203, 70, 120000, true, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800', 'Xe máy điện VinFast Evo200 đời mới, pin LFP 203km/sạc, kèm củ sạc di động và 2 nón bảo hiểm.')" 
-                        class="bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold p-3 rounded-2xl transition shadow-sm text-center flex flex-col items-center justify-center">
-                    <span class="font-extrabold text-xs mb-0.5">⚡ VinFast Evo200</span>
-                    <span class="text-[10px] text-gray-500">120k/ngày • Đô thị</span>
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">VinFast Evo200</div>
+                    <div class="text-[11px] text-gray-500">120.000đ/ngày • Đô thị</div>
                 </button>
-                <button type="button" onclick="fillModel('VinFast', 'Evo200 Lite (Miễn Bằng A1)', 'Economy', 205, 49, 80000, false, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800', 'Xe máy điện giới hạn 49km/h, KHÔNG CẦN BẰNG LÁI XE A1. Thích hợp cho học sinh, sinh viên.')" 
-                        class="bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold p-3 rounded-2xl transition shadow-sm text-center flex flex-col items-center justify-center">
-                    <span class="font-extrabold text-xs mb-0.5">🟢 Evo200 Lite</span>
-                    <span class="text-[10px] text-emerald-600 font-semibold">80k/ngày • Miễn A1</span>
+                <button type="button" onclick="fillModel('VinFast', 'Evo200 Lite (Miễn Bằng A1)', 'Economy', 205, 49, 80000, false, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800', 'Xe máy điện giới hạn 49km/h, không cần bằng lái A1. Thích hợp cho học sinh, sinh viên.')" 
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">VinFast Evo200 Lite</div>
+                    <div class="text-[11px] text-emerald-600">80.000đ/ngày • Miễn A1</div>
                 </button>
-                <button type="button" onclick="fillModel('Yadea', 'Ocean (Nhỏ Xinh Nữ Sinh)', 'Economy', 110, 45, 70000, false, 'Ắc quy Graphene TTFAR', 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800', 'Yadea Ocean nhỏ xinh, không cần bằng lái A1, siêu tiết kiệm cho sinh viên dạo phố.')" 
-                        class="bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold p-3 rounded-2xl transition shadow-sm text-center flex flex-col items-center justify-center">
-                    <span class="font-extrabold text-xs mb-0.5">🟢 Yadea Ocean</span>
-                    <span class="text-[10px] text-emerald-600 font-semibold">70k/ngày • Miễn A1</span>
+                <button type="button" onclick="fillModel('Yadea', 'Ocean', 'Economy', 110, 45, 70000, false, 'Ắc quy Graphene TTFAR', 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800', 'Yadea Ocean nhỏ gọn, không cần bằng lái A1, tiết kiệm cho sinh viên.')" 
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">Yadea Ocean</div>
+                    <div class="text-[11px] text-emerald-600">70.000đ/ngày • Miễn A1</div>
                 </button>
-                <button type="button" onclick="fillModel('Dat Bike', 'Quantum (Pin Khủng 270km)', 'Touring', 270, 100, 180000, true, 'Pin Lithium 7.2 kWh', 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800', 'Dat Bike Quantum xe phượt đường dài, cốp 41L khổng lồ, pin đi 270km/sạc cực bốc.')" 
-                        class="bg-white hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold p-3 rounded-2xl transition shadow-sm text-center flex flex-col items-center justify-center">
-                    <span class="font-extrabold text-xs mb-0.5">🟣 Dat Bike Quantum</span>
-                    <span class="text-[10px] text-gray-500">180k/ngày • Phượt</span>
+                <button type="button" onclick="fillModel('Dat Bike', 'Quantum (Pin 270km)', 'Touring', 270, 100, 180000, true, 'Pin Lithium 7.2 kWh', 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800', 'Dat Bike Quantum cốp 41L, pin đi 270km/sạc.')" 
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">Dat Bike Quantum</div>
+                    <div class="text-[11px] text-gray-500">180.000đ/ngày • Đường dài</div>
                 </button>
             </div>
         </div>
@@ -46,13 +46,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label asp-for="Category" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">
-                        <i class="bi bi-tags-fill text-emerald-600 mr-1"></i> Phân loại nhóm xe
+                        Phân loại nhóm xe
                     </label>
-                    <select asp-for="Category" id="bikeCategory" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800">
-                        <option value="Economy">🟢 Xe Phổ Thông (Học sinh/SV - Miễn bằng A1)</option>
-                        <option value="MidRange" selected>🔵 Xe Đô Thị & Đi Làm (Tầm trung)</option>
-                        <option value="Touring">🟣 Xe Đường Dài - Pin Khủng (Phượt)</option>
-                        <option value="SportPremium">🔴 Xe Thể Thao & Cao Cấp (ABS, 7000W)</option>
+                    <select asp-for="Category" id="bikeCategory" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-gray-800">
+                        <option value="Economy">Xe phổ thông (Học sinh/SV - Miễn bằng A1)</option>
+                        <option value="MidRange" selected>Xe đô thị & Đi làm (Tầm trung)</option>
+                        <option value="Touring">Xe đường dài (Đi phượt)</option>
+                        <option value="SportPremium">Xe thể thao & Cao cấp</option>
                     </select>
                 </div>
                 <div>

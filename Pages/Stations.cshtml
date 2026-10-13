@@ -1,107 +1,147 @@
 @page "/Home/Stations"
 @{
-    ViewData["Title"] = "Mạng Lưới Trạm Sạc & Đổi Pin Thông Minh - EcoBike";
+    ViewData["Title"] = "Trạm sạc & Đổi pin - EcoBike";
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <!-- Header Hero -->
-    <div class="text-center max-w-3xl mx-auto mb-12">
-        <span class="bg-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3 border border-emerald-300">
-            <i class="bi bi-ev-station-fill text-emerald-600"></i> Hạ Tầng Di Chuyển Xanh 24/7
-        </span>
-        <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
-            Mạng Lưới Trạm Sạc & Đổi Pin Xe Máy Điện
-        </h1>
-        <p class="mt-3 text-sm sm:text-base text-gray-500 font-medium">
-            Phủ sóng toàn diện trạm sạc nhanh V-GREEN (VinFast), Dat Bike Station và tủ đổi pin tự động 30 giây giúp bạn an tâm trên mọi cung đường.
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Danh sách trạm sạc & tủ đổi pin</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            Hệ thống điểm sạc nhanh V-GREEN, Dat Bike Charge và tủ đổi pin tự động hỗ trợ khách thuê xe
         </p>
-    </div>
-
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
-            <span class="text-2xl font-black text-emerald-600">500+</span>
-            <span class="block text-xs text-gray-400 font-bold uppercase mt-1">Điểm sạc toàn quốc</span>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
-            <span class="text-2xl font-black text-blue-600">30 Giây</span>
-            <span class="block text-xs text-gray-400 font-bold uppercase mt-1">Đổi pin tự động</span>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
-            <span class="text-2xl font-black text-purple-600">24/7</span>
-            <span class="block text-xs text-gray-400 font-bold uppercase mt-1">Hoạt động liên tục</span>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-center">
-            <span class="text-2xl font-black text-amber-600">100%</span>
-            <span class="block text-xs text-gray-400 font-bold uppercase mt-1">Pin LFP an toàn</span>
-        </div>
     </div>
 
     <!-- Station Cards Grid -->
     <div id="stationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="station-card bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition space-y-4">
-            <div class="flex items-center justify-between">
-                <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm Sạc V-GREEN
-                </span>
-                <span class="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Mở cửa 24/7
-                </span>
-            </div>
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
             <div>
-                <h3 class="font-black text-gray-900 text-base">Trạm Sạc VinFast Landmark 81</h3>
-                <p class="text-xs text-gray-500 mt-1"><i class="bi bi-geo-alt-fill text-red-500"></i> Tầng hầm B2, Vinhomes Central Park, Bình Thạnh, TP.HCM</p>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Trạm sạc V-GREEN
+                    </span>
+                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Trạm sạc VinFast Landmark 81</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> Tầng hầm B2, Vinhomes Central Park, Bình Thạnh, TP.HCM
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">12 cổng (Trống 8)</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
+                </div>
             </div>
-            <div class="bg-gray-50 p-3 rounded-2xl text-xs space-y-1">
-                <div class="flex justify-between"><span>Số cổng sạc:</span> <strong class="text-emerald-700">12 cổng (Sẵn sàng 8)</strong></div>
-                <div class="flex justify-between"><span>Công suất sạc:</span> <strong class="text-gray-800">1.2 kW (Sạc 80% trong 2.5h)</strong></div>
-            </div>
-            <a href="https://maps.google.com" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="bi bi-compass"></i> Chỉ đường trên Google Maps
+            <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
             </a>
         </div>
 
-        <div class="station-card bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition space-y-4">
-            <div class="flex items-center justify-between">
-                <span class="bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ Đổi Pin Tự Động
-                </span>
-                <span class="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đang hoạt động
-                </span>
-            </div>
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
             <div>
-                <h3 class="font-black text-gray-900 text-base">Tủ Đổi Pin EcoBike Chợ Bến Thành</h3>
-                <p class="text-xs text-gray-500 mt-1"><i class="bi bi-geo-alt-fill text-red-500"></i> 45 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM</p>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Tủ đổi pin tự động
+                    </span>
+                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Tủ đổi pin EcoBike Bến Thành</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 45 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Pin sạc đầy có sẵn:</span> <strong class="text-gray-800">6 viên pin</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Thời gian thao tác:</span> <strong class="text-gray-800">Khoảng 1 phút</strong></div>
+                </div>
             </div>
-            <div class="bg-gray-50 p-3 rounded-2xl text-xs space-y-1">
-                <div class="flex justify-between"><span>Pin LFP đầy 100%:</span> <strong class="text-blue-700">6 viên pin có sẵn</strong></div>
-                <div class="flex justify-between"><span>Thời gian đổi pin:</span> <strong class="text-gray-800">Chỉ 30 giây (Quét QR đổi pin)</strong></div>
-            </div>
-            <a href="https://maps.google.com" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="bi bi-compass"></i> Chỉ đường trên Google Maps
+            <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
             </a>
         </div>
 
-        <div class="station-card bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition space-y-4">
-            <div class="flex items-center justify-between">
-                <span class="bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <i class="bi bi-tools text-purple-600"></i> Dat Bike Hub 3S
-                </span>
-                <span class="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 08:00 - 21:00
-                </span>
-            </div>
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
             <div>
-                <h3 class="font-black text-gray-900 text-base">Dat Bike Quantum Hub Điện Biên Phủ</h3>
-                <p class="text-xs text-gray-500 mt-1"><i class="bi bi-geo-alt-fill text-red-500"></i> 234 Điện Biên Phủ, Phường 15, Bình Thạnh, TP.HCM</p>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Trạm sạc nhanh Dat Bike
+                    </span>
+                    <span class="text-gray-600 font-medium text-xs">08:00 - 21:00</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Dat Bike Hub Điện Biên Phủ</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 234 Điện Biên Phủ, Phường 15, Bình Thạnh, TP.HCM
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Số trụ sạc nhanh:</span> <strong class="text-gray-800">4 trụ sạc</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Tốc độ sạc:</span> <strong class="text-gray-800">100 km / 20 phút</strong></div>
+                </div>
             </div>
-            <div class="bg-gray-50 p-3 rounded-2xl text-xs space-y-1">
-                <div class="flex justify-between"><span>Trụ sạc siêu nhanh:</span> <strong class="text-purple-700">4 trụ sạc Dat Charge</strong></div>
-                <div class="flex justify-between"><span>Tốc độ sạc:</span> <strong class="text-gray-800">100 km trong 20 phút</strong></div>
+            <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Trạm sạc V-GREEN
+                    </span>
+                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Trạm sạc V-GREEN Royal City</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 72A Nguyễn Trãi, Thượng Đình, Thanh Xuân, Hà Nội
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">20 cổng (Trống 14)</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
+                </div>
             </div>
-            <a href="https://maps.google.com" target="_blank" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                <i class="bi bi-compass"></i> Chỉ đường trên Google Maps
+            <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Tủ đổi pin Selex
+                    </span>
+                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Trạm đổi pin Selex Cầu Giấy</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 144 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Pin sạc đầy có sẵn:</span> <strong class="text-gray-800">9 viên pin</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Hỗ trợ dòng xe:</span> <strong class="text-gray-800">Selex Camel, Yadea</strong></div>
+                </div>
+            </div>
+            <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
+            </a>
+        </div>
+
+        <div class="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-sm transition flex flex-col justify-between space-y-4">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2.5 py-0.5 rounded">
+                        Trạm sạc V-GREEN
+                    </span>
+                    <span class="text-emerald-600 font-medium text-xs">Hoạt động 24/7</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base">Trạm sạc Vincom Plaza Ngô Quyền</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="bi bi-geo-alt text-gray-400 mr-1"></i> 910A Ngô Quyền, An Hải Bắc, Sơn Trà, Đà Nẵng
+                </p>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 text-xs space-y-1.5 mt-3">
+                    <div class="flex justify-between"><span class="text-gray-500">Số cổng sạc:</span> <strong class="text-gray-800">16 cổng (Trống 11)</strong></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Công suất:</span> <strong class="text-gray-800">1.2 kW</strong></div>
+                </div>
+            </div>
+            <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs py-2.5 rounded-lg transition text-center">
+                Xem chỉ đường Google Maps
             </a>
         </div>
     </div>

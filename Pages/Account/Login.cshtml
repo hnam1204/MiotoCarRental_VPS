@@ -1,45 +1,34 @@
 @page "/Account/Login"
 @model MiotoCarRental.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = "Đăng nhập tài khoản";
+    ViewData["Title"] = "Đăng nhập";
 }
 
 <div class="max-w-md mx-auto px-4 sm:px-6 py-10">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xl space-y-6">
-        <div class="text-center space-y-2">
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-sm">
-                <i class="bi bi-person-fill-lock"></i>
-            </div>
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight">Đăng nhập EcoBike</h1>
-            <p class="text-xs text-gray-500">Nền tảng chia sẻ & cho thuê xe máy điện thông minh</p>
+    <div class="bg-white rounded-xl p-6 sm:p-8 border border-gray-200 shadow-sm space-y-5">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900">Đăng nhập tài khoản</h1>
+            <p class="text-xs text-gray-500 mt-1">Đăng nhập để đặt thuê xe hoặc quản lý phương tiện của bạn</p>
         </div>
 
         <form action="/Account/Login" method="post" id="loginForm" class="space-y-4">
             <input type="hidden" asp-for="ReturnUrl" />
-            <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-semibold"></div>
+            <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 text-red-700 text-xs rounded-lg"></div>
 
             <div>
-                <label asp-for="Email" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    <i class="bi bi-envelope text-emerald-600 mr-1"></i> Email
-                </label>
-                <input asp-for="Email" id="inputEmail" placeholder="vd: khachthue@gmail.com" 
-                       class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
+                <label asp-for="Email" class="block text-xs font-semibold text-gray-700 mb-1">Email</label>
+                <input asp-for="Email" id="inputEmail" placeholder="Nhập địa chỉ email"
+                       class="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-600" />
                 <span asp-validation-for="Email" class="text-xs text-red-500 mt-1 block"></span>
             </div>
 
             <div>
-                <div class="flex items-center justify-between mb-1.5">
-                    <label asp-for="Password" class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        <i class="bi bi-key text-emerald-600 mr-1"></i> Mật khẩu
-                    </label>
-                    <a href="#" class="text-[11px] font-bold text-emerald-600 hover:underline">Quên mật khẩu?</a>
-                </div>
+                <label asp-for="Password" class="block text-xs font-semibold text-gray-700 mb-1">Mật khẩu</label>
                 <div class="relative">
-                    <input asp-for="Password" id="inputPassword" type="password" placeholder="Nhập mật khẩu..." 
-                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-4 pr-11 py-3 text-xs font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" />
-                    <button type="button" onclick="togglePasswordVisibility()" 
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 text-sm focus:outline-none" 
-                            title="Hiện/Ẩn mật khẩu">
+                    <input asp-for="Password" id="inputPassword" type="password" placeholder="Nhập mật khẩu"
+                           class="w-full bg-white border border-gray-300 rounded-lg pl-3.5 pr-10 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-600" />
+                    <button type="button" onclick="togglePasswordVisibility()"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 text-sm">
                         <i id="passwordToggleIcon" class="bi bi-eye"></i>
                     </button>
                 </div>
@@ -47,105 +36,48 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <label class="flex items-center text-xs font-semibold text-gray-600 cursor-pointer">
-                    <input asp-for="RememberMe" class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500" />
-                    <span class="ml-2">Ghi nhớ đăng nhập</span>
+                <label class="flex items-center text-xs text-gray-600 cursor-pointer">
+                    <input asp-for="RememberMe" class="w-4 h-4 text-emerald-600 rounded border-gray-300" />
+                    <span class="ml-2">Duy trì đăng nhập</span>
                 </label>
             </div>
 
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                <i class="bi bi-box-arrow-in-right"></i> ĐĂNG NHẬP NGAY
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg transition text-sm">
+                Đăng nhập
             </button>
         </form>
 
-        <div class="relative my-4 text-center">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
-            <span class="relative bg-white px-3 text-[11px] font-bold uppercase text-gray-400">Hoặc thử nghiệm phân quyền</span>
-        </div>
-
-        <div class="bg-gradient-to-b from-gray-50 to-gray-100/70 p-4 rounded-2xl border border-gray-200 space-y-3">
-            <div class="text-center">
-                <span class="text-[11px] font-black uppercase text-gray-600 flex items-center justify-center gap-1">
-                    <i class="bi bi-mortarboard-fill text-purple-600"></i> Tài Khoản Kiểm Thử Đồ Án (3 Vai Trò)
-                </span>
-                <p class="text-[10px] text-gray-400 mt-0.5">Bấm <strong>1 chạm</strong> để đăng nhập ngay hoặc <strong>điền mẫu</strong> để kiểm tra form</p>
-            </div>
-
-            <div class="space-y-2">
-                <div class="bg-white p-2.5 rounded-xl border border-emerald-100 shadow-sm flex items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <div class="text-xs font-bold text-gray-800 flex items-center gap-1 truncate">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            Khách thuê (Renter)
-                        </div>
-                        <div class="text-[10px] text-gray-400 font-mono truncate">khachthue@gmail.com • pass: renter123</div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="fillCredentials('khachthue@gmail.com', 'renter123')" 
-                                class="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1.5 rounded-lg transition">
-                            Điền form
-                        </button>
-                        <form action="/Account/QuickLogin" method="post" class="inline">
-                            <input type="hidden" name="email" value="khachthue@gmail.com" />
-                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                            <button type="submit" class="text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg transition shadow-sm">
-                                1 Chạm
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="bg-white p-2.5 rounded-xl border border-blue-100 shadow-sm flex items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <div class="text-xs font-bold text-gray-800 flex items-center gap-1 truncate">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                            Chủ xe (Host)
-                        </div>
-                        <div class="text-[10px] text-gray-400 font-mono truncate">chuxe@gmail.com • pass: host123</div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="fillCredentials('chuxe@gmail.com', 'host123')" 
-                                class="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1.5 rounded-lg transition">
-                            Điền form
-                        </button>
-                        <form action="/Account/QuickLogin" method="post" class="inline">
-                            <input type="hidden" name="email" value="chuxe@gmail.com" />
-                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                            <button type="submit" class="text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-lg transition shadow-sm">
-                                1 Chạm
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="bg-white p-2.5 rounded-xl border border-purple-100 shadow-sm flex items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <div class="text-xs font-bold text-gray-800 flex items-center gap-1 truncate">
-                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                            Quản trị viên (Admin)
-                        </div>
-                        <div class="text-[10px] text-gray-400 font-mono truncate">admin@mioto.vn • pass: admin123</div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="fillCredentials('admin@mioto.vn', 'admin123')" 
-                                class="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1.5 rounded-lg transition">
-                            Điền form
-                        </button>
-                        <form action="/Account/QuickLogin" method="post" class="inline">
-                            <input type="hidden" name="email" value="admin@mioto.vn" />
-                            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                            <button type="submit" class="text-[10px] font-bold bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1.5 rounded-lg transition shadow-sm">
-                                1 Chạm
-                            </button>
-                        </form>
-                    </div>
-                </div>
+        <!-- Quick test accounts -->
+        <div class="pt-4 border-t border-gray-100 space-y-2.5">
+            <div class="text-xs font-semibold text-gray-500">Tài khoản có sẵn (Chọn nhanh):</div>
+            <div class="grid grid-cols-3 gap-2">
+                <form action="/Account/QuickLogin" method="post">
+                    <input type="hidden" name="email" value="khachthue@gmail.com" />
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Khách thuê
+                    </button>
+                </form>
+                <form action="/Account/QuickLogin" method="post">
+                    <input type="hidden" name="email" value="chuxe@gmail.com" />
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Chủ xe
+                    </button>
+                </form>
+                <form action="/Account/QuickLogin" method="post">
+                    <input type="hidden" name="email" value="admin@mioto.vn" />
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Quản trị
+                    </button>
+                </form>
             </div>
         </div>
 
-        <p class="text-center text-xs text-gray-500 font-semibold pt-1">
-            Bạn chưa có tài khoản? 
-            <a href="/Account/Register" class="font-bold text-emerald-600 hover:underline">Đăng ký ngay</a>
+        <p class="text-center text-xs text-gray-500 pt-1">
+            Chưa có tài khoản?
+            <a href="/Account/Register" class="font-semibold text-emerald-600 hover:underline">Đăng ký</a>
         </p>
     </div>
 </div>
@@ -164,19 +96,6 @@
                 icon.classList.remove("bi-eye-slash");
                 icon.classList.add("bi-eye");
             }
-        }
-
-        function fillCredentials(email, password) {
-            var emailInput = document.getElementById("inputEmail");
-            var passInput = document.getElementById("inputPassword");
-            emailInput.value = email;
-            passInput.value = password;
-            emailInput.classList.add("ring-2", "ring-emerald-500");
-            passInput.classList.add("ring-2", "ring-emerald-500");
-            setTimeout(function () {
-                emailInput.classList.remove("ring-2", "ring-emerald-500");
-                passInput.classList.remove("ring-2", "ring-emerald-500");
-            }, 800);
         }
     </script>
 }
