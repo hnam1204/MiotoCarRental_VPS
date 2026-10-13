@@ -175,55 +175,64 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Promo 1 -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-4 hover:border-emerald-500 transition shadow-sm">
-            <div class="flex items-start gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex flex-col items-center justify-center shrink-0 font-bold text-xs">
-                    <span class="text-sm font-extrabold">-10%</span>
-                    <span class="text-[10px]">MỌI ĐƠN</span>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-emerald-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-10%</span>
+                    <span class="text-[10px] uppercase font-bold text-emerald-600 mt-1 whitespace-nowrap">ĐƠN ĐẦU</span>
                 </div>
-                <div>
-                    <span class="inline-block text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded mb-1">ECOBIKE10</span>
-                    <h3 class="text-sm font-bold text-slate-900">Giảm 10% đơn thuê đầu tiên</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Áp dụng cho mọi dòng xe máy điện tại TP.HCM &amp; Hà Nội</p>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">ECOBIKE10</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Giảm 10% đơn thuê đầu</h3>
+                    <p class="text-xs text-slate-500 truncate">Áp dụng mọi dòng xe điện</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('ECOBIKE10')" class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 px-3 py-2 rounded-lg transition">
+            <button type="button" onclick="copyVoucher('ECOBIKE10')" class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
 
         <!-- Promo 2 -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-4 hover:border-emerald-500 transition shadow-sm">
-            <div class="flex items-start gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex flex-col items-center justify-center shrink-0 font-bold text-xs">
-                    <span class="text-sm font-extrabold">-15%</span>
-                    <span class="text-[10px]">SINH VIÊN</span>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-blue-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-15%</span>
+                    <span class="text-[10px] uppercase font-bold text-blue-600 mt-1 whitespace-nowrap">HỌC SINH</span>
                 </div>
-                <div>
-                    <span class="inline-block text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded mb-1">SINHVIEN15</span>
-                    <h3 class="text-sm font-bold text-slate-900">Ưu đãi Học sinh - Sinh viên</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Dành cho dòng xe giới hạn &lt;50km/h miễn bằng lái A1</p>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">SINHVIEN15</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Ưu đãi Học sinh - SV</h3>
+                    <p class="text-xs text-slate-500 truncate">Xe &lt;50km/h miễn bằng A1</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('SINHVIEN15')" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 px-3 py-2 rounded-lg transition">
+            <button type="button" onclick="copyVoucher('SINHVIEN15')" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
 
         <!-- Promo 3 -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between gap-4 hover:border-emerald-500 transition shadow-sm">
-            <div class="flex items-start gap-3.5">
-                <div class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex flex-col items-center justify-center shrink-0 font-bold text-xs">
-                    <span class="text-sm font-extrabold">-20%</span>
-                    <span class="text-[10px]">THUÊ TUẦN</span>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-amber-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-20%</span>
+                    <span class="text-[10px] uppercase font-bold text-amber-600 mt-1 whitespace-nowrap">TỪ 3 NGÀY</span>
                 </div>
-                <div>
-                    <span class="inline-block text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded mb-1">XANH20</span>
-                    <h3 class="text-sm font-bold text-slate-900">Thuê từ 3 ngày giảm 20%</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Miễn phí đổi pin tại hệ thống trạm Selex &amp; VinFast</p>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">XANH20</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Thuê từ 3 ngày giảm 20%</h3>
+                    <p class="text-xs text-slate-500 truncate">Miễn phí đổi pin tại trạm</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('XANH20')" class="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-600 hover:text-white border border-amber-200 px-3 py-2 rounded-lg transition">
+            <button type="button" onclick="copyVoucher('XANH20')" class="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-600 hover:text-white border border-amber-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
