@@ -1,18 +1,18 @@
 @page "/Host"
-@model MiotoCarRental.ViewModels.HostIndexPageModel
+@model MiotoCarRental.ViewModels.HostDashboardViewModel
 @using MiotoCarRental.Models.Entities
 @{
     ViewData["Title"] = "Kênh Đối tác Chủ xe - EcoBike Host";
-    var cars = Model.Cars;
+    var cars = Model.MyVehicles;
     var incomingBookings = Model.IncomingBookings;
     var totalGrossRevenue = incomingBookings
-        .Where(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Completed || b.Status == BookingStatus.Approved)
-        .Sum(b => b.TotalPrice);
+        .Where(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Completed || b.Status == BookingStatus.InProgress)
+        .Sum(b => b.TotalAmount);
     var hostNetEarnings = totalGrossRevenue * 0.85m;
     var platformFeeTotal = totalGrossRevenue * 0.15m;
-    var pendingCount = incomingBookings.Count(b => b.Status == BookingStatus.Pending);
-    var activeCount = incomingBookings.Count(b => b.Status == BookingStatus.Approved || b.Status == BookingStatus.Confirmed);
-    var availableCarsCount = cars.Count(c => c.IsAvailable);
+    var pendingCount = incomingBookings.Count(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.AwaitingPayment);
+    var activeCount = incomingBookings.Count(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.InProgress);
+    var availableCarsCount = cars.Count(c => c.Status == VehicleStatus.Active);
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
@@ -62,7 +62,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-medium text-slate-500">Đội xe đang quản lý</div>
-                    <div class="text-2xl font-bold text-slate-900 mt-1">@cars.Count() <span class="text-sm font-normal text-slate-400">xe</span></div>
+                    <div class="text-2xl font-bold text-slate-900 mt-1">@cars.Count <span class="text-sm font-normal text-slate-400">xe</span></div>
                 </div>
                 <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center text-lg">
                     <i class="bi bi-scooter"></i>
@@ -70,7 +70,7 @@
             </div>
             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-emerald-600 font-semibold">@availableCarsCount xe đang mở thuê</span>
-                <span class="text-slate-400">@(cars.Count() - availableCarsCount) tạm ngưng</span>
+                <span class="text-slate-400">@(cars.Count - availableCarsCount) tạm ngưng</span>
             </div>
         </div>
 
@@ -78,14 +78,14 @@
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-medium text-slate-500">Đơn khách đặt thuê</div>
-                    <div class="text-2xl font-bold text-slate-900 mt-1">@incomingBookings.Count() <span class="text-sm font-normal text-slate-400">đơn</span></div>
+                    <div class="text-2xl font-bold text-slate-900 mt-1">@incomingBookings.Count <span class="text-sm font-normal text-slate-400">đơn</span></div>
                 </div>
                 <span class="w-10 h-10 rounded-xl @(pendingCount > 0 ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-indigo-50 text-indigo-600") flex items-center justify-center text-lg">
                     <i class="bi bi-calendar2-check"></i>
                 </span>
             </div>
             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="@(pendingCount > 0 ? "text-amber-700 font-bold" : "text-slate-500")">@pendingCount đơn chờ duyệt</span>
+                <span class="@(pendingCount > 0 ? "text-amber-700 font-bold" : "text-slate-500")">@pendingCount đơn chờ xử lý</span>
                 <span class="text-blue-600 font-semibold">@activeCount đang chạy</span>
             </div>
         </div>
@@ -209,10 +209,10 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
             <a href="#incoming-bookings" class="px-3.5 py-2 rounded-lg bg-slate-900 text-white">
-                1. Đơn khách đặt &amp; Nghiệm thu (@incomingBookings.Count())
+                1. Đơn khách đặt &amp; Nghiệm thu (@incomingBookings.Count)
             </a>
             <a href="#my-vehicles" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                2. Đội xe máy điện của tôi (@cars.Count())
+                2. Đội xe máy điện của tôi (@cars.Count)
             </a>
         </div>
         <div class="relative w-full sm:w-72">
@@ -231,7 +231,7 @@
                 <p class="text-xs text-slate-500 mt-0.5">Phê duyệt đơn mới, lập biên bản Check-in giao xe và Check-out nhận lại xe</p>
             </div>
             <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-md">
-                Tổng cộng @incomingBookings.Count() đơn đặt xe
+                Tổng cộng @incomingBookings.Count đơn đặt xe
             </span>
         </div>
 
@@ -259,26 +259,26 @@
                     <tbody class="divide-y divide-slate-200 text-sm">
                         @foreach (var b in incomingBookings)
                         {
-                            var netHost = b.TotalPrice * 0.85m;
+                            var netHost = b.TotalAmount * 0.85m;
                             <tr class="hover:bg-slate-50/80 host-searchable-row">
-                                <td class="py-3.5 px-6 font-mono text-xs font-bold text-slate-800">#@b.Id</td>
+                                <td class="py-3.5 px-6 font-mono text-xs font-bold text-slate-800">#@b.BookingCode</td>
                                 <td class="py-3.5 px-4">
-                                    <div class="font-bold text-slate-900">@b.Car?.Brand @b.Car?.Model</div>
-                                    <div class="text-xs text-slate-500">Biển số: <strong class="font-mono">@b.Car?.LicensePlate</strong></div>
+                                    <div class="font-bold text-slate-900">@b.Vehicle?.Brand @b.Vehicle?.Model</div>
+                                    <div class="text-xs text-slate-500">Biển số: <strong class="font-mono">@b.Vehicle?.LicensePlate</strong></div>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <div class="font-medium text-slate-900">@b.User?.FullName</div>
-                                    <div class="text-xs text-slate-500">@b.User?.PhoneNumber</div>
+                                    <div class="font-medium text-slate-900">@b.Renter?.FullName</div>
+                                    <div class="text-xs text-slate-500">@b.Renter?.Phone</div>
                                 </td>
                                 <td class="py-3.5 px-4 text-xs text-slate-600">
-                                    <div class="font-medium text-slate-800">@b.StartDate.ToString("dd/MM/yyyy") &rarr; @b.EndDate.ToString("dd/MM/yyyy")</div>
-                                    @if (b.PickupOdometerKm.HasValue)
+                                    <div class="font-medium text-slate-800">@b.StartTime.ToString("dd/MM/yyyy") &rarr; @b.EndTime.ToString("dd/MM/yyyy")</div>
+                                    @if (b.CheckinOdo.HasValue)
                                     {
                                         <div class="text-[11px] text-emerald-700 mt-0.5">
-                                            Giao: @b.PickupOdometerKm km (@b.PickupBatteryPercent% pin)
-                                            @if (b.ReturnOdometerKm.HasValue)
+                                            Giao: @b.CheckinOdo km (@b.CheckinBatteryPercent% pin)
+                                            @if (b.CheckoutOdo.HasValue)
                                             {
-                                                <span>&bull; Trả: @b.ReturnOdometerKm km (@b.ReturnBatteryPercent% pin)</span>
+                                                <span>&bull; Trả: @b.CheckoutOdo km (@b.CheckoutBatteryPercent% pin)</span>
                                             }
                                         </div>
                                     }
@@ -289,16 +289,17 @@
                                 </td>
                                 <td class="py-3.5 px-4">
                                     <div class="font-bold text-emerald-700">+@netHost.ToString("N0")đ</div>
-                                    <div class="text-[11px] text-slate-400">Tổng đơn: @b.TotalPrice.ToString("N0")đ</div>
+                                    <div class="text-[11px] text-slate-400">Tổng đơn: @b.TotalAmount.ToString("N0")đ</div>
                                 </td>
                                 <td class="py-3.5 px-4">
                                     @switch (b.Status)
                                     {
                                         case BookingStatus.Pending:
-                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Chờ duyệt đơn</span>
+                                        case BookingStatus.AwaitingPayment:
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Chờ duyệt / Đặt cọc</span>
                                             break;
-                                        case BookingStatus.Approved:
                                         case BookingStatus.Confirmed:
+                                        case BookingStatus.InProgress:
                                             <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">Đang bàn giao / Thuê</span>
                                             break;
                                         case BookingStatus.Completed:
@@ -313,7 +314,7 @@
                                     <div class="inline-flex items-center gap-1.5">
                                         @if (b.Status == BookingStatus.Pending)
                                         {
-                                            <form action="/Bookings/Confirm" method="post" class="inline">
+                                            <form action="/Host/ApproveBooking" method="post" class="inline">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@b.Id" />
                                                 <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-2xs">
@@ -341,7 +342,7 @@
     <div id="my-vehicles" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden scroll-mt-24">
         <div class="px-6 py-4 border-b border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h2 class="text-base font-bold text-slate-900">2. Đội xe máy điện của tôi (@cars.Count() xe)</h2>
+                <h2 class="text-base font-bold text-slate-900">2. Đội xe máy điện của tôi (@cars.Count xe)</h2>
                 <p class="text-xs text-slate-500 mt-0.5">Bật/tắt trạng thái nhận khách khi xe cần sạc pin, bảo dưỡng hoặc sử dụng cá nhân</p>
             </div>
             <a href="/Host/Create" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg transition">
@@ -375,6 +376,7 @@
                     <tbody class="divide-y divide-slate-200 text-sm">
                         @foreach (var car in cars)
                         {
+                            var isCarActive = car.Status == VehicleStatus.Active;
                             <tr class="hover:bg-slate-50/80 host-searchable-row">
                                 <td class="py-3.5 px-6">
                                     <div class="flex items-center gap-3">
@@ -398,7 +400,7 @@
                                     <div class="text-[11px] text-slate-500">Thực nhận: @((car.PricePerDay * 0.85m).ToString("N0"))đ/ngày</div>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    @if (car.IsAvailable)
+                                    @if (isCarActive)
                                     {
                                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             Đang mở nhận khách
@@ -416,11 +418,11 @@
                                         <a href="/Vehicles/Details/@car.Id" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-medium text-slate-700 transition">
                                             Chi tiết
                                         </a>
-                                        <form action="/Host/ToggleAvailability" method="post" class="inline">
+                                        <form action="/Host/ToggleStatus" method="post" class="inline">
                                             @Html.AntiForgeryToken()
-                                            <input type="hidden" name="carId" value="@car.Id" />
-                                            <button type="submit" class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition @(car.IsAvailable ? "border-amber-200 text-amber-700 hover:bg-amber-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
-                                                @(car.IsAvailable ? "Tạm ngưng" : "Mở cho thuê")
+                                            <input type="hidden" name="id" value="@car.Id" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition @(isCarActive ? "border-amber-200 text-amber-700 hover:bg-amber-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
+                                                @(isCarActive ? "Tạm ngưng" : "Mở cho thuê")
                                             </button>
                                         </form>
                                     </div>

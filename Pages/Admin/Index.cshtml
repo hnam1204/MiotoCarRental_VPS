@@ -3,12 +3,13 @@
 @using MiotoCarRental.Models.Entities
 @{
     ViewData["Title"] = "Trung tâm Quản trị Hệ thống - EcoBike Admin";
-    var pendingLicensesCount = Model.Users.Count(u => !string.IsNullOrEmpty(u.DriverLicenseNumber) && !u.IsLicenseVerified);
-    var verifiedLicensesCount = Model.Users.Count(u => u.IsLicenseVerified);
-    var hostCount = Model.Users.Count(u => u.Role == UserRole.Host);
-    var renterCount = Model.Users.Count(u => u.Role == UserRole.Renter);
-    var activeBookingsCount = Model.RecentBookings.Count(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.Approved || b.Status == BookingStatus.Confirmed);
-    var availableRate = Model.TotalCars > 0 ? (int)Math.Round((double)Model.AvailableCars * 100 / Model.TotalCars) : 100;
+    var platformCommission = Model.TotalRevenue * 0.15m;
+    var hostNetPayout = Model.TotalRevenue - platformCommission;
+    var verifiedLicensesCount = Model.AllUsers.Count(u => u.DriverLicenseStatus == DriverLicenseStatus.Approved);
+    var hostCount = Model.AllUsers.Count(u => u.Role == UserRole.Host);
+    var renterCount = Model.AllUsers.Count(u => u.Role == UserRole.Renter);
+    var activeBookingsCount = Model.Bookings.Count(b => b.Status == BookingStatus.Pending || b.Status == BookingStatus.AwaitingPayment || b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.InProgress);
+    var availableRate = Model.TotalVehicles > 0 ? (int)Math.Round((double)Model.ActiveVehicles * 100 / Model.TotalVehicles) : 100;
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
@@ -33,7 +34,7 @@
                     class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
                 <i class="bi bi-file-earmark-spreadsheet text-emerald-400"></i> Xuất báo cáo (.CSV)
             </button>
-            <a href="/Stations" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+            <a href="/Home/Stations" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
                 <i class="bi bi-ev-station text-amber-400"></i> Trạm sạc &amp; Đổi pin
             </a>
             <a href="/Host/Create" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5">
@@ -49,7 +50,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-medium text-slate-500">Tổng giao dịch (GMV)</div>
-                    <div class="text-xl font-bold text-slate-900 mt-1">@Model.TotalGmv.ToString("N0")đ</div>
+                    <div class="text-xl font-bold text-slate-900 mt-1">@Model.TotalRevenue.ToString("N0")đ</div>
                 </div>
                 <span class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg">
                     <i class="bi bi-cash-stack"></i>
@@ -62,11 +63,11 @@
         </div>
 
         <!-- KPI 2: Platform Fee 15% -->
-        <div class="bg-white rounded-xl p-5 border border-emerald-200 shadow-xs flex flex-col justify-between relative overflow-hidden">
+        <div class="bg-white rounded-xl p-5 border border-emerald-200 shadow-xs flex flex-col justify-between">
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-semibold text-emerald-700">Doanh thu sàn (15%)</div>
-                    <div class="text-xl font-bold text-emerald-700 mt-1">@Model.PlatformCommission.ToString("N0")đ</div>
+                    <div class="text-xl font-bold text-emerald-700 mt-1">@platformCommission.ToString("N0")đ</div>
                 </div>
                 <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-lg">
                     <i class="bi bi-bank"></i>
@@ -74,7 +75,7 @@
             </div>
             <div class="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between text-xs">
                 <span class="text-slate-500">Chủ xe nhận 85%:</span>
-                <span class="font-semibold text-slate-700">@((Model.TotalGmv - Model.PlatformCommission).ToString("N0"))đ</span>
+                <span class="font-semibold text-slate-700">@hostNetPayout.ToString("N0")đ</span>
             </div>
         </div>
 
@@ -83,7 +84,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-medium text-slate-500">Phương tiện sẵn sàng</div>
-                    <div class="text-xl font-bold text-slate-900 mt-1">@Model.AvailableCars <span class="text-sm font-normal text-slate-400">/ @Model.TotalCars xe</span></div>
+                    <div class="text-xl font-bold text-slate-900 mt-1">@Model.ActiveVehicles <span class="text-sm font-normal text-slate-400">/ @Model.TotalVehicles xe</span></div>
                 </div>
                 <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center text-lg">
                     <i class="bi bi-scooter"></i>
@@ -94,8 +95,8 @@
                     <div class="bg-blue-600 h-full rounded-full" style="width: @(availableRate)%"></div>
                 </div>
                 <div class="flex justify-between text-[11px] text-slate-400 mt-1.5">
-                    <span>Tỷ lệ sẵn sàng: @availableRate%</span>
-                    <span>@(Model.TotalCars - Model.AvailableCars) xe tạm khóa</span>
+                    <span>Tỷ lệ mở thuê: @availableRate%</span>
+                    <span>@(Model.TotalVehicles - Model.ActiveVehicles) xe tạm khóa</span>
                 </div>
             </div>
         </div>
@@ -118,20 +119,20 @@
         </div>
 
         <!-- KPI 5: KYC Verification -->
-        <div class="bg-white rounded-xl p-5 border @(pendingLicensesCount > 0 ? "border-amber-300" : "border-slate-200") shadow-xs flex flex-col justify-between">
+        <div class="bg-white rounded-xl p-5 border @(Model.PendingLicenseCount > 0 ? "border-amber-300" : "border-slate-200") shadow-xs flex flex-col justify-between">
             <div class="flex items-start justify-between">
                 <div>
                     <div class="text-xs font-medium text-slate-500">Duyệt bằng lái A1</div>
-                    <div class="text-xl font-bold @(pendingLicensesCount > 0 ? "text-amber-600" : "text-slate-900") mt-1">
-                        @pendingLicensesCount <span class="text-sm font-normal text-slate-400">hồ sơ chờ</span>
+                    <div class="text-xl font-bold @(Model.PendingLicenseCount > 0 ? "text-amber-600" : "text-slate-900") mt-1">
+                        @Model.PendingLicenseCount <span class="text-sm font-normal text-slate-400">hồ sơ chờ</span>
                     </div>
                 </div>
-                <span class="w-10 h-10 rounded-xl @(pendingLicensesCount > 0 ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-slate-100 text-slate-600") flex items-center justify-center text-lg">
+                <span class="w-10 h-10 rounded-xl @(Model.PendingLicenseCount > 0 ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-slate-100 text-slate-600") flex items-center justify-center text-lg">
                     <i class="bi bi-person-vcard"></i>
                 </span>
             </div>
             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-emerald-600 font-medium"><i class="bi bi-check2-all"></i> Đã xác thực: @verifiedLicensesCount</span>
+                <span class="text-emerald-600 font-medium"><i class="bi bi-check2-all"></i> Đã duyệt: @verifiedLicensesCount</span>
                 <a href="#kyc" class="text-amber-700 font-semibold hover:underline">Xử lý ngay &rarr;</a>
             </div>
         </div>
@@ -156,47 +157,40 @@
                 </div>
             </div>
 
-            <!-- Bar Chart Representation -->
             <div class="pt-6 pb-2">
                 <div class="grid grid-cols-6 gap-3 sm:gap-5 items-end h-44 px-2 border-b border-slate-200">
-                    <!-- Month 5 -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
                         <span class="text-[10px] font-semibold text-slate-500">4.2tr</span>
                         <div class="w-full max-w-[42px] bg-emerald-500/85 group-hover:bg-emerald-600 rounded-t-md transition relative flex items-end justify-center" style="height: 45%;">
-                            <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;" title="Phí sàn 15%"></div>
+                            <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;"></div>
                         </div>
                     </div>
-                    <!-- Month 6 -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
                         <span class="text-[10px] font-semibold text-slate-500">5.8tr</span>
                         <div class="w-full max-w-[42px] bg-emerald-500/85 group-hover:bg-emerald-600 rounded-t-md transition relative flex items-end justify-center" style="height: 58%;">
                             <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;"></div>
                         </div>
                     </div>
-                    <!-- Month 7 -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
                         <span class="text-[10px] font-semibold text-slate-500">7.1tr</span>
                         <div class="w-full max-w-[42px] bg-emerald-500/85 group-hover:bg-emerald-600 rounded-t-md transition relative flex items-end justify-center" style="height: 70%;">
                             <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;"></div>
                         </div>
                     </div>
-                    <!-- Month 8 -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
                         <span class="text-[10px] font-semibold text-slate-500">8.4tr</span>
                         <div class="w-full max-w-[42px] bg-emerald-500/85 group-hover:bg-emerald-600 rounded-t-md transition relative flex items-end justify-center" style="height: 80%;">
                             <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;"></div>
                         </div>
                     </div>
-                    <!-- Month 9 -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
                         <span class="text-[10px] font-semibold text-slate-500">9.6tr</span>
                         <div class="w-full max-w-[42px] bg-emerald-500/85 group-hover:bg-emerald-600 rounded-t-md transition relative flex items-end justify-center" style="height: 90%;">
                             <div class="w-full bg-slate-800 rounded-t-xs" style="height: 22%;"></div>
                         </div>
                     </div>
-                    <!-- Month 10 (Current) -->
                     <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
-                        <span class="text-[10px] font-bold text-emerald-700">@((Model.TotalGmv > 0 ? Model.TotalGmv : 11200000).ToString("N0"))đ</span>
+                        <span class="text-[10px] font-bold text-emerald-700">@((Model.TotalRevenue > 0 ? Model.TotalRevenue : 11200000).ToString("N0"))đ</span>
                         <div class="w-full max-w-[42px] bg-emerald-600 rounded-t-md transition relative flex items-end justify-center shadow-xs" style="height: 100%;">
                             <div class="w-full bg-slate-900 rounded-t-xs" style="height: 25%;"></div>
                         </div>
@@ -215,7 +209,7 @@
             <div class="mt-3 pt-3 border-t border-slate-100 grid grid-cols-3 gap-4 text-xs">
                 <div>
                     <span class="text-slate-400 block">Giá trị đơn trung bình</span>
-                    <strong class="text-slate-800 text-sm">@((Model.TotalBookings > 0 ? Model.TotalGmv / Model.TotalBookings : 320000).ToString("N0"))đ / đơn</strong>
+                    <strong class="text-slate-800 text-sm">@((Model.TotalBookings > 0 ? Model.TotalRevenue / Model.TotalBookings : 320000).ToString("N0"))đ / đơn</strong>
                 </div>
                 <div>
                     <span class="text-slate-400 block">Tỷ lệ chiết khấu sàn</span>
@@ -235,11 +229,11 @@
                 <p class="text-xs text-slate-500 mt-0.5">Thống kê theo thương hiệu xe máy điện và phân loại tài khoản</p>
 
                 @{
-                    var totalCarsSafe = Math.Max(1, Model.TotalCars);
-                    var vinfastCount = Model.AllCars.Count(c => c.Brand.Contains("VinFast", StringComparison.OrdinalIgnoreCase));
-                    var datbikeCount = Model.AllCars.Count(c => c.Brand.Contains("Dat Bike", StringComparison.OrdinalIgnoreCase));
-                    var otherBrandCount = Math.Max(0, Model.TotalCars - vinfastCount - datbikeCount);
-                    var freeA1Count = Model.AllCars.Count(c => !c.RequiresLicenseA1);
+                    var totalCarsSafe = Math.Max(1, Model.TotalVehicles);
+                    var vinfastCount = Model.Vehicles.Count(c => c.Brand.Contains("VinFast", StringComparison.OrdinalIgnoreCase));
+                    var datbikeCount = Model.Vehicles.Count(c => c.Brand.Contains("Dat Bike", StringComparison.OrdinalIgnoreCase));
+                    var otherBrandCount = Math.Max(0, Model.TotalVehicles - vinfastCount - datbikeCount);
+                    var freeA1Count = Model.Vehicles.Count(c => !c.RequiresLicenseA1);
                 }
 
                 <div class="space-y-3 mt-4 text-xs">
@@ -299,16 +293,16 @@
                 Tất cả phân khu (4)
             </button>
             <button type="button" onclick="filterAdminSection('section-kyc', this)" class="admin-tab-btn px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                1. Duyệt GPLX A1 (@pendingLicensesCount chờ)
+                1. Duyệt GPLX A1 (@Model.PendingLicenseCount chờ)
             </button>
             <button type="button" onclick="filterAdminSection('section-bookings', this)" class="admin-tab-btn px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                2. Đơn đặt thuê (@Model.RecentBookings.Count())
+                2. Đơn đặt thuê (@Model.Bookings.Count)
             </button>
             <button type="button" onclick="filterAdminSection('section-vehicles', this)" class="admin-tab-btn px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                3. Đội xe (@Model.TotalCars)
+                3. Đội xe (@Model.TotalVehicles)
             </button>
             <button type="button" onclick="filterAdminSection('section-users', this)" class="admin-tab-btn px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                4. Phân quyền User (@Model.Users.Count())
+                4. Phân quyền User (@Model.AllUsers.Count)
             </button>
         </div>
 
@@ -330,8 +324,8 @@
                     <p class="text-xs text-slate-500">Xác thực bằng lái cho khách thuê các dòng xe máy điện có tốc độ trên 50km/h</p>
                 </div>
             </div>
-            <span class="text-xs font-semibold px-3 py-1 rounded-md @(pendingLicensesCount > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-50 text-emerald-700")">
-                @(pendingLicensesCount > 0 ? $"{pendingLicensesCount} hồ sơ đang chờ duyệt" : "Đã xử lý toàn bộ hồ sơ")
+            <span class="text-xs font-semibold px-3 py-1 rounded-md @(Model.PendingLicenseCount > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-50 text-emerald-700")">
+                @(Model.PendingLicenseCount > 0 ? $"{Model.PendingLicenseCount} hồ sơ đang chờ duyệt" : "Đã xử lý toàn bộ hồ sơ")
             </span>
         </div>
 
@@ -346,7 +340,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 text-sm">
-                    @foreach (var u in Model.Users.Where(x => !string.IsNullOrEmpty(x.DriverLicenseNumber) || x.Role == UserRole.Renter))
+                    @foreach (var u in Model.AllUsers)
                     {
                         <tr class="hover:bg-slate-50/80 admin-searchable-row">
                             <td class="py-3.5 px-6">
@@ -356,71 +350,71 @@
                                     </span>
                                     <div>
                                         <div class="font-semibold text-slate-900">@u.FullName</div>
-                                        <div class="text-xs text-slate-500">@u.Email &bull; @u.PhoneNumber</div>
+                                        <div class="text-xs text-slate-500">@u.Email &bull; @u.Phone</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="py-3.5 px-4">
-                                @if (!string.IsNullOrEmpty(u.DriverLicenseNumber))
+                                @if (!string.IsNullOrEmpty(u.DriverLicenseNo))
                                 {
                                     <span class="font-mono text-xs font-bold bg-slate-100 text-slate-800 px-2.5 py-1 rounded border border-slate-300">
-                                        <i class="bi bi-card-heading mr-1 text-slate-500"></i>@u.DriverLicenseNumber
+                                        <i class="bi bi-card-heading mr-1 text-slate-500"></i>@u.DriverLicenseNo
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="text-xs text-slate-400 italic">Chưa gửi số GPLX</span>
+                                    <span class="text-xs text-slate-400 italic">Chưa cập nhật GPLX</span>
                                 }
                             </td>
                             <td class="py-3.5 px-4">
-                                @if (u.IsLicenseVerified)
+                                @switch (u.DriverLicenseStatus)
                                 {
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        <i class="bi bi-patch-check-fill"></i> Đã xác thực hợp lệ
-                                    </span>
-                                }
-                                else if (!string.IsNullOrEmpty(u.DriverLicenseNumber))
-                                {
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                        <i class="bi bi-hourglass-split"></i> Chờ Admin đối chiếu
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
-                                        Chỉ thuê xe miễn bằng A1 (&lt;50km/h)
-                                    </span>
+                                    case DriverLicenseStatus.Approved:
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <i class="bi bi-patch-check-fill"></i> Đã xác thực hợp lệ
+                                        </span>
+                                        break;
+                                    case DriverLicenseStatus.Pending:
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <i class="bi bi-hourglass-split"></i> Chờ Admin duyệt
+                                        </span>
+                                        break;
+                                    case DriverLicenseStatus.Rejected:
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <i class="bi bi-x-circle"></i> Đã từ chối
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
+                                            Chưa xác thực (Thuê xe &lt;50km/h)
+                                        </span>
+                                        break;
                                 }
                             </td>
                             <td class="py-3.5 px-6 text-right">
-                                @if (!string.IsNullOrEmpty(u.DriverLicenseNumber))
-                                {
-                                    <div class="inline-flex items-center gap-2">
-                                        @if (!u.IsLicenseVerified)
-                                        {
-                                            <form action="/Admin/VerifyLicense" method="post" class="inline">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="userId" value="@u.Id" />
-                                                <input type="hidden" name="approve" value="true" />
-                                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-2xs">
-                                                    <i class="bi bi-check-lg"></i> Duyệt GPLX
-                                                </button>
-                                            </form>
-                                        }
-                                        <form action="/Admin/VerifyLicense" method="post" class="inline">
+                                <div class="inline-flex items-center gap-2">
+                                    @if (u.DriverLicenseStatus != DriverLicenseStatus.Approved)
+                                    {
+                                        <form action="/Admin/ApproveLicense" method="post" class="inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@u.Id" />
-                                            <input type="hidden" name="approve" value="false" />
-                                            <button type="submit" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-medium px-3 py-1.5 rounded-lg transition">
-                                                @(u.IsLicenseVerified ? "Thu hồi" : "Từ chối")
+                                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-2xs">
+                                                <i class="bi bi-check-lg"></i> Duyệt GPLX
                                             </button>
                                         </form>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-xs text-slate-400">—</span>
-                                }
+                                    }
+                                    @if (u.DriverLicenseStatus != DriverLicenseStatus.Rejected)
+                                    {
+                                        <form action="/Admin/RejectLicense" method="post" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="userId" value="@u.Id" />
+                                            <input type="hidden" name="reason" value="Hồ sơ GPLX cần bổ sung ảnh rõ nét hơn." />
+                                            <button type="submit" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-medium px-3 py-1.5 rounded-lg transition">
+                                                @(u.DriverLicenseStatus == DriverLicenseStatus.Approved ? "Thu hồi" : "Từ chối")
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -440,7 +434,7 @@
                 </div>
             </div>
             <span class="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-md">
-                Tổng @Model.RecentBookings.Count() đơn giao dịch
+                Tổng @Model.Bookings.Count đơn giao dịch
             </span>
         </div>
 
@@ -458,7 +452,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 text-sm">
-                    @if (!Model.RecentBookings.Any())
+                    @if (!Model.Bookings.Any())
                     {
                         <tr>
                             <td colspan="7" class="py-8 text-center text-slate-500 text-xs">Chưa có đơn đặt thuê xe nào trên hệ thống.</td>
@@ -466,35 +460,36 @@
                     }
                     else
                     {
-                        @foreach (var b in Model.RecentBookings)
+                        @foreach (var b in Model.Bookings)
                         {
-                            var platformFee = b.TotalPrice * 0.15m;
+                            var platformFee = b.TotalAmount * 0.15m;
                             <tr class="hover:bg-slate-50/80 admin-searchable-row">
-                                <td class="py-3.5 px-6 font-mono text-xs font-bold text-slate-800">#@b.Id</td>
+                                <td class="py-3.5 px-6 font-mono text-xs font-bold text-slate-800">#@b.BookingCode</td>
                                 <td class="py-3.5 px-4">
-                                    <div class="font-semibold text-slate-900">@b.Car?.Brand @b.Car?.Model</div>
-                                    <div class="text-xs text-slate-500">Biển số: <strong class="font-mono">@b.Car?.LicensePlate</strong></div>
+                                    <div class="font-semibold text-slate-900">@b.Vehicle?.Brand @b.Vehicle?.Model</div>
+                                    <div class="text-xs text-slate-500">Biển số: <strong class="font-mono">@b.Vehicle?.LicensePlate</strong></div>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <div class="font-medium text-slate-900">@b.User?.FullName</div>
-                                    <div class="text-xs text-slate-500">@b.User?.PhoneNumber</div>
+                                    <div class="font-medium text-slate-900">@b.Renter?.FullName</div>
+                                    <div class="text-xs text-slate-500">@b.Renter?.Phone</div>
                                 </td>
                                 <td class="py-3.5 px-4 text-xs text-slate-600">
-                                    <div class="font-medium text-slate-800">@b.StartDate.ToString("dd/MM/yyyy") &rarr; @b.EndDate.ToString("dd/MM/yyyy")</div>
-                                    <div class="text-slate-400">Đặt cọc: @b.DepositAmount.ToString("N0")đ</div>
+                                    <div class="font-medium text-slate-800">@b.StartTime.ToString("dd/MM/yyyy") &rarr; @b.EndTime.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-slate-400">@b.TotalDays ngày &bull; Cọc: @b.DepositAmount.ToString("N0")đ</div>
                                 </td>
                                 <td class="py-3.5 px-4">
-                                    <div class="font-bold text-slate-900">@b.TotalPrice.ToString("N0")đ</div>
+                                    <div class="font-bold text-slate-900">@b.TotalAmount.ToString("N0")đ</div>
                                     <div class="text-[11px] font-semibold text-emerald-700">Phí sàn (15%): +@platformFee.ToString("N0")đ</div>
                                 </td>
                                 <td class="py-3.5 px-4">
                                     @switch (b.Status)
                                     {
                                         case BookingStatus.Pending:
-                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Chờ chủ xe duyệt</span>
+                                        case BookingStatus.AwaitingPayment:
+                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">Chờ duyệt / Cọc</span>
                                             break;
-                                        case BookingStatus.Approved:
                                         case BookingStatus.Confirmed:
+                                        case BookingStatus.InProgress:
                                             <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">Đang thuê xe</span>
                                             break;
                                         case BookingStatus.Completed:
@@ -517,7 +512,7 @@
                                         {
                                             <form action="/Admin/CancelBooking" method="post" class="inline">
                                                 @Html.AntiForgeryToken()
-                                                <input type="hidden" name="id" value="@b.Id" />
+                                                <input type="hidden" name="bookingId" value="@b.Id" />
                                                 <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-medium transition">
                                                     Hủy đơn
                                                 </button>
@@ -539,7 +534,7 @@
             <div class="flex items-center gap-2.5">
                 <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">03</span>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">Kiểm duyệt &amp; Quản lý Đội xe máy điện (@Model.AllCars.Count() xe)</h2>
+                    <h2 class="text-base font-bold text-slate-900">Kiểm duyệt &amp; Quản lý Đội xe máy điện (@Model.Vehicles.Count xe)</h2>
                     <p class="text-xs text-slate-500">Kiểm tra thông số pin, biển số, chủ sở hữu và tạm khóa phương tiện bảo trì hoặc vi phạm</p>
                 </div>
             </div>
@@ -562,8 +557,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 text-sm">
-                    @foreach (var car in Model.AllCars)
+                    @foreach (var car in Model.Vehicles)
                     {
+                        var isCarActive = car.Status == VehicleStatus.Active;
                         <tr class="hover:bg-slate-50/80 admin-searchable-row">
                             <td class="py-3.5 px-6">
                                 <div class="flex items-center gap-3">
@@ -585,13 +581,13 @@
                                 </div>
                             </td>
                             <td class="py-3.5 px-4 text-xs text-slate-700 font-medium">
-                                @(car.Owner?.FullName ?? "Đối tác EcoBike")
+                                @(car.Host?.FullName ?? "Đối tác EcoBike")
                             </td>
                             <td class="py-3.5 px-4 font-bold text-emerald-700">
                                 @car.PricePerDay.ToString("N0")đ
                             </td>
                             <td class="py-3.5 px-4">
-                                @if (car.IsAvailable)
+                                @if (isCarActive)
                                 {
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                         Đang mở thuê
@@ -611,9 +607,9 @@
                                     </a>
                                     <form action="/Admin/ToggleVehicleStatus" method="post" class="inline">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="carId" value="@car.Id" />
-                                        <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition @(car.IsAvailable ? "border-rose-200 text-rose-600 hover:bg-rose-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
-                                            @(car.IsAvailable ? "Khóa xe" : "Mở khóa")
+                                        <input type="hidden" name="vehicleId" value="@car.Id" />
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition @(isCarActive ? "border-rose-200 text-rose-600 hover:bg-rose-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
+                                            @(isCarActive ? "Khóa xe" : "Mở khóa")
                                         </button>
                                     </form>
                                 </div>
@@ -631,7 +627,7 @@
             <div class="flex items-center gap-2.5">
                 <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">04</span>
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">Quản lý Tài khoản &amp; Phân quyền Vai trò (@Model.Users.Count() tài khoản)</h2>
+                    <h2 class="text-base font-bold text-slate-900">Quản lý Tài khoản &amp; Phân quyền Vai trò (@Model.AllUsers.Count tài khoản)</h2>
                     <p class="text-xs text-slate-500">Cấp quyền Đối tác Chủ xe (Host), Khách thuê (Renter) hoặc Quản trị viên (Admin)</p>
                 </div>
             </div>
@@ -649,12 +645,12 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200 text-sm">
-                    @foreach (var u in Model.Users)
+                    @foreach (var u in Model.AllUsers)
                     {
                         <tr class="hover:bg-slate-50/80 admin-searchable-row">
                             <td class="py-3.5 px-6 font-semibold text-slate-900">@u.FullName</td>
                             <td class="py-3.5 px-4 text-slate-600">@u.Email</td>
-                            <td class="py-3.5 px-4 text-slate-600">@u.PhoneNumber</td>
+                            <td class="py-3.5 px-4 text-slate-600">@u.Phone</td>
                             <td class="py-3.5 px-4">
                                 @switch (u.Role)
                                 {
@@ -673,7 +669,7 @@
                                 <form action="/Admin/UpdateUserRole" method="post" class="inline-flex items-center gap-2">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="userId" value="@u.Id" />
-                                    <select name="role" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-slate-800 focus:outline-none focus:border-emerald-600">
+                                    <select name="newRole" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-slate-800 focus:outline-none focus:border-emerald-600">
                                         <option value="Renter" selected="@(u.Role == UserRole.Renter)">Khách thuê (Renter)</option>
                                         <option value="Host" selected="@(u.Role == UserRole.Host)">Chủ xe (Host)</option>
                                         <option value="Admin" selected="@(u.Role == UserRole.Admin)">Quản trị (Admin)</option>
@@ -722,11 +718,11 @@
         const rows = [
             ['Ma Don', 'Phuong Tien', 'Khach Thue', 'Ngay Bat Dau', 'Ngay Ket Thuc', 'Tong Tien (VND)', 'Phi San 15% (VND)', 'Trang Thai']
         ];
-        @foreach (var b in Model.RecentBookings)
+        @foreach (var b in Model.Bookings)
         {
-            var fee = (long)(b.TotalPrice * 0.15m);
+            var fee = (long)(b.TotalAmount * 0.15m);
             <text>
-            rows.push(['#@b.Id', '@Html.Raw((b.Car?.Brand + " " + b.Car?.Model).Replace("'", ""))', '@Html.Raw((b.User?.FullName ?? "").Replace("'", ""))', '@b.StartDate.ToString("yyyy-MM-dd")', '@b.EndDate.ToString("yyyy-MM-dd")', '@b.TotalPrice', '@fee', '@b.Status']);
+            rows.push(['#@b.BookingCode', '@Html.Raw((b.Vehicle?.Brand + " " + b.Vehicle?.Model).Replace("'", ""))', '@Html.Raw((b.Renter?.FullName ?? "").Replace("'", ""))', '@b.StartTime.ToString("yyyy-MM-dd")', '@b.EndTime.ToString("yyyy-MM-dd")', '@b.TotalAmount', '@fee', '@b.Status']);
             </text>
         }
         const csvContent = '\uFEFF' + rows.map(e => e.join(',')).join('\n');
