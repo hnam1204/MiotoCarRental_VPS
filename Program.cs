@@ -32,7 +32,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-// Tự động khởi tạo Database và nạp 12 xe điện mẫu khi chạy ứng dụng
+// Tự động khởi tạo Database và nạp 16 xe điện mẫu khi chạy ứng dụng
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
