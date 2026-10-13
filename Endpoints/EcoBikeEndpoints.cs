@@ -23,34 +23,187 @@ namespace MiotoCarRental.Endpoints
             app.MapGet("/Admin/Index", () => Results.Redirect("/Admin"));
 
             // =========================================================================
-            // 1. RESTful JSON APIs (Backend API Layer)
+            // 1. RESTful JSON APIs (.NET Core 9 Web API Layer cho ReactJS Frontend)
             // =========================================================================
+            app.MapGet("/swagger", () => Results.Redirect("/swagger/index.html"));
+            app.MapGet("/api-docs", () => Results.Redirect("/swagger/index.html"));
+            app.MapGet("/react", () => Results.Redirect("/react/index.html"));
+
             var api = app.MapGroup("/api");
 
-            api.MapGet("/vehicles", async (MiotoDbContext db, VehicleCategory? category, string? city) =>
+            api.MapGet("/vehicles", async (MiotoDbContext db, VehicleCategory? category, string? city, string? brand, bool? requiresLicense, decimal? maxPrice, string? search) =>
             {
                 var query = db.Vehicles.Where(v => v.Status == VehicleStatus.Active).AsQueryable();
                 if (category.HasValue) query = query.Where(v => v.Category == category.Value);
                 if (!string.IsNullOrWhiteSpace(city)) query = query.Where(v => v.City.Contains(city));
-                var list = await query.ToListAsync();
+                if (!string.IsNullOrWhiteSpace(brand)) query = query.Where(v => v.Brand.Contains(brand));
+                if (requiresLicense.HasValue) query = query.Where(v => v.RequiresLicenseA1 == requiresLicense.Value);
+                if (maxPrice.HasValue && maxPrice.Value > 0) query = query.Where(v => v.PricePerDay <= maxPrice.Value);
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var kw = search.Trim().ToLower();
+                    query = query.Where(v => v.Brand.ToLower().Contains(kw) || v.Model.ToLower().Contains(kw) || v.City.ToLower().Contains(kw));
+                }
+
+                var list = await query.Select(v => new
+                {
+                    v.Id,
+                    v.Brand,
+                    v.Model,
+                    v.LicensePlate,
+                    v.YearManufacture,
+                    Category = v.Category.ToString(),
+                    CategoryId = (int)v.Category,
+                    v.BatteryRangeKm,
+                    v.MaxSpeedKmH,
+                    v.BatteryType,
+                    v.RequiresLicenseA1,
+                    v.PricePerDay,
+                    v.City,
+                    v.District,
+                    v.Address,
+                    v.InstantBooking,
+                    v.ThumbnailUrl,
+                    v.LimitKmPerDay
+                }).ToListAsync();
+
                 return Results.Ok(list.OrderBy(v => v.PricePerDay));
             });
 
             api.MapGet("/vehicles/{id:int}", async (int id, MiotoDbContext db) =>
             {
-                var vehicle = await db.Vehicles.Include(v => v.Host).FirstOrDefaultAsync(v => v.Id == id);
-                return vehicle is not null ? Results.Ok(vehicle) : Results.NotFound();
+                var v = await db.Vehicles.Include(x => x.Host).FirstOrDefaultAsync(x => x.Id == id);
+                if (v is null) return Results.NotFound(new { message = "Không tìm thấy phương tiện" });
+                return Results.Ok(new
+                {
+                    v.Id,
+                    v.Brand,
+                    v.Model,
+                    v.LicensePlate,
+                    v.YearManufacture,
+                    Category = v.Category.ToString(),
+                    v.BatteryRangeKm,
+                    v.MaxSpeedKmH,
+                    v.BatteryType,
+                    v.RequiresLicenseA1,
+                    v.PricePerDay,
+                    v.City,
+                    v.District,
+                    v.Address,
+                    v.InstantBooking,
+                    v.ThumbnailUrl,
+                    v.Description,
+                    HostName = v.Host?.FullName ?? "Đối tác EcoBike"
+                });
             });
 
             api.MapGet("/stats", async (MiotoDbContext db) =>
             {
+                var vehicles = await db.Vehicles.ToListAsync();
+                var bookings = await db.Bookings.ToListAsync();
+                var totalGmv = bookings.Where(b => b.Status != BookingStatus.Cancelled).Sum(b => b.TotalAmount);
                 return Results.Ok(new
                 {
-                    Architecture = "3-Layer Architecture + Razor Pages (MVVM) + Minimal Web API",
-                    TotalVehicles = await db.Vehicles.CountAsync(),
+                    Architecture = "ReactJS Frontend (ClientApp) + ASP.NET Core 9.0 Web API + 3-Layer Services",
+                    TotalVehicles = vehicles.Count,
                     TotalUsers = await db.Users.CountAsync(),
-                    TotalBookings = await db.Bookings.CountAsync()
+                    TotalBookings = bookings.Count,
+                    TotalGMV = totalGmv,
+                    PlatformCommission = Math.Round(totalGmv * 0.15m, 0),
+                    Categories = new
+                    {
+                        Economy = vehicles.Count(v => v.Category == VehicleCategory.Economy),
+                        MidRange = vehicles.Count(v => v.Category == VehicleCategory.MidRange),
+                        Touring = vehicles.Count(v => v.Category == VehicleCategory.Touring),
+                        SportPremium = vehicles.Count(v => v.Category == VehicleCategory.SportPremium)
+                    }
                 });
+            });
+
+            api.MapGet("/coupons", () =>
+            {
+                var coupons = new[]
+                {
+                    new { Id = 1, Code = "ECOBIKE50", Description = "Giảm 50% tối đa 50.000đ cho chuyến đầu tiên", DiscountPercent = 50, MaxDiscountAmount = 50000m },
+                    new { Id = 2, Code = "SINHVIEN20", Description = "Ưu đãi 20% tối đa 40.000đ dành cho Học sinh - Sinh viên", DiscountPercent = 20, MaxDiscountAmount = 40000m },
+                    new { Id = 3, Code = "GREEN10", Description = "Giảm 10% tối đa 100.000đ cho hành trình xanh", DiscountPercent = 10, MaxDiscountAmount = 100000m }
+                };
+                return Results.Ok(coupons);
+            });
+
+            api.MapGet("/bookings", async (MiotoDbContext db) =>
+            {
+                var list = await db.Bookings
+                    .Include(b => b.Vehicle)
+                    .Include(b => b.Renter)
+                    .OrderByDescending(b => b.CreatedAt)
+                    .Take(20)
+                    .Select(b => new
+                    {
+                        b.Id,
+                        b.BookingCode,
+                        VehicleName = b.Vehicle != null ? b.Vehicle.Brand + " " + b.Vehicle.Model : "Xe máy điện",
+                        RenterName = b.Renter != null ? b.Renter.FullName : "Khách thuê",
+                        PickupDate = b.StartTime,
+                        ReturnDate = b.EndTime,
+                        b.TotalDays,
+                        b.RentalFee,
+                        b.InsuranceFee,
+                        b.DepositAmount,
+                        b.TotalAmount,
+                        Status = b.Status.ToString()
+                    })
+                    .ToListAsync();
+                return Results.Ok(list);
+            });
+
+            api.MapPost("/bookings/calculate", async (MiotoDbContext db, int vehicleId, int days, string? couponCode) =>
+            {
+                var vehicle = await db.Vehicles.FindAsync(vehicleId);
+                if (vehicle == null) return Results.NotFound(new { message = "Không tìm thấy xe" });
+
+                int validDays = Math.Max(1, days);
+                decimal rentalFee = vehicle.PricePerDay * validDays;
+                decimal insuranceFee = 15000m * validDays;
+                decimal discount = 0m;
+
+                if (!string.IsNullOrWhiteSpace(couponCode))
+                {
+                    var code = couponCode.Trim().ToUpper();
+                    if (code == "ECOBIKE50") discount = Math.Min(Math.Round(rentalFee * 0.50m, 0), 50000m);
+                    else if (code == "SINHVIEN20") discount = Math.Min(Math.Round(rentalFee * 0.20m, 0), 40000m);
+                    else if (code == "GREEN10") discount = Math.Min(Math.Round(rentalFee * 0.10m, 0), 100000m);
+                }
+
+                decimal totalAmount = rentalFee + insuranceFee - discount;
+                decimal deposit = Math.Round(totalAmount * 0.3m, 0);
+
+                return Results.Ok(new
+                {
+                    VehicleId = vehicle.Id,
+                    VehicleName = $"{vehicle.Brand} {vehicle.Model}",
+                    PricePerDay = vehicle.PricePerDay,
+                    Days = validDays,
+                    RentalFee = rentalFee,
+                    InsuranceFee = insuranceFee,
+                    CouponCode = couponCode?.ToUpper(),
+                    DiscountAmount = discount,
+                    TotalAmount = totalAmount,
+                    DepositRequired = deposit
+                });
+            }).DisableAntiforgery();
+
+            api.MapGet("/stations", () =>
+            {
+                var stations = new[]
+                {
+                    new { Id = 1, Name = "Trạm Sạc Siêu Tốc V-GREEN Vinhomes Central Park", City = "TP. Hồ Chí Minh", District = "Bình Thạnh", Type = "FastCharge", Ports = 24, Status = "Hoạt động 24/7" },
+                    new { Id = 2, Name = "Trạm Đổi Pin Tự Động Selex Nguyễn Huệ", City = "TP. Hồ Chí Minh", District = "Quận 1", Type = "BatterySwap", Ports = 16, Status = "Hoạt động 24/7" },
+                    new { Id = 3, Name = "Dat Bike Supercharge Station Võ Văn Tần", City = "TP. Hồ Chí Minh", District = "Quận 3", Type = "SuperCharge", Ports = 12, Status = "Hoạt động 24/7" },
+                    new { Id = 4, Name = "Trạm Sạc V-GREEN Royal City Nguyễn Trãi", City = "Hà Nội", District = "Thanh Xuân", Type = "FastCharge", Ports = 30, Status = "Hoạt động 24/7" },
+                    new { Id = 5, Name = "Trạm Đổi Pin & Sạc Nhanh Cầu Rồng", City = "Đà Nẵng", District = "Hải Châu", Type = "BatterySwap", Ports = 18, Status = "Hoạt động 24/7" }
+                };
+                return Results.Ok(stations);
             });
 
             // =========================================================================
