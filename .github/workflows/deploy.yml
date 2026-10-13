@@ -68,8 +68,10 @@ jobs:
           release_archive="$(find artifact -maxdepth 1 -type f -name 'ecobike-linux-x64-*.tar.gz' -print -quit)"
           test -n "$release_archive"
           cp "$release_archive" ecobike-release.tar.gz
-          tar -tzf ecobike-release.tar.gz | grep -Eq '(^|/)MiotoCarRental.dll$'
-          tar -tzf ecobike-release.tar.gz | grep -Eq '(^|/)wwwroot/react/index.html$'
+          tar -tzf ecobike-release.tar.gz > release-contents.txt
+          grep -Eq '(^|/)MiotoCarRental.dll$' release-contents.txt
+          grep -Eq '(^|/)wwwroot/react/index.html$' release-contents.txt
+          echo "Release artifact validation: PASS"
 
       - name: Install, verify, switch and health-check
         shell: bash
@@ -135,7 +137,10 @@ jobs:
           tar -xzf "$transfer_bundle" -C "$release_dir"
           test -f "$release_dir/MiotoCarRental.dll"
           test -f "$release_dir/wwwroot/react/index.html"
-          if find "$release_dir" -type f \( -name '*.db' -o -name '*.db-wal' -o -name '*.db-shm' \) | grep -q .; then
+          sqlite_file="$(find "$release_dir" -type f \
+            \( -name '*.db' -o -name '*.db-wal' -o -name '*.db-shm' \) \
+            -print -quit)"
+          if [ -n "$sqlite_file" ]; then
             echo 'Release contains SQLite data; refusing deployment.'
             exit 1
           fi
