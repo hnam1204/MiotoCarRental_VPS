@@ -19,6 +19,7 @@ namespace MiotoCarRental.Endpoints
             // Redirect legacy /Home routes to Razor Pages root
             app.MapGet("/Home", () => Results.Redirect("/"));
             app.MapGet("/Home/Index", () => Results.Redirect("/"));
+            app.MapGet("/Stations", () => Results.Redirect("/Home/Stations"));
             app.MapGet("/Vehicles/Index", (HttpContext ctx) => Results.Redirect("/Vehicles" + ctx.Request.QueryString));
             app.MapGet("/Host/Index", () => Results.Redirect("/Host"));
             app.MapGet("/Admin/Index", () => Results.Redirect("/Admin"));
