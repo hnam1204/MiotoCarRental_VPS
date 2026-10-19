@@ -1,0 +1,85 @@
+@page "/Bookings/Contract/{id:int}"
+@model MiotoCarRental.ViewModels.BookingDetailsPageModel
+@{
+    Layout = null;
+    var Model = this.Model.Booking;
+    var host = Model.Vehicle?.Host;
+    var renter = Model.Renter;
+    var vehicle = Model.Vehicle;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hợp Đồng Thuê Xe Máy Điện #@Model.BookingCode - EcoBike Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Times New Roman', serif; }
+        .no-print { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @@media print {
+            .no-print { display: none !important; }
+            body { padding: 0; background: white; }
+            .contract-container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 py-8 px-4">
+    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <a href="/Bookings/Details/@Model.Id" class="text-gray-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-1.5">
+            <i class="bi bi-arrow-left"></i> Quay lại chi tiết đơn đặt xe
+        </a>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-2 px-5 rounded-xl shadow-md transition flex items-center gap-2">
+                <i class="bi bi-printer-fill"></i> In Hợp Đồng / Lưu PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-xl border border-gray-200 contract-container leading-relaxed">
+        <div class="text-center mb-8">
+            <p class="font-bold text-sm uppercase tracking-wider">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+            <p class="font-semibold text-xs italic">Độc lập - Tự do - Hạnh phúc</p>
+            <div class="w-24 h-0.5 bg-black mx-auto mt-1 mb-6"></div>
+            <h1 class="text-xl sm:text-2xl font-bold uppercase tracking-tight text-gray-900 mt-4">
+                HỢP ĐỒNG CHO THUÊ XE MÁY ĐIỆN VÀ BIÊN BẢN BÀN GIAO NGUỒN PIN LFP
+            </h1>
+            <p class="text-xs text-gray-500 font-sans mt-1">Mã hợp đồng điện tử: <strong>#EB-HD-@Model.BookingCode</strong> | Ngày lập: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+
+        <div class="space-y-6 text-sm">
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">BÊN A: BÊN CHO THUÊ (CHỦ PHƯƠNG TIỆN / ĐỐI TÁC)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>• Họ và tên: <strong>@(host?.FullName ?? "Nguyễn Văn Chủ Xe")</strong></div>
+                    <div>• Số điện thoại: <strong>@(host?.Phone ?? "0902000002")</strong></div>
+                    <div>• Email: <strong>@(host?.Email ?? "chuxe@gmail.com")</strong></div>
+                    <div>• Địa chỉ bàn giao xe: <strong>@(vehicle?.Address), @(vehicle?.District), @(vehicle?.City)</strong></div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">BÊN B: BÊN THUÊ (KHÁCH HÀNG SỬ DỤNG PHƯƠNG TIỆN)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>• Họ và tên: <strong>@(renter?.FullName ?? "Trần Khách Thuê")</strong></div>
+                    <div>• Số điện thoại: <strong>@(renter?.Phone ?? "0903000003")</strong></div>
+                    <div>• Email: <strong>@(renter?.Email ?? "khachthue@gmail.com")</strong></div>
+                    <div>• Giấy phép lái xe / CCCD: <strong>@(renter?.DriverLicenseNo ?? "GPLX-A1-XAC_THUC")</strong> (Đã xác minh eKYC)</div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-300 pt-4">
+                <h3 class="font-bold text-base uppercase mb-2">ĐIỀU 1: ĐẶC TÍNH PHƯƠNG TIỆN & CHI PHÍ</h3>
+                <div class="text-xs space-y-1.5">
+                    <p>• <strong>Phương tiện:</strong> @(vehicle?.Brand) @(vehicle?.Model) — Biển số: <strong>@(vehicle?.LicensePlate)</strong></p>
+                    <p>• <strong>Thời gian thuê:</strong> @Model.StartTime.ToString("HH:mm dd/MM/yyyy") đến @Model.EndTime.ToString("HH:mm dd/MM/yyyy") (<strong>@Model.TotalDays ngày</strong>)</p>
+                    <p>• <strong>TỔNG GIÁ TRỊ GIAO DỊCH:</strong> <strong class="text-base text-gray-900">@Model.TotalAmount.ToString("N0") VNĐ</strong> (Tiền cọc 30%: <strong>@Model.DepositAmount.ToString("N0") VNĐ</strong>)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

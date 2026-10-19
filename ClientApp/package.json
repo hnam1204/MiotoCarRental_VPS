@@ -1,0 +1,21 @@
+{
+  "name": "ecobike-react-client",
+  "private": true,
+  "version": "2.0.0",
+  "description": "EcoBike ReactJS Frontend connecting to ASP.NET Core 9.0 Web API",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.454.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^7.3.7"
+  }
+}

@@ -1,0 +1,200 @@
+@page "/Host/Create"
+@model MiotoCarRental.ViewModels.CreateVehicleViewModel
+@{
+    ViewData["Title"] = "Đăng xe máy điện cho thuê";
+}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+    <div class="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-8">
+        <div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Kênh Đối Tác Chủ Xe</span>
+            <h1 class="text-2xl font-black text-gray-900 mt-1">Đăng xe máy điện mới</h1>
+            <p class="text-xs text-gray-500 mt-1">Gia tăng thu nhập từ phương tiện xe máy điện nhàn rỗi của bạn</p>
+        </div>
+
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <span class="text-xs font-semibold text-gray-600 block mb-2.5">
+                Điền nhanh thông số theo dòng xe phổ biến:
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <button type="button" onclick="fillModel('VinFast', 'Evo200 (Pin LFP 203km)', 'MidRange', 203, 70, 120000, true, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800', 'Xe máy điện VinFast Evo200 đời mới, pin LFP 203km/sạc, kèm củ sạc di động và 2 nón bảo hiểm.')" 
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">VinFast Evo200</div>
+                    <div class="text-[11px] text-gray-500">120.000đ/ngày • Đô thị</div>
+                </button>
+                <button type="button" onclick="fillModel('VinFast', 'Evo200 Lite (Miễn Bằng A1)', 'Economy', 205, 49, 80000, false, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800', 'Xe máy điện giới hạn 49km/h, không cần bằng lái A1. Thích hợp cho học sinh, sinh viên.')"
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">VinFast Evo200 Lite</div>
+                    <div class="text-[11px] text-emerald-600">80.000đ/ngày • Miễn A1</div>
+                </button>
+                <button type="button" onclick="fillModel('Yadea', 'Ocean', 'Economy', 110, 45, 70000, false, 'Ắc quy Graphene TTFAR', 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800', 'Yadea Ocean nhỏ gọn, không cần bằng lái A1, tiết kiệm cho sinh viên.')"
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">Yadea Ocean</div>
+                    <div class="text-[11px] text-emerald-600">70.000đ/ngày • Miễn A1</div>
+                </button>
+                <button type="button" onclick="fillModel('Dat Bike', 'Quantum (Pin 270km)', 'Touring', 270, 100, 180000, true, 'Pin Lithium 7.2 kWh', 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800', 'Dat Bike Quantum cốp 41L, pin đi 270km/sạc.')"
+                        class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
+                    <div class="font-semibold">Dat Bike Quantum</div>
+                    <div class="text-[11px] text-gray-500">180.000đ/ngày • Đường dài</div>
+                </button>
+            </div>
+        </div>
+
+        <form action="/Host/Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-semibold"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Category" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                        Phân loại nhóm xe
+                    </label>
+                    <select asp-for="Category" id="bikeCategory" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-gray-800">
+                        <option value="Economy">Xe phổ thông (Học sinh/SV - Miễn bằng A1)</option>
+                        <option value="MidRange" selected>Xe đô thị & Đi làm (Tầm trung)</option>
+                        <option value="Touring">Xe đường dài (Đi phượt)</option>
+                        <option value="SportPremium">Xe thể thao & Cao cấp</option>
+                    </select>
+                </div>
+                <div>
+                    <label asp-for="Brand" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Hãng sản xuất</label>
+                    <select asp-for="Brand" id="bikeBrand" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800">
+                        <option value="VinFast">VinFast</option>
+                        <option value="Dat Bike">Dat Bike</option>
+                        <option value="Yadea">Yadea</option>
+                        <option value="Pega">Pega</option>
+                        <option value="Selex">Selex Motors</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Model" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Dòng xe / Tên xe</label>
+                <input asp-for="Model" id="bikeModel" placeholder="vd: Evo200, Feliz S hoặc Quantum" 
+                       class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
+                <span asp-validation-for="Model" class="text-xs text-red-500 mt-1 block"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="LicensePlate" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Biển số xe máy điện</label>
+                    <input asp-for="LicensePlate" id="bikePlate" placeholder="vd: 59-E1 123.45" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800 uppercase" required />
+                    <span asp-validation-for="LicensePlate" class="text-xs text-red-500 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="YearManufacture" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Năm sản xuất</label>
+                    <input asp-for="YearManufacture" type="number" min="2020" max="2026" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label asp-for="BatteryRangeKm" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Cự ly 1 lần sạc (km)</label>
+                    <input asp-for="BatteryRangeKm" id="bikeRange" type="number" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
+                </div>
+                <div>
+                    <label asp-for="MaxSpeedKmH" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Tốc độ tối đa (km/h)</label>
+                    <input asp-for="MaxSpeedKmH" id="bikeSpeed" type="number" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
+                </div>
+                <div>
+                    <label asp-for="BatteryType" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Loại công nghệ Pin</label>
+                    <input asp-for="BatteryType" id="bikeBatteryType" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" />
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-800 block">Quy định Giấy phép lái xe</span>
+                    <span class="text-[11px] text-gray-400">Chọn "Miễn bằng lái" cho các xe vận tốc dưới 50km/h</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer">
+                        <input type="radio" asp-for="RequiresLicenseA1" id="reqA1_True" value="true" checked /> Có bằng A1
+                    </label>
+                    <label class="flex items-center gap-1.5 text-xs font-bold text-blue-700 cursor-pointer">
+                        <input type="radio" asp-for="RequiresLicenseA1" id="reqA1_False" value="false" /> Miễn bằng A1
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="PricePerDay" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Đơn giá thuê theo ngày (VND)</label>
+                    <input asp-for="PricePerDay" id="bikePrice" type="number" step="10000" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-black text-emerald-600" required />
+                </div>
+                <div>
+                    <label asp-for="City" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Thành phố nhận xe</label>
+                    <select asp-for="City" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800">
+                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Address" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Địa chỉ bàn giao xe</label>
+                    <input asp-for="Address" id="bikeAddress" placeholder="vd: 120 Nguyễn Huệ, Phường Bến Nghé" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
+                </div>
+                <div>
+                    <label asp-for="District" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Quận / Huyện</label>
+                    <input asp-for="District" id="bikeDistrict" placeholder="vd: Quận 1" 
+                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" />
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="ThumbnailUrl" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Link hình ảnh xe thực tế</label>
+                <input asp-for="ThumbnailUrl" id="bikeThumbnail" placeholder="https://..." 
+                       class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" />
+            </div>
+
+            <div>
+                <label asp-for="Description" class="block text-xs font-bold text-gray-700 uppercase mb-1.5">Mô tả chi tiết</label>
+                <textarea asp-for="Description" id="bikeDesc" rows="3" placeholder="Mô tả tình trạng xe, phụ kiện tặng kèm..." 
+                          class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-semibold text-gray-800"></textarea>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <input asp-for="InstantBooking" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
+                <label asp-for="InstantBooking" class="text-xs font-bold text-gray-700 cursor-pointer">
+                    Bật chế độ "Đặt xe nhanh"
+                </label>
+            </div>
+
+            <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                <a href="/Host" class="text-xs font-bold text-gray-500 hover:underline">Quay lại danh sách</a>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-8 py-3.5 rounded-2xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5">
+                    <i class="bi bi-check-circle-fill mr-1"></i> XÁC NHẬN ĐĂNG XE MÁY ĐIỆN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function fillModel(brand, model, category, range, speed, price, reqA1, batteryType, imgUrl, desc) {
+        document.getElementById('bikeCategory').value = category || 'MidRange';
+        document.getElementById('bikeBrand').value = brand;
+        document.getElementById('bikeModel').value = model;
+        document.getElementById('bikePlate').value = '59-E' + Math.floor(Math.random() * 9 + 1) + ' ' + Math.floor(Math.random() * 89999 + 10000);
+        document.getElementById('bikeRange').value = range;
+        document.getElementById('bikeSpeed').value = speed;
+        document.getElementById('bikePrice').value = price;
+        document.getElementById('bikeBatteryType').value = batteryType;
+        document.getElementById('bikeThumbnail').value = imgUrl;
+        document.getElementById('bikeAddress').value = '150 Lê Lợi, Phường Bến Thành';
+        document.getElementById('bikeDistrict').value = 'Quận 1';
+        document.getElementById('bikeDesc').value = desc;
+        if (reqA1) { document.getElementById('reqA1_True').checked = true; }
+        else { document.getElementById('reqA1_False').checked = true; }
+    }
+</script>

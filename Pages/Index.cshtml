@@ -1,0 +1,606 @@
+@page "/"
+@model MiotoCarRental.ViewModels.HomeIndexPageModel
+@using MiotoCarRental.Models.Entities
+@{
+    ViewData["Title"] = "Trang chủ - Thuê xe máy điện tự lái";
+    var featuredCars = Model.FeaturedCars;
+}
+
+<!-- Hero Section with Real Visuals & Floating Booking Box -->
+<section class="relative bg-slate-900 overflow-hidden">
+    <!-- Background Image with Dark Gradient Overlay -->
+    <div class="absolute inset-0">
+        <img src="/images/vehicles/vinfast-theon-s.jpg" alt="EcoBike Thuê xe máy điện" class="w-full h-full object-cover opacity-30 object-center" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-950/75"></div>
+    </div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <!-- Left Column: Value Proposition -->
+            <div class="lg:col-span-7 text-white space-y-5">
+                <div class="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold px-3.5 py-1.5 rounded-full">
+                    <i class="bi bi-lightning-charge-fill text-amber-400"></i>
+                    <span>Nền tảng thuê xe máy điện tự lái tại TP.HCM, Hà Nội & Đà Nẵng</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+                    Di chuyển xanh, êm ái &amp; <span class="text-emerald-400">tiết kiệm 80% chi phí</span> xăng xe
+                </h1>
+
+                <p class="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
+                    Hơn <strong class="text-white">50+ mẫu xe máy điện</strong> đời mới từ VinFast, Dat Bike, Selex Motors và Yadea.
+                    Có sẵn phân khúc giới hạn dưới 50km/h <strong class="text-emerald-300">không yêu cầu bằng lái A1</strong> dành cho học sinh, sinh viên.
+                </p>
+
+                <!-- Key Trust Badges -->
+                <div class="grid grid-cols-3 gap-4 pt-2 max-w-xl">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                            <i class="bi bi-shield-check"></i> 100%
+                        </div>
+                        <div class="text-xs text-slate-300 mt-0.5">Xe có bảo hiểm &amp; hợp đồng điện tử</div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                            <i class="bi bi-ev-station"></i> 150+
+                        </div>
+                        <div class="text-xs text-slate-300 mt-0.5">Trạm sạc nhanh &amp; tủ đổi pin 24/7</div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                            <i class="bi bi-clock-history"></i> 5 phút
+                        </div>
+                        <div class="text-xs text-slate-300 mt-0.5">Thủ tục nhận xe CCCD gắn chip</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Stats Preview Card -->
+            <div class="hidden lg:block lg:col-span-5">
+                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 text-white shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3.5 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-bold">
+                                <i class="bi bi-stars"></i>
+                            </span>
+                            <div>
+                                <div class="text-xs text-emerald-300 font-semibold">Mẫu xe được thuê nhiều nhất tuần</div>
+                                <div class="text-sm font-bold">VinFast Evo200 &amp; Dat Bike Quantum</div>
+                            </div>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-semibold px-2.5 py-1 rounded-md">
+                            Sẵn xe giao ngay
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-xs mb-4">
+                        <div class="bg-slate-900/70 rounded-xl p-3 border border-white/10">
+                            <span class="text-slate-400 block">Giá thuê học sinh / SV</span>
+                            <span class="text-base font-bold text-white mt-0.5 block">Từ 70.000đ <small class="text-slate-400 font-normal">/ngày</small></span>
+                        </div>
+                        <div class="bg-slate-900/70 rounded-xl p-3 border border-white/10">
+                            <span class="text-slate-400 block">Quãng đường 1 lần sạc</span>
+                            <span class="text-base font-bold text-emerald-400 mt-0.5 block">165 - 270 km</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-slate-300 bg-slate-900/50 px-3.5 py-2.5 rounded-xl">
+                        <span><i class="bi bi-check-circle-fill text-emerald-400 mr-1"></i> Tặng kèm 02 mũ bảo hiểm + Áo mưa + Bộ sạc theo xe</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Search Box -->
+        <div class="mt-8 bg-white rounded-2xl shadow-xl border border-slate-200 p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-md">
+                        <i class="bi bi-calendar2-check mr-1"></i> Đặt xe tự lái
+                    </span>
+                    <span class="text-xs text-slate-500 hidden sm:inline">Chọn khu vực và thời gian để kiểm tra xe trống theo thời gian thực</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span class="text-slate-400 mr-1">Tìm nhanh:</span>
+                    <a href="/Vehicles?RequiresLicenseA1=false" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-medium transition">Miễn bằng A1</a>
+                    <a href="/Vehicles?Brand=VinFast" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-medium transition">VinFast</a>
+                    <a href="/Vehicles?Brand=Dat+Bike" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-medium transition">Dat Bike (270km)</a>
+                    <a href="/Vehicles?Brand=Selex" class="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-medium transition">Selex Đổi pin</a>
+                </div>
+            </div>
+
+            <form action="/Vehicles" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                        <i class="bi bi-geo-alt text-emerald-600 mr-1"></i> Thành phố nhận xe
+                    </label>
+                    <select name="City" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white">
+                        <option value="">Tất cả thành phố</option>
+                        <option value="TP. Hồ Chí Minh" selected>TP. Hồ Chí Minh</option>
+                        <option value="Hà Nội">Hà Nội</option>
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                        <i class="bi bi-Grid text-emerald-600 mr-1"></i> Phân khúc xe
+                    </label>
+                    <select name="Category" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white">
+                        <option value="">Tất cả dòng xe</option>
+                        <option value="Economy">Học sinh / SV (Miễn A1)</option>
+                        <option value="MidRange">Đô thị &amp; Đi làm</option>
+                        <option value="Touring">Đường dài &amp; Đi phượt</option>
+                        <option value="SportPremium">Thể thao Cao cấp</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                        <i class="bi bi-calendar-event text-emerald-600 mr-1"></i> Ngày nhận xe
+                    </label>
+                    <input type="date" name="StartDate" value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                           class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                        <i class="bi bi-calendar-check text-emerald-600 mr-1"></i> Ngày trả xe
+                    </label>
+                    <input type="date" name="EndDate" value="@DateTime.Today.AddDays(3).ToString("yyyy-MM-dd")"
+                           class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-600 focus:bg-white" />
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition text-sm flex items-center justify-center gap-2 h-[42px]">
+                        <i class="bi bi-search"></i> Tìm xe trống ngay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Promotional Vouchers Section (Like Mioto.vn Promotions) -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Ưu đãi &amp; Mã khuyến mãi trong tháng</h2>
+            <p class="text-xs sm:text-sm text-slate-500">Sao chép mã bên dưới và nhập tại bước xác nhận đặt xe để được giảm giá trực tiếp</p>
+        </div>
+        <span id="copyToast" class="hidden text-xs font-semibold bg-emerald-600 text-white px-3 py-1.5 rounded-lg shadow-sm">
+            <i class="bi bi-check2-circle mr-1"></i> Đã sao chép mã giảm giá!
+        </span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Promo 1 -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-emerald-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-10%</span>
+                    <span class="text-[10px] uppercase font-bold text-emerald-600 mt-1 whitespace-nowrap">ĐƠN ĐẦU</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">ECOBIKE10</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Giảm 10% đơn thuê đầu</h3>
+                    <p class="text-xs text-slate-500 truncate">Áp dụng mọi dòng xe điện</p>
+                </div>
+            </div>
+            <button type="button" onclick="copyVoucher('ECOBIKE10')" class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+                Lưu mã
+            </button>
+        </div>
+
+        <!-- Promo 2 -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-blue-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-15%</span>
+                    <span class="text-[10px] uppercase font-bold text-blue-600 mt-1 whitespace-nowrap">HỌC SINH</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">SINHVIEN15</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Ưu đãi Học sinh - SV</h3>
+                    <p class="text-xs text-slate-500 truncate">Xe &lt;50km/h miễn bằng A1</p>
+                </div>
+            </div>
+            <button type="button" onclick="copyVoucher('SINHVIEN15')" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+                Lưu mã
+            </button>
+        </div>
+
+        <!-- Promo 3 -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3 hover:border-amber-500 hover:shadow-md transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-16 h-16 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex flex-col items-center justify-center shrink-0 font-bold">
+                    <span class="text-xl font-black leading-none tracking-tight">-20%</span>
+                    <span class="text-[10px] uppercase font-bold text-amber-600 mt-1 whitespace-nowrap">TỪ 3 NGÀY</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <span class="inline-block text-[11px] font-bold font-mono text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">XANH20</span>
+                        <span class="text-[10px] text-slate-400">HSD: 31/12</span>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900 truncate">Thuê từ 3 ngày giảm 20%</h3>
+                    <p class="text-xs text-slate-500 truncate">Miễn phí đổi pin tại trạm</p>
+                </div>
+            </div>
+            <button type="button" onclick="copyVoucher('XANH20')" class="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-600 hover:text-white border border-amber-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+                Lưu mã
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 4 Categories -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex items-center justify-between mb-5">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Danh mục xe theo nhu cầu sử dụng</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Phân loại rõ ràng theo vận tốc giới hạn, dung lượng pin LFP và quy định bằng lái</p>
+        </div>
+        <a href="/Vehicles" class="text-sm font-semibold text-emerald-600 hover:underline hidden sm:inline">Xem tất cả dòng xe &rarr;</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="/Vehicles?Category=@VehicleCategory.Economy"
+           class="bg-white p-5 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition flex flex-col justify-between group">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:bg-emerald-600 group-hover:text-white transition">
+                        <i class="bi bi-mortarboard"></i>
+                    </span>
+                    <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md">Miễn bằng A1</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-700">Phổ thông &amp; Học sinh</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Giới hạn dưới 50km/h, trọng lượng nhẹ dễ dắt (VinFast Evo200 Lite, Yadea Odora, Pega)</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Giá chỉ từ <strong class="text-slate-900 text-sm">70.000đ</strong>/ngày</span>
+                <span class="text-emerald-600 font-semibold">Chọn xe &rarr;</span>
+            </div>
+        </a>
+
+        <a href="/Vehicles?Category=@VehicleCategory.MidRange"
+           class="bg-white p-5 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition flex flex-col justify-between group">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-xl group-hover:bg-blue-600 group-hover:text-white transition">
+                        <i class="bi bi-briefcase"></i>
+                    </span>
+                    <span class="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md">Cốp rộng 25L</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-700">Đô thị &amp; Đi làm</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Quãng đường 165-205km/sạc, chống nước IP67 đi mưa ngập an toàn (Feliz S, Evo200)</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Giá chỉ từ <strong class="text-slate-900 text-sm">100.000đ</strong>/ngày</span>
+                <span class="text-emerald-600 font-semibold">Chọn xe &rarr;</span>
+            </div>
+        </a>
+
+        <a href="/Vehicles?Category=@VehicleCategory.Touring"
+           class="bg-white p-5 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition flex flex-col justify-between group">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-xl group-hover:bg-amber-600 group-hover:text-white transition">
+                        <i class="bi bi-compass"></i>
+                    </span>
+                    <span class="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-md">Pin 200-270km</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-700">Đường dài &amp; Đi phượt</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Pin LFP dung lượng cao hoặc đổi pin 2 phút tại trạm (Dat Bike Quantum, Selex Camel)</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Giá chỉ từ <strong class="text-slate-900 text-sm">130.000đ</strong>/ngày</span>
+                <span class="text-emerald-600 font-semibold">Chọn xe &rarr;</span>
+            </div>
+        </a>
+
+        <a href="/Vehicles?Category=@VehicleCategory.SportPremium"
+           class="bg-white p-5 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition flex flex-col justify-between group">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center text-xl group-hover:bg-rose-600 group-hover:text-white transition">
+                        <i class="bi bi-speedometer2"></i>
+                    </span>
+                    <span class="text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-md">Phanh ABS 2 kênh</span>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 group-hover:text-emerald-700">Thể thao &amp; Cao cấp</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Công suất 7100W, khóa thông minh PAAK, tốc độ tối đa 100km/h (VinFast Theon S, Vento S)</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Giá chỉ từ <strong class="text-slate-900 text-sm">180.000đ</strong>/ngày</span>
+                <span class="text-emerald-600 font-semibold">Chọn xe &rarr;</span>
+            </div>
+        </a>
+    </div>
+</section>
+
+<!-- Featured Vehicles -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-2">
+        <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Xe máy điện nổi bật đang sẵn sàng</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Tất cả phương tiện đều được sạc đầy trên 85% pin và kiểm tra phanh trước khi bàn giao</p>
+        </div>
+        <a href="/Vehicles" class="text-sm font-semibold text-emerald-600 hover:underline">Xem toàn bộ danh sách (@featuredCars.Count()+ xe) &rarr;</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach (var car in featuredCars)
+        {
+            <div class="bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition flex flex-col justify-between group">
+                <div class="relative h-52 bg-slate-100 overflow-hidden">
+                    <img src="@car.ThumbnailUrl" alt="@car.Brand @car.Model" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                        @if (!car.RequiresLicenseA1)
+                        {
+                            <span class="bg-emerald-600 text-white text-xs font-semibold px-2.5 py-1 rounded shadow-sm">
+                                <i class="bi bi-check2-circle mr-0.5"></i> Miễn bằng A1
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="bg-slate-900/80 text-white text-xs font-medium px-2.5 py-1 rounded">
+                                Yêu cầu GPLX A1
+                            </span>
+                        }
+                        <span class="bg-white/95 text-slate-800 text-xs font-semibold px-2.5 py-1 rounded shadow-sm">
+                            @car.BatteryType
+                        </span>
+                    </div>
+                    <span class="absolute bottom-3 left-3 bg-slate-900/75 backdrop-blur-xs text-white text-xs px-2.5 py-1 rounded flex items-center gap-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-400"></i> @car.District, @car.City
+                    </span>
+                    <span class="absolute bottom-3 right-3 bg-emerald-600 text-white text-[11px] font-semibold px-2 py-0.5 rounded">
+                        <i class="bi bi-lightning-fill"></i> Giao nhanh
+                    </span>
+                </div>
+
+                <div class="p-5 flex flex-col flex-grow justify-between">
+                    <div>
+                        <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                            <span>@car.Brand • Đời @car.YearManufacture • Biển số <strong class="text-slate-700">@car.LicensePlate</strong></span>
+                            <span class="text-amber-500 font-semibold"><i class="bi bi-star-fill"></i> 4.9</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition">
+                            <a href="/Vehicles/Details/@car.Id">@car.Brand @car.Model</a>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">@car.Description</p>
+
+                        <div class="grid grid-cols-3 gap-2 py-2.5 px-3 my-3.5 bg-slate-50 rounded-lg border border-slate-100 text-xs">
+                            <div>
+                                <div class="text-slate-400 text-[11px]">Quãng đường</div>
+                                <div class="font-bold text-slate-800"><i class="bi bi-battery-charging text-emerald-600 mr-0.5"></i>@car.BatteryRangeKm km</div>
+                            </div>
+                            <div class="border-x border-slate-200 pl-2">
+                                <div class="text-slate-400 text-[11px]">Vận tốc tối đa</div>
+                                <div class="font-bold text-slate-800">@car.MaxSpeedKmH km/h</div>
+                            </div>
+                            <div class="pl-1">
+                                <div class="text-slate-400 text-[11px]">Thế chấp</div>
+                                <div class="font-bold text-emerald-700">Miễn cọc tiền</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <div>
+                            <span class="text-xs text-slate-400 line-through block">@((car.PricePerDay * 1.15m).ToString("N0"))đ</span>
+                            <span class="text-xl font-bold text-emerald-600">@car.PricePerDay.ToString("N0")đ</span>
+                            <span class="text-xs text-slate-500"> / ngày</span>
+                        </div>
+                        <a href="/Vehicles/Details/@car.Id"
+                           class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg transition shadow-xs flex items-center gap-1.5">
+                            <span>Đặt xe ngay</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Interactive Cost Comparison Calculator: Electric vs Gasoline -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="bg-slate-900 rounded-2xl p-6 sm:p-8 lg:p-10 text-white border border-slate-800 shadow-lg">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div class="lg:col-span-6 space-y-4">
+                <span class="inline-block text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-md">
+                    Công cụ ước tính chi phí nhiên liệu
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold">Vì sao thuê xe máy điện tiết kiệm hơn xe tay ga chạy xăng?</h2>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    Với 1 lần sạc đầy pin LFP (chỉ tốn khoảng 6.000đ - 9.000đ tiền điện cho 180km), bạn tiết kiệm được tới 85% chi phí nhiên liệu so với đổ xăng RON 95 truyền thống.
+                </p>
+
+                <!-- Sliders -->
+                <div class="space-y-4 pt-2 bg-slate-800/70 p-5 rounded-xl border border-slate-700">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1.5">
+                            <span class="text-slate-300">Số ngày dự kiến thuê xe:</span>
+                            <span id="calcDaysLabel" class="text-emerald-400 font-bold text-sm">5 ngày</span>
+                        </div>
+                        <input id="calcDaysInput" type="range" min="1" max="30" value="5" oninput="updateSavingsCalc()"
+                               class="w-full accent-emerald-500 cursor-pointer" />
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1.5">
+                            <span class="text-slate-300">Quãng đường di chuyển trung bình / ngày:</span>
+                            <span id="calcKmLabel" class="text-emerald-400 font-bold text-sm">50 km/ngày</span>
+                        </div>
+                        <input id="calcKmInput" type="range" min="15" max="150" step="5" value="50" oninput="updateSavingsCalc()"
+                               class="w-full accent-emerald-500 cursor-pointer" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
+                        <div class="text-xs text-slate-400 uppercase font-semibold">Xe máy xăng truyền thống</div>
+                        <div class="text-xs text-slate-400 mt-1">Tiêu hao ~2.2 lít xăng / 100km</div>
+                        <div id="gasCostOutput" class="text-2xl font-bold text-rose-400 mt-3">137.500đ</div>
+                        <div class="text-xs text-slate-400 mt-1">Tiền xăng dự kiến cho chuyến đi</div>
+                    </div>
+
+                    <div class="bg-emerald-950/80 border border-emerald-500/40 rounded-xl p-5">
+                        <div class="text-xs text-emerald-300 uppercase font-semibold">Xe máy điện EcoBike</div>
+                        <div class="text-xs text-emerald-200/80 mt-1">Sạc điện tiêu chuẩn / Trạm sạc</div>
+                        <div id="evCostOutput" class="text-2xl font-bold text-emerald-400 mt-3">18.000đ</div>
+                        <div class="text-xs text-emerald-200/80 mt-1">Tiền sạc điện cho cả hành trình</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 bg-emerald-600/20 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="text-xs text-emerald-300 font-medium">Tổng số tiền nhiên liệu tiết kiệm được:</div>
+                        <div id="totalSavedOutput" class="text-xl font-bold text-white">Tiết kiệm 119.500đ &bull; Giảm 14.5 kg khí thải CO₂</div>
+                    </div>
+                    <a href="/Vehicles" class="shrink-0 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-lg transition">
+                        Chọn xe ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Pickup Locations & Rental Process -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- 4 Steps -->
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 p-6 sm:p-7">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-1">Quy trình thuê &amp; nhận bàn giao xe</h2>
+            <p class="text-xs text-slate-500 mb-6">Minh bạch tình trạng pin và ODO công-tơ-mét qua biên bản điện tử</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+                        <h3 class="font-bold text-slate-900 text-sm">Chọn xe &amp; Xác thực GPLX</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Tìm xe theo quận/huyện. Nếu thuê xe trên 50km/h, cập nhật số GPLX A1 trong mục Hồ sơ để được duyệt tự động.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+                        <h3 class="font-bold text-slate-900 text-sm">Đặt lịch &amp; Ký hợp đồng</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Áp dụng mã khuyến mãi, đặt cọc giữ xe 30% và nhận Hợp đồng thuê xe điện tử có đầy đủ thông tin pháp lý.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+                        <h3 class="font-bold text-slate-900 text-sm">Check-in Nhận xe (Pin &amp; ODO)</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Chủ xe bàn giao xe kèm bộ sạc, 02 mũ bảo hiểm và ghi nhận chính xác số Km ODO + % Pin lúc giao lên hệ thống.
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">4</span>
+                        <h3 class="font-bold text-slate-900 text-sm">Trả xe &amp; Quyết toán minh bạch</h3>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Đối chiếu ODO và mức pin khi trả xe. Hoàn tất chuyến đi và để lại đánh giá chất lượng xe cho cộng đồng.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Reviews -->
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 p-6 sm:p-7 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Khách hàng đánh giá</h2>
+                        <p class="text-xs text-slate-500">Nhận xét thực tế từ người thuê xe</p>
+                    </div>
+                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-2.5 py-1 rounded-md">
+                        <i class="bi bi-star-fill text-amber-500"></i> 4.9 / 5.0
+                    </span>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-bold text-slate-900">Nguyễn Minh Khôi <span class="font-normal text-slate-500">• Sinh viên ĐH Bách Khoa</span></span>
+                            <span class="text-amber-500"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                        </div>
+                        <p class="text-slate-600 leading-relaxed">"Mình thuê chiếc VinFast Evo200 Lite đi học cả tuần ở Thủ Đức. Xe êm, cốp để vừa balo laptop, sạc 1 lần đi được gần 4 ngày mới phải sạc lại."</p>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-bold text-slate-900">Trần Thu Hà <span class="font-normal text-slate-500">• Du lịch Đà Nẵng</span></span>
+                            <span class="text-amber-500"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                        </div>
+                        <p class="text-slate-600 leading-relaxed">"Nhận xe ngay Quận Hải Châu, chủ xe giao đúng giờ, pin 100%. Leo đèo Sơn Trà bằng chiếc Dat Bike Quantum cực khỏe, không lo hết pin giữa chừng."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <div class="text-xs text-slate-600">
+                    Bạn có xe máy điện nhàn rỗi? <strong class="text-slate-900">Nhận 85% doanh thu mỗi chuyến</strong>
+                </div>
+                <a href="/Host/BecomeHost" class="shrink-0 text-xs font-semibold text-emerald-700 hover:underline">
+                    Đăng ký Chủ xe &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function copyVoucher(code) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code);
+        }
+        const toast = document.getElementById('copyToast');
+        if (toast) {
+            toast.textContent = 'Đã sao chép mã: ' + code;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+    }
+
+    function updateSavingsCalc() {
+        const days = parseInt(document.getElementById('calcDaysInput').value || '5', 10);
+        const kmPerDay = parseInt(document.getElementById('calcKmInput').value || '50', 10);
+        const totalKm = days * kmPerDay;
+
+        document.getElementById('calcDaysLabel').textContent = days + ' ngày';
+        document.getElementById('calcKmLabel').textContent = kmPerDay + ' km/ngày (Tổng ' + totalKm + ' km)';
+
+        // Gas scooter: ~550 VND / km; EV: ~75 VND / km
+        const gasCost = Math.round((totalKm * 550) / 1000) * 1000;
+        const evCost = Math.round((totalKm * 75) / 1000) * 1000;
+        const saved = Math.max(0, gasCost - evCost);
+        const co2Kg = (totalKm * 0.058).toFixed(1);
+
+        document.getElementById('gasCostOutput').textContent = gasCost.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('evCostOutput').textContent = evCost.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('totalSavedOutput').textContent =
+            'Tiết kiệm ' + saved.toLocaleString('vi-VN') + 'đ • Giảm ' + co2Kg + ' kg khí thải CO₂';
+    }
+</script>

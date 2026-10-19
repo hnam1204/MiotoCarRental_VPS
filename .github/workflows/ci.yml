@@ -1,0 +1,81 @@
+name: EcoBike CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: npm
+          cache-dependency-path: ClientApp/package-lock.json
+
+      - name: Install frontend dependencies from lockfile
+        working-directory: ClientApp
+        run: npm ci
+
+      - name: Build React frontend
+        working-directory: ClientApp
+        run: npm run build
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore .NET dependencies for Linux x64
+        run: dotnet restore MiotoCarRental.sln --runtime linux-x64
+
+      - name: Build Release
+        run: dotnet build MiotoCarRental.sln --configuration Release --no-restore
+
+      - name: Run automated tests
+        run: dotnet test MiotoCarRental.sln --configuration Release --no-build --no-restore --logger "console;verbosity=normal"
+
+      - name: Publish self-contained Linux x64 release
+        run: dotnet publish MiotoCarRental.csproj --configuration Release --runtime linux-x64 --self-contained true --no-restore --output ./artifacts/publish
+
+      - name: Validate release contents
+        shell: bash
+        run: |
+          test -f artifacts/publish/MiotoCarRental.dll
+          test -f artifacts/publish/wwwroot/react/index.html
+          compgen -G 'artifacts/publish/wwwroot/react/assets/index-*.js' > /dev/null
+          if find artifacts/publish -type f \( -name '*.db' -o -name '*.db-wal' -o -name '*.db-shm' \) | grep -q .; then
+            echo 'SQLite files must not be included in a release artifact.'
+            exit 1
+          fi
+          if grep -R -n -E 'BEGIN (OPENSSH|RSA|EC) PRIVATE KEY|ASPNETCORE_DEMO' artifacts/publish --include='*.json' --include='*.config' --include='*.xml' --include='*.txt'; then
+            echo 'Potential secret material found in the release artifact.'
+            exit 1
+          fi
+
+      - name: Package versioned release artifact
+        run: tar -czf "ecobike-linux-x64-${{ github.run_id }}.tar.gz" -C artifacts/publish .
+
+      - name: Upload versioned release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecobike-linux-x64-${{ github.run_id }}
+          path: ecobike-linux-x64-${{ github.run_id }}.tar.gz
+          if-no-files-found: error
+          retention-days: 14

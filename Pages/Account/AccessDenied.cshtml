@@ -1,0 +1,77 @@
+@page "/Account/AccessDenied"
+@model MiotoCarRental.ViewModels.AccessDeniedPageModel
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+    var returnUrl = Model.ReturnUrl ?? "";
+    var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Khách";
+    var userName = User.Identity?.Name ?? "Chưa đăng nhập";
+}
+
+<div class="max-w-lg mx-auto px-4 sm:px-6 py-14">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8 space-y-5">
+        <div class="text-center space-y-2">
+            <div class="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <h1 class="text-xl font-bold text-gray-900">Không có quyền truy cập</h1>
+            <p class="text-xs text-gray-500">
+                Tài khoản hiện tại (<strong>@userName</strong> - Vai trò: <strong>@currentRole</strong>) không có quyền truy cập vào trang này.
+            </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <a href="/"
+               class="w-full sm:w-1/2 py-2.5 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium text-xs transition text-center">
+                Về trang chủ
+            </a>
+
+            @if (currentRole == "Renter")
+            {
+                <form action="/Account/UpgradeToHost" method="post" class="w-full sm:w-1/2">
+                    @Html.AntiForgeryToken()
+                    <button type="submit"
+                            class="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition text-center">
+                        Đăng ký làm chủ xe
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a href="/Account/Login"
+                   class="w-full sm:w-1/2 py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition text-center">
+                    Đăng nhập tài khoản khác
+                </a>
+            }
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+            <div class="text-xs font-medium text-gray-500 mb-2">Chuyển tài khoản:</div>
+            <div class="grid grid-cols-3 gap-2">
+                <form action="/Account/QuickLogin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="email" value="khachthue@gmail.com" />
+                    <input type="hidden" name="returnUrl" value="/" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Khách thuê
+                    </button>
+                </form>
+                <form action="/Account/QuickLogin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="email" value="chuxe@gmail.com" />
+                    <input type="hidden" name="returnUrl" value="@(string.IsNullOrEmpty(returnUrl) ? "/Host" : returnUrl)" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Chủ xe
+                    </button>
+                </form>
+                <form action="/Account/QuickLogin" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="email" value="admin@mioto.vn" />
+                    <input type="hidden" name="returnUrl" value="@(string.IsNullOrEmpty(returnUrl) ? "/Admin" : returnUrl)" />
+                    <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
+                        Quản trị
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

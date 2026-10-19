@@ -1,0 +1,168 @@
+name: EcoBike Approved Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ci_run_id:
+        description: 'Successful CI workflow run ID whose artifact should be deployed'
+        required: true
+        type: string
+      release_label:
+        description: 'Optional release label for auditability'
+        required: false
+        default: manual
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ecobike-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ecobike-production
+    env:
+      ECOBIKE_ROOT: /srv/ecobike
+      ECOBIKE_SERVICE: ecobike.service
+      ECOBIKE_HEALTH_URL: http://127.0.0.1:5081/health
+
+    steps:
+      - name: Verify source run is successful EcoBike CI on master
+        uses: actions/github-script@v7
+        env:
+          SOURCE_RUN_ID: ${{ inputs.ci_run_id }}
+        with:
+          script: |
+            const sourceRunId = process.env.SOURCE_RUN_ID;
+            if (!/^\d+$/.test(sourceRunId)) {
+              core.setFailed('ci_run_id must contain only digits.');
+              return;
+            }
+
+            const { data: run } = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: Number(sourceRunId)
+            });
+
+            if (run.name !== 'EcoBike CI' || run.conclusion !== 'success' || run.event !== 'push' || run.head_branch !== 'master') {
+              core.setFailed('The selected run is not a successful EcoBike CI push from master.');
+            }
+
+      - name: Download approved CI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ecobike-linux-x64-${{ inputs.ci_run_id }}
+          path: artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.ci_run_id }}
+
+      - name: Prepare transfer bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_archive="$(find artifact -maxdepth 1 -type f -name 'ecobike-linux-x64-*.tar.gz' -print -quit)"
+          test -n "$release_archive"
+          cp "$release_archive" ecobike-release.tar.gz
+          tar -tzf ecobike-release.tar.gz > release-contents.txt
+          grep -Eq '(^|/)MiotoCarRental.dll$' release-contents.txt
+          grep -Eq '(^|/)wwwroot/react/index.html$' release-contents.txt
+          echo "Release artifact validation: PASS"
+
+      - name: Install, verify, switch and health-check
+        shell: bash
+        env:
+          SSH_KEY: ${{ secrets.ECOBIKE_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.ECOBIKE_SSH_KNOWN_HOSTS }}
+          SSH_HOST: ${{ vars.ECOBIKE_SSH_HOST }}
+          SSH_USER: ${{ vars.ECOBIKE_SSH_USER }}
+          SSH_PORT: ${{ vars.ECOBIKE_SSH_PORT }}
+          RELEASE_LABEL: ${{ inputs.release_label }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          : "${SSH_KEY:?ECOBIKE_SSH_PRIVATE_KEY is required}"
+          : "${SSH_KNOWN_HOSTS:?ECOBIKE_SSH_KNOWN_HOSTS is required}"
+          : "${SSH_HOST:?ECOBIKE_SSH_HOST is required}"
+          : "${SSH_USER:?ECOBIKE_SSH_USER is required}"
+          : "${SSH_PORT:?ECOBIKE_SSH_PORT is required}"
+          case "$SSH_HOST" in
+            ''|*[!A-Za-z0-9._:-]*) echo 'ECOBIKE_SSH_HOST contains unsupported characters.'; exit 1 ;;
+          esac
+          case "$SSH_USER" in
+            ''|*[!A-Za-z0-9._-]*) echo 'ECOBIKE_SSH_USER contains unsupported characters.'; exit 1 ;;
+          esac
+          case "$SSH_PORT" in
+            ''|*[!0-9]*) echo 'ECOBIKE_SSH_PORT must contain only digits.'; exit 1 ;;
+          esac
+
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_KEY" > "$HOME/.ssh/ecobike_key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/ecobike_known_hosts"
+          chmod 600 "$HOME/.ssh/ecobike_key" "$HOME/.ssh/ecobike_known_hosts"
+
+          ssh_args=(-i "$HOME/.ssh/ecobike_key" -o UserKnownHostsFile="$HOME/.ssh/ecobike_known_hosts" -o StrictHostKeyChecking=yes -p "$SSH_PORT")
+          remote="$SSH_USER@$SSH_HOST"
+          transfer_path="/tmp/ecobike-release-$WORKFLOW_RUN_ID.tar.gz"
+          scp -i "$HOME/.ssh/ecobike_key" \
+          -o UserKnownHostsFile="$HOME/.ssh/ecobike_known_hosts" \
+          -o StrictHostKeyChecking=yes \
+          -P "$SSH_PORT" \
+          ecobike-release.tar.gz "$remote:$transfer_path"
+          safe_label="$(printf '%s' "$RELEASE_LABEL" | tr -cd 'A-Za-z0-9._-' | cut -c1-40)"
+          test -n "$safe_label"
+          release_id="$WORKFLOW_RUN_ID-$safe_label"
+          ssh "${ssh_args[@]}" "$remote" bash -s -- "$release_id" "$transfer_path" "$ECOBIKE_ROOT" "$ECOBIKE_SERVICE" "$ECOBIKE_HEALTH_URL" <<'REMOTE_SCRIPT'
+          set -eu
+          requested_id="$1"
+          transfer_bundle="$2"
+          ecobike_root="$3"
+          ecobike_service="$4"
+          health_url="$5"
+          safe_release_id="$(printf '%s' "$requested_id" | tr -cd 'A-Za-z0-9._-')"
+          test -n "$safe_release_id"
+          release_dir="$ecobike_root/releases/$safe_release_id"
+          test ! -e "$release_dir"
+          previous_target=""
+          if [ -L "$ecobike_root/current" ]; then
+            previous_target="$(readlink -f "$ecobike_root/current" || true)"
+          fi
+
+          trap 'rm -f "$transfer_bundle"' EXIT
+          mkdir -p "$release_dir"
+          tar -xzf "$transfer_bundle" -C "$release_dir"
+          test -f "$release_dir/MiotoCarRental.dll"
+          test -f "$release_dir/wwwroot/react/index.html"
+          sqlite_file="$(find "$release_dir" -type f \
+            \( -name '*.db' -o -name '*.db-wal' -o -name '*.db-shm' \) \
+            -print -quit)"
+          if [ -n "$sqlite_file" ]; then
+            echo 'Release contains SQLite data; refusing deployment.'
+            exit 1
+          fi
+
+          ln -sfn "$release_dir" "$ecobike_root/current"
+          healthy=0
+          if sudo systemctl restart "$ecobike_service"; then
+            for attempt in 1 2 3 4 5; do
+              if curl --fail --silent --show-error --max-time 5 "$health_url"; then
+                healthy=1
+                break
+              fi
+              sleep 2
+            done
+          fi
+          if [ "$healthy" -ne 1 ]; then
+            if [ -n "$previous_target" ]; then
+              ln -sfn "$previous_target" "$ecobike_root/current"
+              sudo systemctl restart "$ecobike_service"
+            else
+              rm -f "$ecobike_root/current"
+            fi
+            exit 1
+          fi
+          REMOTE_SCRIPT
