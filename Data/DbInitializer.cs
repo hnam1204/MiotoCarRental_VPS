@@ -1,18 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using MiotoCarRental.Models.Entities;
-using MiotoCarRental.Services;
 
 namespace MiotoCarRental.Data
 {
     public static class DbInitializer
     {
-        public static void Initialize(MiotoDbContext context, bool seedDemoData, IPasswordService passwordService)
+        public static void Initialize(MiotoDbContext context)
         {
-            if (!seedDemoData)
-            {
-                return;
-            }
-
             context.Database.EnsureCreated();
 
             if (context.Vehicles.Any())
@@ -26,7 +20,7 @@ namespace MiotoCarRental.Data
                 FullName = "Quản Trị Viên EcoBike",
                 Email = "admin@mioto.vn",
                 Phone = "0901000001",
-                PasswordHash = string.Empty,
+                PasswordHash = "admin123",
                 Role = UserRole.Admin,
                 DriverLicenseNo = "GPLX-A1-ADMIN",
                 DriverLicenseStatus = DriverLicenseStatus.Approved
@@ -37,7 +31,7 @@ namespace MiotoCarRental.Data
                 FullName = "Nguyễn Văn Chủ Xe (Hoàng Long)",
                 Email = "chuxe@gmail.com",
                 Phone = "0902000002",
-                PasswordHash = string.Empty,
+                PasswordHash = "host123",
                 Role = UserRole.Host,
                 DriverLicenseNo = "GPLX-A1-79A123",
                 DriverLicenseStatus = DriverLicenseStatus.Approved
@@ -48,16 +42,13 @@ namespace MiotoCarRental.Data
                 FullName = "Trần Khách Thuê (Minh Tuấn)",
                 Email = "khachthue@gmail.com",
                 Phone = "0903000003",
-                PasswordHash = string.Empty,
+                PasswordHash = "renter123",
                 Role = UserRole.Renter,
                 DriverLicenseNo = "GPLX-A1-88B999",
                 DriverLicenseStatus = DriverLicenseStatus.Approved
             };
 
             context.Users.AddRange(admin, host, renter);
-            admin.PasswordHash = passwordService.HashPassword(admin, "admin123");
-            host.PasswordHash = passwordService.HashPassword(host, "host123");
-            renter.PasswordHash = passwordService.HashPassword(renter, "renter123");
             context.SaveChanges();
 
             // 2. Seed Xe máy điện (12 xe phân bổ 4 nhóm: Phổ thông/Không bằng lái, Đô thị, Đường dài, Thể thao)

@@ -22,17 +22,17 @@
                     <div class="font-semibold">VinFast Evo200</div>
                     <div class="text-[11px] text-gray-500">120.000đ/ngày • Đô thị</div>
                 </button>
-                <button type="button" onclick="fillModel('VinFast', 'Evo200 Lite (Miễn Bằng A1)', 'Economy', 205, 49, 80000, false, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800', 'Xe máy điện giới hạn 49km/h, không cần bằng lái A1. Thích hợp cho học sinh, sinh viên.')"
+                <button type="button" onclick="fillModel('VinFast', 'Evo200 Lite (Miễn Bằng A1)', 'Economy', 205, 49, 80000, false, 'Pin LFP 3.5 kWh', 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800', 'Xe máy điện giới hạn 49km/h, không cần bằng lái A1. Thích hợp cho học sinh, sinh viên.')" 
                         class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
                     <div class="font-semibold">VinFast Evo200 Lite</div>
                     <div class="text-[11px] text-emerald-600">80.000đ/ngày • Miễn A1</div>
                 </button>
-                <button type="button" onclick="fillModel('Yadea', 'Ocean', 'Economy', 110, 45, 70000, false, 'Ắc quy Graphene TTFAR', 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800', 'Yadea Ocean nhỏ gọn, không cần bằng lái A1, tiết kiệm cho sinh viên.')"
+                <button type="button" onclick="fillModel('Yadea', 'Ocean', 'Economy', 110, 45, 70000, false, 'Ắc quy Graphene TTFAR', 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800', 'Yadea Ocean nhỏ gọn, không cần bằng lái A1, tiết kiệm cho sinh viên.')" 
                         class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
                     <div class="font-semibold">Yadea Ocean</div>
                     <div class="text-[11px] text-emerald-600">70.000đ/ngày • Miễn A1</div>
                 </button>
-                <button type="button" onclick="fillModel('Dat Bike', 'Quantum (Pin 270km)', 'Touring', 270, 100, 180000, true, 'Pin Lithium 7.2 kWh', 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800', 'Dat Bike Quantum cốp 41L, pin đi 270km/sạc.')"
+                <button type="button" onclick="fillModel('Dat Bike', 'Quantum (Pin 270km)', 'Touring', 270, 100, 180000, true, 'Pin Lithium 7.2 kWh', 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800', 'Dat Bike Quantum cốp 41L, pin đi 270km/sạc.')" 
                         class="bg-white hover:bg-emerald-50 border border-gray-200 text-gray-800 text-xs font-medium p-2.5 rounded-lg transition text-left">
                     <div class="font-semibold">Dat Bike Quantum</div>
                     <div class="text-[11px] text-gray-500">180.000đ/ngày • Đường dài</div>
@@ -41,7 +41,6 @@
         </div>
 
         <form action="/Host/Create" method="post" class="space-y-6">
-            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 text-red-700 text-xs rounded-xl font-semibold"></div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

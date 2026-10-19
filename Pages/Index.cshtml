@@ -6,86 +6,84 @@
     var featuredCars = Model.FeaturedCars;
 }
 
-<!-- Hero Section with Real Visuals & Floating Booking Box -->
-<section class="relative bg-slate-900 overflow-hidden">
-    <!-- Background Image with Dark Gradient Overlay -->
-    <div class="absolute inset-0">
-        <img src="/images/vehicles/vinfast-theon-s.jpg" alt="EcoBike Thuê xe máy điện" class="w-full h-full object-cover opacity-30 object-center" />
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-950/75"></div>
-    </div>
+<!-- Hero Section with Fresh Bright Emerald Theme & Floating Booking Box -->
+<section class="relative bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 overflow-hidden">
+    <!-- Subtle Decorative Light Circles -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-amber-300/15 blur-2xl pointer-events-none"></div>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 lg:pt-16 lg:pb-20">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 lg:pt-14 lg:pb-16">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <!-- Left Column: Value Proposition -->
             <div class="lg:col-span-7 text-white space-y-5">
-                <div class="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold px-3.5 py-1.5 rounded-full">
-                    <i class="bi bi-lightning-charge-fill text-amber-400"></i>
-                    <span>Nền tảng thuê xe máy điện tự lái tại TP.HCM, Hà Nội & Đà Nẵng</span>
+                <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs border border-white/30 text-white text-xs font-semibold px-3.5 py-1.5 rounded-full shadow-2xs">
+                    <i class="bi bi-lightning-charge-fill text-amber-300"></i>
+                    <span>Nền tảng thuê xe máy điện tự lái tại TP.HCM, Hà Nội &amp; Đà Nẵng</span>
                 </div>
 
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
-                    Di chuyển xanh, êm ái &amp; <span class="text-emerald-400">tiết kiệm 80% chi phí</span> xăng xe
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white">
+                    Di chuyển xanh, êm ái &amp; <span class="text-amber-200 underline decoration-amber-300/60 decoration-wavy underline-offset-8">tiết kiệm 80%</span> chi phí
                 </h1>
 
-                <p class="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-                    Hơn <strong class="text-white">50+ mẫu xe máy điện</strong> đời mới từ VinFast, Dat Bike, Selex Motors và Yadea.
-                    Có sẵn phân khúc giới hạn dưới 50km/h <strong class="text-emerald-300">không yêu cầu bằng lái A1</strong> dành cho học sinh, sinh viên.
+                <p class="text-emerald-50 text-sm sm:text-base max-w-2xl leading-relaxed font-medium">
+                    Hơn <strong class="text-white font-bold">50+ mẫu xe máy điện</strong> đời mới từ VinFast, Dat Bike, Selex Motors và Yadea. 
+                    Có sẵn phân khúc giới hạn dưới 50km/h <strong class="bg-white/20 text-white px-2 py-0.5 rounded">miễn bằng lái A1</strong> dành cho học sinh, sinh viên.
                 </p>
 
                 <!-- Key Trust Badges -->
-                <div class="grid grid-cols-3 gap-4 pt-2 max-w-xl">
-                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                <div class="grid grid-cols-3 gap-3 sm:gap-4 pt-2 max-w-xl">
+                    <div class="bg-white/15 backdrop-blur-xs border border-white/25 rounded-xl p-3.5">
+                        <div class="text-amber-200 font-extrabold text-lg sm:text-xl flex items-center gap-1.5">
                             <i class="bi bi-shield-check"></i> 100%
                         </div>
-                        <div class="text-xs text-slate-300 mt-0.5">Xe có bảo hiểm &amp; hợp đồng điện tử</div>
+                        <div class="text-xs text-white font-medium mt-0.5">Bảo hiểm &amp; hợp đồng điện tử</div>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                    <div class="bg-white/15 backdrop-blur-xs border border-white/25 rounded-xl p-3.5">
+                        <div class="text-amber-200 font-extrabold text-lg sm:text-xl flex items-center gap-1.5">
                             <i class="bi bi-ev-station"></i> 150+
                         </div>
-                        <div class="text-xs text-slate-300 mt-0.5">Trạm sạc nhanh &amp; tủ đổi pin 24/7</div>
+                        <div class="text-xs text-white font-medium mt-0.5">Trạm sạc nhanh &amp; đổi pin 24/7</div>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-                        <div class="text-emerald-400 font-bold text-lg sm:text-xl flex items-center gap-1.5">
+                    <div class="bg-white/15 backdrop-blur-xs border border-white/25 rounded-xl p-3.5">
+                        <div class="text-amber-200 font-extrabold text-lg sm:text-xl flex items-center gap-1.5">
                             <i class="bi bi-clock-history"></i> 5 phút
                         </div>
-                        <div class="text-xs text-slate-300 mt-0.5">Thủ tục nhận xe CCCD gắn chip</div>
+                        <div class="text-xs text-white font-medium mt-0.5">Nhận xe nhanh với CCCD</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Quick Stats Preview Card -->
+            <!-- Right Column: Bright White Quick Stats Preview Card -->
             <div class="hidden lg:block lg:col-span-5">
-                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 text-white shadow-2xl">
-                    <div class="flex items-center justify-between border-b border-white/10 pb-3.5 mb-4">
+                <div class="bg-white rounded-2xl p-5 text-slate-800 shadow-xl border border-emerald-100">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-9 h-9 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-bold">
-                                <i class="bi bi-stars"></i>
+                            <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                                <i class="bi bi-scooter"></i>
                             </span>
                             <div>
-                                <div class="text-xs text-emerald-300 font-semibold">Mẫu xe được thuê nhiều nhất tuần</div>
-                                <div class="text-sm font-bold">VinFast Evo200 &amp; Dat Bike Quantum</div>
+                                <div class="text-xs text-emerald-600 font-bold uppercase tracking-wide">Được thuê nhiều nhất tuần</div>
+                                <div class="text-sm font-extrabold text-slate-900">VinFast Evo200 &amp; Dat Bike Quantum</div>
                             </div>
                         </div>
-                        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-semibold px-2.5 py-1 rounded-md">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-1 rounded-lg">
                             Sẵn xe giao ngay
                         </span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 text-xs mb-4">
-                        <div class="bg-slate-900/70 rounded-xl p-3 border border-white/10">
-                            <span class="text-slate-400 block">Giá thuê học sinh / SV</span>
-                            <span class="text-base font-bold text-white mt-0.5 block">Từ 70.000đ <small class="text-slate-400 font-normal">/ngày</small></span>
+                        <div class="bg-emerald-50/70 rounded-xl p-3.5 border border-emerald-100">
+                            <span class="text-slate-500 font-medium block">Giá thuê học sinh / SV</span>
+                            <span class="text-lg font-extrabold text-emerald-700 mt-0.5 block">70.000đ <small class="text-slate-500 font-normal">/ngày</small></span>
                         </div>
-                        <div class="bg-slate-900/70 rounded-xl p-3 border border-white/10">
-                            <span class="text-slate-400 block">Quãng đường 1 lần sạc</span>
-                            <span class="text-base font-bold text-emerald-400 mt-0.5 block">165 - 270 km</span>
+                        <div class="bg-sky-50/70 rounded-xl p-3.5 border border-sky-100">
+                            <span class="text-slate-500 font-medium block">Quãng đường 1 lần sạc</span>
+                            <span class="text-lg font-extrabold text-sky-700 mt-0.5 block">165 - 270 km</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs text-slate-300 bg-slate-900/50 px-3.5 py-2.5 rounded-xl">
-                        <span><i class="bi bi-check-circle-fill text-emerald-400 mr-1"></i> Tặng kèm 02 mũ bảo hiểm + Áo mưa + Bộ sạc theo xe</span>
+                    <div class="flex items-center justify-between text-xs text-emerald-800 bg-emerald-50 px-3.5 py-2.5 rounded-xl font-medium border border-emerald-100">
+                        <span><i class="bi bi-gift-fill text-emerald-600 mr-1.5"></i> Tặng kèm 02 mũ bảo hiểm + Áo mưa + Bộ sạc theo xe</span>
                     </div>
                 </div>
             </div>
@@ -412,62 +410,62 @@
 
 <!-- Interactive Cost Comparison Calculator: Electric vs Gasoline -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <div class="bg-slate-900 rounded-2xl p-6 sm:p-8 lg:p-10 text-white border border-slate-800 shadow-lg">
+    <div class="bg-gradient-to-br from-emerald-50 via-teal-50/60 to-white rounded-2xl p-6 sm:p-8 lg:p-10 text-slate-800 border border-emerald-200 shadow-md">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div class="lg:col-span-6 space-y-4">
-                <span class="inline-block text-xs font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-md">
-                    Công cụ ước tính chi phí nhiên liệu
+                <span class="inline-block text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 border border-emerald-300 px-3 py-1 rounded-md">
+                    <i class="bi bi-calculator mr-1"></i> Ước tính chi phí nhiên liệu
                 </span>
-                <h2 class="text-2xl sm:text-3xl font-bold">Vì sao thuê xe máy điện tiết kiệm hơn xe tay ga chạy xăng?</h2>
-                <p class="text-sm text-slate-300 leading-relaxed">
-                    Với 1 lần sạc đầy pin LFP (chỉ tốn khoảng 6.000đ - 9.000đ tiền điện cho 180km), bạn tiết kiệm được tới 85% chi phí nhiên liệu so với đổ xăng RON 95 truyền thống.
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Vì sao thuê xe máy điện tiết kiệm hơn xe tay ga xăng?</h2>
+                <p class="text-sm text-slate-600 leading-relaxed">
+                    Với 1 lần sạc đầy pin LFP (chỉ tốn khoảng <strong class="text-emerald-700">7.000đ - 9.000đ</strong> tiền điện cho 180km), bạn tiết kiệm được tới <strong class="text-emerald-700 font-extrabold">85% chi phí</strong> so với đổ xăng RON 95 truyền thống.
                 </p>
 
                 <!-- Sliders -->
-                <div class="space-y-4 pt-2 bg-slate-800/70 p-5 rounded-xl border border-slate-700">
+                <div class="space-y-4 pt-2 bg-white p-5 rounded-2xl border border-emerald-100 shadow-xs">
                     <div>
                         <div class="flex justify-between text-xs font-semibold mb-1.5">
-                            <span class="text-slate-300">Số ngày dự kiến thuê xe:</span>
-                            <span id="calcDaysLabel" class="text-emerald-400 font-bold text-sm">5 ngày</span>
+                            <span class="text-slate-700">Số ngày dự kiến thuê xe:</span>
+                            <span id="calcDaysLabel" class="text-emerald-700 font-bold text-sm">5 ngày</span>
                         </div>
                         <input id="calcDaysInput" type="range" min="1" max="30" value="5" oninput="updateSavingsCalc()"
-                               class="w-full accent-emerald-500 cursor-pointer" />
+                               class="w-full accent-emerald-600 cursor-pointer" />
                     </div>
 
                     <div>
                         <div class="flex justify-between text-xs font-semibold mb-1.5">
-                            <span class="text-slate-300">Quãng đường di chuyển trung bình / ngày:</span>
-                            <span id="calcKmLabel" class="text-emerald-400 font-bold text-sm">50 km/ngày</span>
+                            <span class="text-slate-700">Quãng đường di chuyển trung bình / ngày:</span>
+                            <span id="calcKmLabel" class="text-emerald-700 font-bold text-sm">50 km/ngày</span>
                         </div>
                         <input id="calcKmInput" type="range" min="15" max="150" step="5" value="50" oninput="updateSavingsCalc()"
-                               class="w-full accent-emerald-500 cursor-pointer" />
+                               class="w-full accent-emerald-600 cursor-pointer" />
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-5">
-                        <div class="text-xs text-slate-400 uppercase font-semibold">Xe máy xăng truyền thống</div>
-                        <div class="text-xs text-slate-400 mt-1">Tiêu hao ~2.2 lít xăng / 100km</div>
-                        <div id="gasCostOutput" class="text-2xl font-bold text-rose-400 mt-3">137.500đ</div>
-                        <div class="text-xs text-slate-400 mt-1">Tiền xăng dự kiến cho chuyến đi</div>
+                    <div class="bg-white border border-rose-200 rounded-2xl p-5 shadow-xs">
+                        <div class="text-xs text-rose-600 uppercase font-bold">Xe máy xăng truyền thống</div>
+                        <div class="text-xs text-slate-500 mt-1">Tiêu hao ~2.2 lít xăng / 100km</div>
+                        <div id="gasCostOutput" class="text-2xl font-extrabold text-rose-600 mt-3">137.500đ</div>
+                        <div class="text-xs text-slate-400 mt-1">Tiền xăng dự kiến chuyến đi</div>
                     </div>
 
-                    <div class="bg-emerald-950/80 border border-emerald-500/40 rounded-xl p-5">
-                        <div class="text-xs text-emerald-300 uppercase font-semibold">Xe máy điện EcoBike</div>
-                        <div class="text-xs text-emerald-200/80 mt-1">Sạc điện tiêu chuẩn / Trạm sạc</div>
-                        <div id="evCostOutput" class="text-2xl font-bold text-emerald-400 mt-3">18.000đ</div>
-                        <div class="text-xs text-emerald-200/80 mt-1">Tiền sạc điện cho cả hành trình</div>
+                    <div class="bg-white border border-emerald-300 rounded-2xl p-5 shadow-xs">
+                        <div class="text-xs text-emerald-700 uppercase font-bold">Xe máy điện EcoBike</div>
+                        <div class="text-xs text-slate-500 mt-1">Sạc pin tiêu chuẩn / Đổi pin</div>
+                        <div id="evCostOutput" class="text-2xl font-extrabold text-emerald-600 mt-3">18.000đ</div>
+                        <div class="text-xs text-slate-400 mt-1">Tiền sạc điện toàn hành trình</div>
                     </div>
                 </div>
 
-                <div class="mt-4 bg-emerald-600/20 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="mt-4 bg-emerald-600 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-white shadow-md">
                     <div>
-                        <div class="text-xs text-emerald-300 font-medium">Tổng số tiền nhiên liệu tiết kiệm được:</div>
-                        <div id="totalSavedOutput" class="text-xl font-bold text-white">Tiết kiệm 119.500đ &bull; Giảm 14.5 kg khí thải CO₂</div>
+                        <div class="text-xs text-emerald-100 font-medium">Tổng số tiền nhiên liệu bạn tiết kiệm được:</div>
+                        <div id="totalSavedOutput" class="text-lg sm:text-xl font-black text-white mt-0.5">Tiết kiệm 119.500đ &bull; Giảm 14.5 kg CO₂</div>
                     </div>
-                    <a href="/Vehicles" class="shrink-0 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-lg transition">
+                    <a href="/Vehicles" class="shrink-0 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-xs">
                         Chọn xe ngay
                     </a>
                 </div>

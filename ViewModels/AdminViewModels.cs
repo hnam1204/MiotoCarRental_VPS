@@ -9,6 +9,7 @@ using MiotoCarRental.Models.Entities;
 namespace MiotoCarRental.ViewModels
 {
     [Authorize(Roles = "Admin")]
+    [IgnoreAntiforgeryToken]
     public class AdminDashboardViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;

@@ -14,30 +14,30 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
 
-    <!-- Top Executive Admin Banner -->
-    <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-md border border-slate-800 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+    <!-- Top Executive Admin Banner (Fresh Emerald Bright) -->
+    <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-6 text-white shadow-md border border-emerald-500 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         <div class="space-y-1.5">
             <div class="flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-md">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Hệ thống vận hành ổn định
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/20 backdrop-blur-xs text-white border border-white/30 px-2.5 py-0.5 rounded-md">
+                    <span class="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span> Hệ thống vận hành ổn định
                 </span>
-                <span class="text-xs text-slate-400">Cập nhật lúc @DateTime.Now.ToString("HH:mm - dd/MM/yyyy")</span>
+                <span class="text-xs text-emerald-100">Cập nhật lúc @DateTime.Now.ToString("HH:mm - dd/MM/yyyy")</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Trung tâm Quản trị &amp; Điều hành Sàn EcoBike</h1>
-            <p class="text-xs sm:text-sm text-slate-300 max-w-2xl">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Trung tâm Quản trị &amp; Điều hành Sàn EcoBike</h1>
+            <p class="text-xs sm:text-sm text-emerald-50 max-w-2xl font-medium">
                 Kiểm soát toàn diện doanh thu phí sàn (15%), phê duyệt hồ sơ GPLX hạng A1, kiểm duyệt phương tiện đối tác và điều phối đơn thuê xe.
             </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5 shrink-0">
             <button type="button" onclick="exportAdminReportCsv()"
-                    class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
-                <i class="bi bi-file-earmark-spreadsheet text-emerald-400"></i> Xuất báo cáo (.CSV)
+                    class="bg-white/15 hover:bg-white/25 text-white border border-white/30 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-2xs">
+                <i class="bi bi-file-earmark-spreadsheet text-amber-200"></i> Xuất báo cáo (.CSV)
             </button>
-            <a href="/Home/Stations" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
-                <i class="bi bi-ev-station text-amber-400"></i> Trạm sạc &amp; Đổi pin
+            <a href="/Home/Stations" class="bg-white/15 hover:bg-white/25 text-white border border-white/30 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-2xs">
+                <i class="bi bi-ev-station text-amber-200"></i> Trạm sạc &amp; Đổi pin
             </a>
-            <a href="/Host/Create" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5">
+            <a href="/Host/Create" class="bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center gap-1.5">
                 <i class="bi bi-plus-lg"></i> Thêm xe vào sàn
             </a>
         </div>

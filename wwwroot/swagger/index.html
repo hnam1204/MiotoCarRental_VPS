@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoBike .NET 9 Web API — Swagger / OpenAPI Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-black text-xs">
+          OAS 3.1 • .NET 9.0 Minimal Web API
+        </span>
+        <h1 class="font-extrabold text-lg text-white">EcoBike RESTful Web API Explorer</h1>
+      </div>
+      <div class="flex items-center gap-2.5 text-xs font-bold">
+        <a href="/react" class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 transition">
+          <i class="bi bi-filetype-jsx mr-1"></i> Mở ReactJS ClientApp
+        </a>
+        <a href="/" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition">
+          <i class="bi bi-house-door-fill mr-1"></i> Về Trang Chủ
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-4">
+    <div class="bg-slate-800/70 border border-slate-700 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Backend Architecture (Non-MVC)</div>
+        <div class="text-sm text-slate-300 mt-1">
+          ASP.NET Core 9.0 Minimal Web API (<code class="text-amber-300">Endpoints/EcoBikeEndpoints.cs</code>) + 3-Layer Services (<code class="text-amber-300">Services/</code>) + EF Core SQLite
+        </div>
+      </div>
+      <span class="px-3 py-1.5 rounded-xl bg-slate-900 text-xs font-mono text-emerald-400 border border-slate-700">
+        Base URL: /api
+      </span>
+    </div>
+
+    <div id="endpoints" class="space-y-3"></div>
+
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span id="res-title" class="text-xs font-bold uppercase tracking-wider text-emerald-400">Kết quả JSON trả về trực tiếp từ .NET Core Web API</span>
+        <span id="res-status" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-xs font-mono">HTTP 200 OK</span>
+      </div>
+      <pre id="res-body" class="text-xs font-mono text-emerald-300 overflow-x-auto max-h-96 p-4 bg-slate-900 rounded-xl border border-slate-800">Bấm nút "Try it out" ở bất kỳ API nào phía trên để xem dữ liệu JSON thực tế...</pre>
+    </div>
+  </main>
+
+  <script>
+    const APIS = [
+      { method: 'GET', path: '/api/vehicles', desc: 'Lấy danh sách 16 xe máy điện đang hoạt động (Hỗ trợ lọc theo Category, City, Brand, GPLX A1)' },
+      { method: 'GET', path: '/api/vehicles?category=0', desc: 'Lọc riêng nhóm xe Học sinh / Sinh viên (<50km/h, Miễn bằng lái A1)' },
+      { method: 'GET', path: '/api/vehicles/1', desc: 'Xem chi tiết thông số kỹ thuật 1 phương tiện theo ID' },
+      { method: 'GET', path: '/api/stats', desc: 'Thống kê tổng quan hệ thống (Tổng xe, User, Đơn đặt, Doanh thu GMV, Hoa hồng sàn 15%)' },
+      { method: 'GET', path: '/api/coupons', desc: 'Lấy danh sách các Mã giảm giá (Discount Coupons) đang kích hoạt' },
+      { method: 'GET', path: '/api/bookings', desc: 'Lấy danh sách các đơn đặt thuê xe máy điện mới nhất' },
+      { method: 'POST', path: '/api/bookings/calculate?vehicleId=1&days=3&couponCode=ECOBIKE50', desc: 'Tính phí thuê xe tự động + Bảo hiểm + Áp mã giảm giá (BookingService)' },
+      { method: 'GET', path: '/api/stations', desc: 'Danh sách các Trạm sạc nhanh V-GREEN & Trạm đổi pin 24/7' }
+    ];
+
+    const container = document.getElementById('endpoints');
+    APIS.forEach((api) => {
+      const isPost = api.method === 'POST';
+      const div = document.createElement('div');
+      div.className = 'bg-slate-800/90 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3';
+      div.innerHTML = `
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="px-3 py-1 rounded-lg font-black text-xs w-16 text-center ${isPost ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}">
+            ${api.method}
+          </span>
+          <code class="text-sm font-bold text-white">${api.path}</code>
+          <span class="text-xs text-slate-400">${api.desc}</span>
+        </div>
+        <button onclick="callApi('${api.method}', '${api.path}')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
+          Try it out ▶
+        </button>
+      `;
+      container.appendChild(div);
+    });
+
+    async function callApi(method, path) {
+      document.getElementById('res-title').innerText = `${method} ${path}`;
+      document.getElementById('res-body').innerText = 'Đang gọi API...';
+      try {
+        const res = await fetch(path, { method });
+        document.getElementById('res-status').innerText = `HTTP ${res.status}`;
+        const data = await res.json();
+        document.getElementById('res-body').innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('res-body').innerText = 'Lỗi: ' + err.message;
+      }
+    }
+
+    callApi('GET', '/api/stats');
+  </script>
+</body>
+</html>

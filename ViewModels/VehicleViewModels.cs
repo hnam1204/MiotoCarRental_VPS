@@ -7,6 +7,7 @@ using MiotoCarRental.Models.Entities;
 
 namespace MiotoCarRental.ViewModels
 {
+    [IgnoreAntiforgeryToken]
     public class VehicleSearchViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
@@ -97,6 +98,7 @@ namespace MiotoCarRental.ViewModels
         }
     }
 
+    [IgnoreAntiforgeryToken]
     public class VehicleDetailViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;

@@ -28,7 +28,6 @@
             @if (currentRole == "Renter")
             {
                 <form action="/Account/UpgradeToHost" method="post" class="w-full sm:w-1/2">
-                    @Html.AntiForgeryToken()
                     <button type="submit"
                             class="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs transition text-center">
                         Đăng ký làm chủ xe
@@ -48,7 +47,6 @@
             <div class="text-xs font-medium text-gray-500 mb-2">Chuyển tài khoản:</div>
             <div class="grid grid-cols-3 gap-2">
                 <form action="/Account/QuickLogin" method="post">
-                    @Html.AntiForgeryToken()
                     <input type="hidden" name="email" value="khachthue@gmail.com" />
                     <input type="hidden" name="returnUrl" value="/" />
                     <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
@@ -56,7 +54,6 @@
                     </button>
                 </form>
                 <form action="/Account/QuickLogin" method="post">
-                    @Html.AntiForgeryToken()
                     <input type="hidden" name="email" value="chuxe@gmail.com" />
                     <input type="hidden" name="returnUrl" value="@(string.IsNullOrEmpty(returnUrl) ? "/Host" : returnUrl)" />
                     <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
@@ -64,7 +61,6 @@
                     </button>
                 </form>
                 <form action="/Account/QuickLogin" method="post">
-                    @Html.AntiForgeryToken()
                     <input type="hidden" name="email" value="admin@mioto.vn" />
                     <input type="hidden" name="returnUrl" value="@(string.IsNullOrEmpty(returnUrl) ? "/Admin" : returnUrl)" />
                     <button type="submit" class="w-full py-2 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition">
