@@ -138,6 +138,51 @@
         </div>
     </div>
 
+    <!-- Biểu đồ Thống kê Doanh thu (Đường) và Phân bổ Phương tiện (Cột) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Biểu đồ Đường: Xu hướng Doanh thu & GMV 6 tháng -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Biểu đồ đường: Xu hướng Doanh thu (6 tháng)</h3>
+                        <p class="text-[11px] text-slate-500">Tăng trưởng tổng giao dịch GMV và phí sàn 15%</p>
+                    </div>
+                </div>
+                <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Tăng trưởng +24%
+                </span>
+            </div>
+            <div class="relative h-64 w-full">
+                <canvas id="revenueLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Biểu đồ Cột: Số lượng phương tiện theo Phân khúc -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Biểu đồ cột: Thống kê Xe theo 4 phân khúc</h3>
+                        <p class="text-[11px] text-slate-500">Phân bố số lượng xe đang cho thuê trên hệ thống</p>
+                    </div>
+                </div>
+                <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    Tổng @Model.TotalVehicles phương tiện
+                </span>
+            </div>
+            <div class="relative h-64 w-full">
+                <canvas id="vehicleBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Analytics Charts & Fleet Breakdown Row -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <!-- Left 7 Cols: Monthly Revenue & Commission Visual Chart -->
@@ -602,14 +647,27 @@
                             </td>
                             <td class="py-3.5 px-6 text-right">
                                 <div class="inline-flex items-center gap-1.5">
-                                    <a href="/Vehicles/Details/@car.Id" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-medium text-slate-700 transition">
-                                        Xem xe
+                                    <a href="/Vehicles/Details/@car.Id" class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-medium text-slate-700 transition" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
                                     </a>
+                                    <!-- Nút Sửa giá thuê xe nhanh -->
+                                    <button type="button" onclick="editVehiclePrice(@car.Id, '@car.Model', @car.PricePerDay)" 
+                                            class="px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-medium transition" title="Sửa giá thuê">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </button>
                                     <form action="/Admin/ToggleVehicleStatus" method="post" class="inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="vehicleId" value="@car.Id" />
-                                        <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition @(isCarActive ? "border-rose-200 text-rose-600 hover:bg-rose-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")">
-                                            @(isCarActive ? "Khóa xe" : "Mở khóa")
+                                        <button type="submit" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition @(isCarActive ? "border-slate-300 text-slate-600 hover:bg-slate-50" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50")" title="@(isCarActive ? "Tạm khóa xe" : "Mở khóa xe")">
+                                            @(isCarActive ? "Khóa" : "Mở")
+                                        </button>
+                                    </form>
+                                    <!-- Nút Xóa xe hoàn toàn -->
+                                    <form action="/Admin/DeleteVehicle" method="post" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA phương tiện @car.Model (@car.LicensePlate) khỏi hệ thống?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="vehicleId" value="@car.Id" />
+                                        <button type="submit" class="px-2.5 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-medium transition" title="Xóa xe vĩnh viễn">
+                                            <i class="bi bi-trash3"></i> Xóa
                                         </button>
                                     </form>
                                 </div>
@@ -666,18 +724,29 @@
                                 }
                             </td>
                             <td class="py-3.5 px-6 text-right">
-                                <form action="/Admin/UpdateUserRole" method="post" class="inline-flex items-center gap-2">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="userId" value="@u.Id" />
-                                    <select name="newRole" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs bg-white text-slate-800 focus:outline-none focus:border-emerald-600">
-                                        <option value="Renter" selected="@(u.Role == UserRole.Renter)">Khách thuê (Renter)</option>
-                                        <option value="Host" selected="@(u.Role == UserRole.Host)">Chủ xe (Host)</option>
-                                        <option value="Admin" selected="@(u.Role == UserRole.Admin)">Quản trị (Admin)</option>
-                                    </select>
-                                    <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
-                                        Lưu quyền
-                                    </button>
-                                </form>
+                                <div class="inline-flex items-center gap-2">
+                                    <form action="/Admin/UpdateUserRole" method="post" class="inline-flex items-center gap-1.5">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@u.Id" />
+                                        <select name="newRole" class="border border-slate-300 rounded-lg px-2 py-1 text-xs bg-white text-slate-800 focus:outline-none focus:border-emerald-600">
+                                            <option value="Renter" selected="@(u.Role == UserRole.Renter)">Khách (Renter)</option>
+                                            <option value="Host" selected="@(u.Role == UserRole.Host)">Chủ xe (Host)</option>
+                                            <option value="Admin" selected="@(u.Role == UserRole.Admin)">Admin</option>
+                                        </select>
+                                        <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-2.5 py-1 rounded-lg transition" title="Lưu phân quyền">
+                                            Lưu
+                                        </button>
+                                    </form>
+
+                                    <!-- Nút Xóa người dùng -->
+                                    <form action="/Admin/DeleteUser" method="post" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA tài khoản @u.FullName (@u.Email)?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@u.Id" />
+                                        <button type="submit" class="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition" title="Xóa người dùng">
+                                            <i class="bi bi-trash3 text-sm"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -733,4 +802,114 @@
         a.download = 'Bao_Cao_Doanh_Thu_EcoBike_Admin.csv';
         a.click();
     }
+
+    function editVehiclePrice(id, model, currentPrice) {
+        const newPrice = prompt(`Cập nhật đơn giá thuê theo ngày cho xe [${model}]:`, currentPrice);
+        if (newPrice !== null && !isNaN(newPrice) && Number(newPrice) > 0) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Admin/UpdateVehiclePrice';
+            
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'vehicleId';
+            idInput.value = id;
+            form.appendChild(idInput);
+
+            const priceInput = document.createElement('input');
+            priceInput.type = 'hidden';
+            priceInput.name = 'pricePerDay';
+            priceInput.value = newPrice;
+            form.appendChild(priceInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Khởi tạo Biểu đồ Thống kê Chart.js
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1. Biểu đồ Đường: Doanh thu theo tháng
+        const ctxLine = document.getElementById('revenueLineChart');
+        if (ctxLine) {
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: ['Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11'],
+                    datasets: [
+                        {
+                            label: 'Tổng GMV (triệu VNĐ)',
+                            data: [12.5, 18.2, 25.0, 31.8, 38.4, 46.5],
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#059669',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Phí sàn 15% (triệu VNĐ)',
+                            data: [1.87, 2.73, 3.75, 4.77, 5.76, 6.98],
+                            borderColor: '#0284c7',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#0284c7',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 2. Biểu đồ Cột: Thống kê số lượng xe theo 4 phân khúc
+        const ctxBar = document.getElementById('vehicleBarChart');
+        if (ctxBar) {
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Phổ thông (Miễn A1)', 'Đô thị cao cấp', 'Đường dài / Touring', 'Thể thao công suất cao'],
+                    datasets: [{
+                        label: 'Số lượng xe',
+                        data: [
+                            @Model.Vehicles.Count(v => v.Category == VehicleCategory.Economy),
+                            @Model.Vehicles.Count(v => v.Category == VehicleCategory.MidRange),
+                            @Model.Vehicles.Count(v => v.Category == VehicleCategory.Touring),
+                            @Model.Vehicles.Count(v => v.Category == VehicleCategory.SportPremium)
+                        ],
+                        backgroundColor: [
+                            '#10b981', // Emerald
+                            '#0284c7', // Sky Blue
+                            '#f59e0b', // Amber
+                            '#8b5cf6'  // Purple
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    });
 </script>

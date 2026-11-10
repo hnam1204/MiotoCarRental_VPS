@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kế hoạch Triển khai & Bàn giao Hệ thống EcoBike</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+        }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 13pt;
+            line-height: 1.45;
+            color: #111;
+            margin: 0;
+            padding: 24px;
+            background: #fff;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .org-title {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #064e3b;
+        }
+        .national-title {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        .national-sub {
+            text-align: center;
+            font-size: 11pt;
+            font-style: italic;
+            border-bottom: 1px solid #333;
+            display: inline-block;
+            padding-bottom: 4px;
+        }
+        .doc-title {
+            text-align: center;
+            margin: 28px 0 16px 0;
+        }
+        .doc-title h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 6px 0;
+            color: #064e3b;
+        }
+        .doc-title h2 {
+            font-size: 13pt;
+            font-weight: normal;
+            font-style: italic;
+            margin: 0;
+        }
+        .recipient {
+            margin: 16px 0 24px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13.5pt;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0 8px 0;
+            color: #047857;
+            border-bottom: 1px solid #d1fae5;
+            padding-bottom: 4px;
+        }
+        p {
+            margin: 0 0 10px 0;
+            text-align: justify;
+        }
+        table.content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 18px 0;
+            font-size: 11.5pt;
+        }
+        table.content-table th, table.content-table td {
+            border: 1px solid #4b5563;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+        table.content-table th {
+            background-color: #f0fdf4;
+            font-weight: bold;
+            text-align: center;
+            color: #065f46;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        .signatures {
+            width: 100%;
+            margin-top: 36px;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+        }
+        .signatures td {
+            vertical-align: top;
+            text-align: center;
+            width: 50%;
+            padding: 0 10px;
+        }
+        .sig-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .sig-space {
+            height: 70px;
+        }
+        .sig-name {
+            font-weight: bold;
+        }
+        .highlight-box {
+            background-color: #f8fafc;
+            border-left: 4px solid #10b981;
+            padding: 10px 14px;
+            margin: 12px 0;
+            font-size: 12pt;
+        }
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="background: #ecfdf5; border: 1px solid #10b981; padding: 12px 18px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
+        <span style="font-weight: bold; color: #065f46;">Hướng dẫn xuất PDF:</span> 
+        Nhấn phím <kbd style="background:#fff; border:1px solid #999; padding:2px 6px; border-radius:4px; font-weight:bold;">Ctrl + P</kbd> &rarr; Mục máy in chọn <b>"Save as PDF" (Lưu dưới dạng PDF)</b> để lưu file PDF đính kèm email!
+    </div>
+
+    <!-- Header Tiêu ngữ Doanh nghiệp B2B -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 55%;">
+                <div class="org-title">ECOBIKE SOLUTIONS TECHNOLOGY</div>
+                <div style="font-size: 10.5pt; font-weight: bold; color: #374151;">ĐƠN VỊ PHÁT TRIỂN & TÍCH HỢP HỆ THỐNG</div>
+                <div style="font-size: 10pt; font-style: italic;">Số: 01/2026/KHTK-ECOBIKE</div>
+            </td>
+            <td style="width: 45%; text-align: right;">
+                <div class="national-title">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div class="national-sub">Độc lập – Tự do – Hạnh phúc</div>
+                <div style="font-size: 10pt; font-style: italic; margin-top: 6px;">TP. Hồ Chí Minh, ngày 02 tháng 11 năm 2026</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Tiêu đề văn bản -->
+    <div class="doc-title">
+        <h1>KẾ HOẠCH TRIỂN KHAI VÀ CHUYỂN GIAO HỆ THỐNG</h1>
+        <h2>Dự án: Nền tảng Cho thuê và Chia sẻ Xe máy điện P2P Thông minh (EcoBike)</h2>
+    </div>
+
+    <div class="recipient">
+        Kính gửi: Quý Khách hàng (Bà Trần L.T.B)
+    </div>
+
+    <p>
+        Căn cứ vào kết quả nghiệm thu kỹ thuật nội bộ của hệ thống <b>EcoBike</b> (bao gồm giao diện Web/React, hệ thống Web API .NET 9.0, hệ quản trị cơ sở dữ liệu và 46 kịch bản kiểm thử Unit Test đạt chuẩn 100%), Đơn vị Phát triển Giải pháp trân trọng gửi đến Quý Khách hàng bản <b>Kế hoạch Triển khai, Đào tạo Online và Dự toán Chi phí</b> chi tiết như sau:
+    </p>
+
+    <!-- Phần 1 -->
+    <h3>I. KẾ HOẠCH THỜI GIAN TRIỂN KHAI (TIMELINE)</h3>
+    <p>
+        Hệ thống được lên lộ trình triển khai và nghiệm thu trong <b>3 tuần làm việc</b>, chia thành các mốc cụ thể nhằm đảm bảo hệ thống vận hành liên tục, an toàn và bảo mật:
+    </p>
+
+    <table class="content-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Giai đoạn</th>
+                <th style="width: 18%;">Thời gian</th>
+                <th style="width: 42%;">Nội dung công việc triển khai</th>
+                <th style="width: 28%;">Sản phẩm bàn giao</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center bold">Giai đoạn 1</td>
+                <td class="text-center"><b>Tuần 1</b><br>(Ngày 1 – Ngày 5)</td>
+                <td>
+                    • Khởi tạo hạ tầng máy chủ Cloud VPS Ubuntu 22.04 LTS và Docker Container.<br>
+                    • Thiết lập cơ sở dữ liệu SQLite, cấu hình chứng chỉ SSL/HTTPS và tên miền doanh nghiệp.<br>
+                    • Triển khai mã nguồn Backend & Frontend lên môi trường Staging.
+                </td>
+                <td>Hệ thống Staging hoạt động trực tiếp trên Internet để Khách hàng duyệt thử.</td>
+            </tr>
+            <tr>
+                <td class="text-center bold">Giai đoạn 2</td>
+                <td class="text-center"><b>Tuần 2</b><br>(Ngày 6 – Ngày 12)</td>
+                <td>
+                    • Phối hợp cùng Quý Khách hàng thực hiện nghiệm thu người dùng (UAT).<br>
+                    • Tổ chức các phiên <b>Đào tạo trực tuyến (Online Training)</b> cho Quản trị viên và Chủ xe.<br>
+                    • Tiếp nhận phản hồi, tinh chỉnh cấu hình nghiệp vụ và quy tắc cọc theo yêu cầu.
+                </td>
+                <td>Biên bản nghiệm thu kỹ thuật UAT & Tài liệu hướng dẫn sử dụng.</td>
+            </tr>
+            <tr>
+                <td class="text-center bold">Giai đoạn 3</td>
+                <td class="text-center"><b>Tuần 3</b><br>(Ngày 13 – Ngày 18)</td>
+                <td>
+                    • Chuyển đổi dữ liệu sang môi trường Production chính thức.<br>
+                    • Bàn giao tài khoản Quản trị tối cao (Admin), kho mã nguồn Git và tài liệu kỹ thuật.<br>
+                    • Kích hoạt hệ thống chính thức (Go-Live) và kích hoạt chế độ bảo hành 24/7.
+                </td>
+                <td>Hệ thống Go-Live chính thức & Biên bản bàn giao hoàn tất dự án.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Phần 2 -->
+    <h3>II. HÌNH THỨC ĐÀO TẠO & HƯỚNG DẪN SỬ DỤNG (ONLINE TRAINING)</h3>
+    <p>
+        Nhằm tối ưu hóa thời gian và thuận tiện cho công tác đào tạo nhân sự của Quý Khách hàng, chương trình chuyển giao được tổ chức theo hình thức <b>Trực tuyến (Online)</b>:
+    </p>
+    <ul>
+        <li><b>Nền tảng thực hiện:</b> Google Meet hoặc Microsoft Teams (Link họp gửi trước 24 giờ kèm tài liệu họp).</li>
+        <li><b>Phân nhóm và nội dung đào tạo:</b>
+            <ul>
+                <li><b>Phiên 1 — Đào tạo Quản trị viên (Admin):</b> Quản trị danh mục xe máy điện, phê duyệt xe mới, kiểm duyệt hồ sơ CCCD/GPLX, quản lý đơn cọc 30%, và xem báo cáo tài chính/doanh thu toàn sàn.</li>
+                <li><b>Phiên 2 — Đào tạo Chủ xe (Host):</b> Quy trình đăng tải phương tiện, cập nhật pin/quãng đường, quản lý lịch cho thuê, và quy trình giao nhận xe số hóa.</li>
+            </ul>
+        </li>
+        <li><b>Tài liệu chuyển giao đính kèm:</b>
+            <ul>
+                <li>File PDF Sổ tay Hướng dẫn Sử dụng (User Manual) có ảnh chụp minh họa từng bước.</li>
+                <li>Video Record buổi training lưu trữ trên Cloud để Khách hàng đào tạo nhân sự mới.</li>
+                <li>Tài liệu kỹ thuật mở rộng API Swagger dành cho bộ phận IT nội bộ.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <!-- Phần 3 -->
+    <h3>III. BẢNG DỰ TOÁN CHI PHÍ TRIỂN KHAI VÀ DUY TRÌ HỆ THỐNG</h3>
+    <p>
+        Bảng chi phí được tính toán minh bạch dựa trên biểu giá thực tế của các nhà cung cấp hạ tầng tại Việt Nam:
+    </p>
+
+    <table class="content-table">
+        <thead>
+            <tr>
+                <th style="width: 8%;">STT</th>
+                <th style="width: 42%;">Hạng mục chi phí</th>
+                <th style="width: 16%;">Thời hạn</th>
+                <th style="width: 18%;">Đơn giá dự kiến (VNĐ)</th>
+                <th style="width: 16%;">Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">1</td>
+                <td><b>Hạ tầng Máy chủ Cloud VPS</b><br><small style="color: #555;">(2 vCPU, 4GB RAM, 50GB SSD NVMe, Băng thông không giới hạn)</small></td>
+                <td class="text-center">01 năm</td>
+                <td class="text-right bold">4.200.000</td>
+                <td>~350.000 đ/tháng</td>
+            </tr>
+            <tr>
+                <td class="text-center">2</td>
+                <td><b>Tên miền & Chứng chỉ bảo mật SSL</b><br><small style="color: #555;">(Domain thương hiệu .vn / .com + SSL Let's Encrypt)</small></td>
+                <td class="text-center">01 năm</td>
+                <td class="text-right bold">550.000</td>
+                <td>Bảo mật HTTPS</td>
+            </tr>
+            <tr>
+                <td class="text-center">3</td>
+                <td><b>Cổng thanh toán & Tích hợp Bản đồ số</b><br><small style="color: #555;">(Cổng VietQR / PayOS Sandbox & Google Maps API)</small></td>
+                <td class="text-center">Trọn gói</td>
+                <td class="text-right bold">0</td>
+                <td>Gói doanh nghiệp miễn phí</td>
+            </tr>
+            <tr>
+                <td class="text-center">4</td>
+                <td><b>Chi phí Cài đặt, Đào tạo Online & Chuyển giao</b></td>
+                <td class="text-center">Gói dự án</td>
+                <td class="text-right bold">0</td>
+                <td>Đã bao gồm trong hợp đồng</td>
+            </tr>
+            <tr>
+                <td class="text-center">5</td>
+                <td><b>Bảo hành & Hỗ trợ Kỹ thuật Vận hành</b><br><small style="color: #555;">(Khắc phục lỗi phát sinh, backup dữ liệu tự động 24/7)</small></td>
+                <td class="text-center">03 tháng đầu</td>
+                <td class="text-right bold">0</td>
+                <td>Hỗ trợ kỹ thuật miễn phí</td>
+            </tr>
+            <tr style="background-color: #f0fdf4;">
+                <td colspan="3" class="text-center bold" style="font-size: 12pt; color: #065f46;">TỔNG DỰ TOÁN NĂM ĐẦU TIÊN:</td>
+                <td class="text-right bold" style="font-size: 13pt; color: #047857;">4.750.000 VNĐ</td>
+                <td class="text-center font-italic" style="font-size: 10pt;">Chưa gồm VAT</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="highlight-box">
+        <b>Cam kết dịch vụ (SLA):</b> Đơn vị phát triển cam kết đồng hành cùng Quý Khách hàng trong suốt quá trình vận hành. Mọi sự cố kỹ thuật trong thời gian bảo hành sẽ được tiếp nhận và xử lý trong vòng 02 giờ làm việc.
+    </div>
+
+    <!-- Chữ ký B2B -->
+    <table class="signatures">
+        <tr>
+            <td>
+                <div class="sig-title">ĐẠI DIỆN KHÁCH HÀNG</div>
+                <div style="font-style: italic; font-size: 11pt;">(Ký và ghi rõ họ tên)</div>
+                <div class="sig-space"></div>
+                <div class="sig-name">Bà Trần L.T.B</div>
+            </td>
+            <td>
+                <div class="sig-title">ĐẠI DIỆN ĐƠN VỊ PHÁT TRIỂN GIẢI PHÁP</div>
+                <div style="font-style: italic; font-size: 11pt;">(Ký và ghi rõ họ tên)</div>
+                <div class="sig-space"></div>
+                <div class="sig-name">Trần Nhất Tâm & Đội ngũ EcoBike Solutions</div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
