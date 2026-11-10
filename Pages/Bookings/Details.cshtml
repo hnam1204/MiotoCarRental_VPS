@@ -122,12 +122,16 @@
                 </p>
 
                 <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 inline-block shadow-inner">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ECOBIKE-DEPOSIT-@Model.BookingCode" 
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ECOBIKE-DEPOSIT-@Model.BookingCode-AMOUNT-@Model.DepositAmount" 
                          alt="QR Code" class="w-44 h-44 mx-auto rounded-lg" />
-                    <span class="text-[10px] text-gray-400 block mt-2 font-mono">Nội dung CK: @Model.BookingCode</span>
+                    <div class="mt-3 space-y-1">
+                        <span class="text-[10px] text-gray-500 block font-mono">Nội dung CK: @Model.BookingCode</span>
+                        <span class="text-[10px] text-gray-500 block font-mono">Số tiền: @Model.DepositAmount.ToString("N0")đ</span>
+                    </div>
                 </div>
 
-                <form action="/Bookings/ConfirmPayment" method="post">
+                <form action="/Bookings/SimulatePayment" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition">
                         <i class="bi bi-check2-circle mr-1"></i> [DEMO] Giả lập Xác nhận Đã Chuyển Khoản Thành Công

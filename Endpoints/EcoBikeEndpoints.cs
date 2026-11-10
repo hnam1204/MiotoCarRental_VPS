@@ -352,6 +352,19 @@ namespace MiotoCarRental.Endpoints
                 return Results.Redirect($"/Bookings/Details/{id}");
             }).DisableAntiforgery();
 
+            // API mô phỏng Webhook thanh toán (dành cho Demo)
+            app.MapPost("/Bookings/SimulatePayment", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id) =>
+            {
+                var booking = await db.Bookings.FindAsync(id);
+                if (booking == null) return Results.NotFound();
+
+                // Giả lập xử lý thanh toán thành công
+                await bookingService.ConfirmDepositAsync(id, $"VCB-SIM-{Guid.NewGuid().ToString()[..8].ToUpper()}");
+                
+                SetTempMessage(http, "SuccessMessage", "Mô phỏng thanh toán thành công! Đơn hàng đã được xác nhận.");
+                return Results.Redirect($"/Bookings/Details/{id}");
+            }).DisableAntiforgery();
+
             app.MapPost("/Bookings/Checkin", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id, [FromForm] int odo, [FromForm] int fuelLevel) =>
             {
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
