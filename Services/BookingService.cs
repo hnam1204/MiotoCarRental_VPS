@@ -117,6 +117,12 @@ namespace MiotoCarRental.Services
             var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null) return false;
 
+            // Chỉ cho phép xác nhận cọc khi trạng thái đang là Chờ thanh toán
+            if (booking.Status != BookingStatus.AwaitingPayment)
+            {
+                return false;
+            }
+
             booking.Status = BookingStatus.Confirmed;
             await _context.SaveChangesAsync();
             return true;
@@ -126,6 +132,16 @@ namespace MiotoCarRental.Services
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null) return false;
+
+            if (booking.Status != BookingStatus.Confirmed)
+            {
+                return false;
+            }
+
+            if (odo < 0 || batteryPercent < 0 || batteryPercent > 100)
+            {
+                return false;
+            }
 
             booking.CheckinOdo = odo;
             booking.CheckinBatteryPercent = batteryPercent;
@@ -140,6 +156,22 @@ namespace MiotoCarRental.Services
         {
             var booking = await _context.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == bookingId);
             if (booking == null) return false;
+
+            if (booking.Status != BookingStatus.InProgress)
+            {
+                return false;
+            }
+
+            // ODO khi trả xe không thể nhỏ hơn ODO khi nhận xe
+            if (booking.CheckinOdo.HasValue && odo < booking.CheckinOdo.Value)
+            {
+                return false;
+            }
+
+            if (batteryPercent < 0 || batteryPercent > 100)
+            {
+                return false;
+            }
 
             booking.CheckoutOdo = odo;
             booking.CheckoutBatteryPercent = batteryPercent;

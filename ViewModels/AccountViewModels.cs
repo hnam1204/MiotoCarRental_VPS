@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MiotoCarRental.Data;
 using MiotoCarRental.Endpoints;
 using MiotoCarRental.Models.Entities;
+using MiotoCarRental.Services;
 
 namespace MiotoCarRental.ViewModels
 {
@@ -15,13 +16,15 @@ namespace MiotoCarRental.ViewModels
     public class LoginViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
+        private readonly PasswordService? _passwordService;
 
         public LoginViewModel() { }
 
         [ActivatorUtilitiesConstructor]
-        public LoginViewModel(MiotoDbContext context)
+        public LoginViewModel(MiotoDbContext context, PasswordService? passwordService = null)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         [BindProperty]
@@ -59,16 +62,45 @@ namespace MiotoCarRental.ViewModels
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == Email.ToLower().Trim());
-            if (user == null || (user.PasswordHash != Password && user.PasswordHash != $"{Password}_hash_123" && user.PasswordHash != $"{Password.ToLower()}123"))
+            bool passwordValid = false;
+
+            if (user != null)
+            {
+                if (_passwordService != null)
+                {
+                    var verifyResult = _passwordService.VerifyAndUpgrade(user, Password);
+                    if (verifyResult != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                    {
+                        passwordValid = true;
+                        if (verifyResult == Microsoft.AspNetCore.Identity.PasswordVerificationResult.SuccessRehashNeeded)
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+                else
+                {
+                    passwordValid = (user.PasswordHash == Password || user.PasswordHash == $"{Password}_hash_123" || user.PasswordHash == $"{Password.ToLower()}123");
+                }
+            }
+
+            if (!passwordValid || user == null)
             {
                 ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không chính xác.");
                 return Page();
             }
 
-            await EcoBikeEndpoints.SignInUserAsync(HttpContext, user, RememberMe);
-            TempData["SuccessMessage"] = $"Đăng nhập thành công! Chào mừng {user.FullName}.";
+            if (HttpContext != null)
+            {
+                await EcoBikeEndpoints.SignInUserAsync(HttpContext, user, RememberMe);
+            }
 
-            if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
+            if (TempData != null)
+            {
+                TempData["SuccessMessage"] = $"Đăng nhập thành công! Chào mừng {user.FullName}.";
+            }
+
+            if (!string.IsNullOrEmpty(ReturnUrl) && Url != null && Url.IsLocalUrl(ReturnUrl))
             {
                 return Redirect(ReturnUrl);
             }
@@ -83,13 +115,15 @@ namespace MiotoCarRental.ViewModels
     public class RegisterViewModel : PageModel
     {
         private readonly MiotoDbContext? _context;
+        private readonly PasswordService? _passwordService;
 
         public RegisterViewModel() { }
 
         [ActivatorUtilitiesConstructor]
-        public RegisterViewModel(MiotoDbContext context)
+        public RegisterViewModel(MiotoDbContext context, PasswordService? passwordService = null)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         [BindProperty]
@@ -134,6 +168,12 @@ namespace MiotoCarRental.ViewModels
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (Role == UserRole.Admin)
+            {
+                ModelState.AddModelError("Role", "Không thể đăng ký tài khoản với quyền Quản trị viên.");
+                return Page();
+            }
+
             if (!ModelState.IsValid || _context == null)
             {
                 return Page();
@@ -164,11 +204,23 @@ namespace MiotoCarRental.ViewModels
                 CreatedAt = DateTime.UtcNow
             };
 
+            if (_passwordService != null)
+            {
+                newUser.PasswordHash = _passwordService.HashPassword(newUser, Password);
+            }
+
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
-            await EcoBikeEndpoints.SignInUserAsync(HttpContext, newUser, true);
 
-            TempData["SuccessMessage"] = "Đăng ký tài khoản thành công! Bạn đã được tự động đăng nhập.";
+            if (HttpContext != null)
+            {
+                await EcoBikeEndpoints.SignInUserAsync(HttpContext, newUser, true);
+            }
+
+            if (TempData != null)
+            {
+                TempData["SuccessMessage"] = "Đăng ký tài khoản thành công! Bạn đã được tự động đăng nhập.";
+            }
             return Redirect("/");
         }
     }
