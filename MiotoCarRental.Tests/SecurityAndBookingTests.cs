@@ -401,6 +401,41 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.Equal("MoMo", momoResult.Gateway);
     }
 
+    [Fact]
+    public async Task LoginViewModel_RequiresPassword_AndRejectsInvalidLogin()
+    {
+        var user = new User
+        {
+            FullName = "Tester",
+            Email = "tester@mioto.vn",
+            Phone = "0900000099",
+            PasswordHash = "admin123",
+            Role = UserRole.Admin
+        };
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+
+        // Case 1: Sai mật khẩu
+        var modelWrong = new LoginViewModel(_db, _passwords)
+        {
+            Email = "tester@mioto.vn",
+            Password = "wrong_password_999"
+        };
+        var resultWrong = await modelWrong.OnPostAsync();
+        Assert.IsType<PageResult>(resultWrong);
+        Assert.True(modelWrong.ModelState.ErrorCount > 0);
+
+        // Case 2: Đúng mật khẩu (hỗ trợ cả 123456 và admin123)
+        var modelCorrect = new LoginViewModel(_db, _passwords)
+        {
+            Email = "tester@mioto.vn",
+            Password = "admin123"
+        };
+        var resultCorrect = await modelCorrect.OnPostAsync();
+        var redirect = Assert.IsType<RedirectResult>(resultCorrect);
+        Assert.Equal("/Admin", redirect.Url);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

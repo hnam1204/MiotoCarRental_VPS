@@ -210,10 +210,31 @@ namespace MiotoCarRental.Endpoints
             // =========================================================================
             // 2. ACCOUNT & AUTHENTICATION ENDPOINTS
             // =========================================================================
-            app.MapPost("/Account/Login", async (HttpContext http, MiotoDbContext db, [FromForm] string email, [FromForm] string password, [FromForm] bool rememberMe, [FromForm] string? returnUrl) =>
+            app.MapPost("/Account/Login", async (HttpContext http, MiotoDbContext db, IPasswordService passwordService, [FromForm] string? email, [FromForm] string? password, [FromForm] bool rememberMe, [FromForm] string? returnUrl) =>
             {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (user == null || (user.PasswordHash != password && user.PasswordHash != "123456" && user.PasswordHash != "admin123"))
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                {
+                    SetTempMessage(http, "ErrorMessage", "Vui lòng nhập đầy đủ Email và Mật khẩu!");
+                    return Results.Redirect($"/Account/Login?returnUrl={returnUrl}");
+                }
+
+                var user = await db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower().Trim());
+                bool isValid = false;
+
+                if (user != null)
+                {
+                    var verify = passwordService.VerifyAndUpgrade(user, password.Trim());
+                    if (verify != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+                    {
+                        isValid = true;
+                        if (verify == Microsoft.AspNetCore.Identity.PasswordVerificationResult.SuccessRehashNeeded)
+                        {
+                            await db.SaveChangesAsync();
+                        }
+                    }
+                }
+
+                if (!isValid || user == null)
                 {
                     SetTempMessage(http, "ErrorMessage", "Email hoặc mật khẩu không chính xác!");
                     return Results.Redirect($"/Account/Login?returnUrl={returnUrl}");
@@ -232,28 +253,10 @@ namespace MiotoCarRental.Endpoints
                 return Results.Redirect("/");
             }).DisableAntiforgery();
 
-            app.MapPost("/Account/QuickLogin", async (HttpContext http, MiotoDbContext db, [FromForm] string email, [FromForm] string? returnUrl) =>
+            app.MapPost("/Account/QuickLogin", (HttpContext http) =>
             {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (user != null)
-                {
-                    if (user.Role == UserRole.Admin)
-                    {
-                        SetTempMessage(http, "ErrorMessage", "Tài khoản Quản trị viên (Admin) bắt buộc phải nhập mật khẩu để bảo vệ hệ thống!");
-                        return Results.Redirect($"/Account/Login?returnUrl={returnUrl}");
-                    }
-
-                    await SignInUserAsync(http, user, true);
-                    SetTempMessage(http, "SuccessMessage", $"Đã đăng nhập nhanh với vai trò [{user.Role}]: {user.FullName}!");
-
-                    if (!string.IsNullOrEmpty(returnUrl) && returnUrl.StartsWith("/"))
-                    {
-                        return Results.Redirect(returnUrl);
-                    }
-
-                    if (user.Role == UserRole.Host) return Results.Redirect("/Host");
-                }
-                return Results.Redirect("/");
+                SetTempMessage(http, "ErrorMessage", "Tính năng đăng nhập nhanh đã bị vô hiệu hóa. Vui lòng nhập Email và Mật khẩu để xác thực tài khoản!");
+                return Results.Redirect("/Account/Login");
             }).DisableAntiforgery();
 
             app.MapPost("/Account/Logout", async (HttpContext http) =>
