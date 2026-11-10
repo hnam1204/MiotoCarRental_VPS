@@ -447,6 +447,71 @@ namespace MiotoCarRental.Endpoints
                 return Results.Json(new { RspCode = "00", Message = "Confirm Success" });
             });
 
+            // API kiểm tra trạng thái thanh toán đơn hàng thời gian thực (Real-time Polling)
+            app.MapGet("/api/bookings/{id:int}/status", async (int id, MiotoDbContext db) =>
+            {
+                var booking = await db.Bookings.FindAsync(id);
+                if (booking == null) return Results.NotFound();
+
+                bool isPaid = booking.Status == BookingStatus.Confirmed || 
+                              booking.Status == BookingStatus.InProgress || 
+                              booking.Status == BookingStatus.Completed;
+
+                return Results.Ok(new
+                {
+                    id = booking.Id,
+                    bookingCode = booking.BookingCode,
+                    status = booking.Status.ToString(),
+                    isPaid = isPaid,
+                    paymentMethod = booking.PaymentMethod,
+                    transactionId = booking.PaymentTransactionId,
+                    bankCode = booking.PaymentBankCode,
+                    depositPaidAt = booking.DepositPaidAt?.ToString("yyyy-MM-ddTHH:mm:ss")
+                });
+            });
+
+            // API Webhook tiếp nhận biến động số dư ngân hàng thực tế từ SePay / Casso (MBBank)
+            app.MapPost("/api/sepay/webhook", async (HttpContext http, MiotoDbContext db, IBookingService bookingService, ISepayService sepayService, [FromBody] SepayWebhookPayload payload) =>
+            {
+                string? authHeader = http.Request.Headers["Authorization"].FirstOrDefault();
+
+                var pendingBookings = await db.Bookings
+                    .Where(b => b.Status == BookingStatus.AwaitingPayment || b.Status == BookingStatus.Pending)
+                    .ToListAsync();
+
+                var result = sepayService.ProcessWebhook(payload, authHeader, pendingBookings);
+
+                if (!result.IsValidApiKey)
+                {
+                    return Results.Json(new { success = false, message = "Invalid API Key" }, statusCode: 401);
+                }
+
+                if (result.IsSuccess)
+                {
+                    await bookingService.ConfirmDepositAsync(result.BookingId, result.ReferenceCode, "SEPAY_MBBANK", "MBBank");
+                    return Results.Ok(new { success = true, message = "Xác nhận cọc thành công", bookingId = result.BookingId });
+                }
+
+                return Results.Ok(new { success = false, message = result.Message });
+            });
+
+            // API kiểm thử kích hoạt mô phỏng Webhook SePay (Dành cho Demo / Thuyết trình)
+            app.MapPost("/api/sepay/test-webhook/{bookingId:int}", async (int bookingId, MiotoDbContext db, IBookingService bookingService) =>
+            {
+                var booking = await db.Bookings.FindAsync(bookingId);
+                if (booking == null) return Results.NotFound();
+
+                if (booking.Status == BookingStatus.Pending)
+                {
+                    booking.Status = BookingStatus.AwaitingPayment;
+                    await db.SaveChangesAsync();
+                }
+
+                var refCode = $"MB-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}";
+                await bookingService.ConfirmDepositAsync(booking.Id, refCode, "SEPAY_MBBANK", "MBBank");
+                return Results.Ok(new { success = true, message = "Đã nhận diện thanh toán từ MBBank thành công!", referenceCode = refCode });
+            });
+
             // API mô phỏng Webhook thanh toán (dành cho Demo)
             app.MapPost("/Bookings/SimulatePayment", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id) =>
             {

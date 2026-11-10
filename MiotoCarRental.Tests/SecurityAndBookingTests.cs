@@ -251,6 +251,99 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.False(result.IsValidSignature);
     }
 
+    [Fact]
+    public void SepayService_CreatesValidVietQrUrl_AndProcessesWebhookSuccessfully()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"Sepay:BankCode", "MB"},
+            {"Sepay:BankName", "MBBank"},
+            {"Sepay:AccountNumber", "0901000001"},
+            {"Sepay:AccountName", "ECOBIKE VIETNAM"},
+            {"Sepay:ApiKey", "TEST_KEY_123"}
+        };
+
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var sepay = new SepayService(config);
+
+        var qrUrl = sepay.GetVietQrUrl(180000, "EB-20261111-9999");
+        Assert.Contains("img.vietqr.io/image/MB-0901000001", qrUrl);
+        Assert.Contains("amount=180000", qrUrl);
+        Assert.Contains("addInfo=EB-20261111-9999", qrUrl);
+
+        var booking = new Booking
+        {
+            Id = 55,
+            BookingCode = "EB-20261111-9999",
+            DepositAmount = 180000,
+            Status = BookingStatus.AwaitingPayment
+        };
+
+        var payload = new SepayWebhookPayload
+        {
+            Id = 98765,
+            Gateway = "MBBank",
+            TransferType = "in",
+            TransferAmount = 180000,
+            Content = "Thanh toan coc xe EB-20261111-9999 tu app MBBank",
+            ReferenceCode = "FT2611110098765"
+        };
+
+        var result = sepay.ProcessWebhook(payload, "Apikey TEST_KEY_123", new[] { booking });
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.IsValidApiKey);
+        Assert.Equal(55, result.BookingId);
+        Assert.Equal("FT2611110098765", result.ReferenceCode);
+        Assert.Equal(180000, result.Amount);
+    }
+
+    [Fact]
+    public void SepayService_RejectsUnderpaidOrOutgoingTransaction()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"Sepay:ApiKey", "TEST_KEY_123"}
+        };
+
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var sepay = new SepayService(config);
+        var booking = new Booking
+        {
+            Id = 56,
+            BookingCode = "EB-20261111-8888",
+            DepositAmount = 200000
+        };
+
+        // Case 1: Tiền vào không đủ cọc (chuyển thiếu)
+        var underpaidPayload = new SepayWebhookPayload
+        {
+            Id = 111,
+            TransferType = "in",
+            TransferAmount = 50000, // Cọc 200k nhưng chỉ chuyển 50k
+            Content = "EB-20261111-8888"
+        };
+        var underpaidResult = sepay.ProcessWebhook(underpaidPayload, "Apikey TEST_KEY_123", new[] { booking });
+        Assert.False(underpaidResult.IsSuccess);
+
+        // Case 2: Tiền ra (chuyển đi)
+        var outPayload = new SepayWebhookPayload
+        {
+            Id = 222,
+            TransferType = "out",
+            TransferAmount = 200000,
+            Content = "EB-20261111-8888"
+        };
+        var outResult = sepay.ProcessWebhook(outPayload, "Apikey TEST_KEY_123", new[] { booking });
+        Assert.False(outResult.IsSuccess);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

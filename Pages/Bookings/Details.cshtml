@@ -1,6 +1,7 @@
 @page "/Bookings/Details/{id:int}"
 @model MiotoCarRental.ViewModels.BookingDetailsPageModel
 @using MiotoCarRental.Models.Entities
+@inject MiotoCarRental.Services.ISepayService Sepay
 @{
     var Model = this.Model.Booking;
     ViewData["Title"] = $"Đơn đặt xe #{Model.BookingCode}";
@@ -114,14 +115,14 @@
         <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-xl text-center">
             <div class="max-w-md mx-auto space-y-5">
                 <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                    <i class="bi bi-shield-lock-fill text-blue-600"></i> Cổng thanh toán Quốc gia VNPAY & VietQR
+                    <i class="bi bi-shield-lock-fill text-blue-600"></i> Cổng thanh toán Quốc gia VNPAY & VietQR MBBank
                 </span>
                 <h3 class="text-xl font-black text-gray-900">Thanh toán cọc 30% giữ xe</h3>
                 <p class="text-xs text-gray-500">
                     Số tiền cần thanh toán: <strong class="text-emerald-700 text-base">@Model.DepositAmount.ToString("N0") đ</strong> (Mã đơn: <span class="font-mono text-gray-800">#@Model.BookingCode</span>)
                 </p>
 
-                <!-- Nút Thanh toán qua Cổng VNPay chính thức -->
+                <!-- 1. Thanh toán qua Cổng VNPay Sandbox -->
                 <form action="/Payment/CreateVnPayUrl" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
@@ -129,7 +130,7 @@
                         <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                             <path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H3V8h18v10zm-10-7H5v2h6v-2z"/>
                         </svg>
-                        <span class="text-base tracking-wide">Thanh toán cọc qua Cổng VNPAY</span>
+                        <span class="text-base tracking-wide">Thanh toán qua Cổng VNPAY (Thẻ / ATM)</span>
                         <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
@@ -151,27 +152,68 @@
 
                 <div class="relative flex py-1 items-center">
                     <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-gray-400 text-[11px] font-bold uppercase">Hoặc Quét mã VietQR chuyển khoản</span>
+                    <span class="flex-shrink mx-4 text-emerald-700 text-[11px] font-black uppercase flex items-center gap-1">
+                        <i class="bi bi-qr-code-scan"></i> Hoặc Quét mã VietQR MBBank (Ting ting tự động)
+                    </span>
                     <div class="flex-grow border-t border-gray-200"></div>
                 </div>
 
-                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 inline-block shadow-inner">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ECOBIKE-DEPOSIT-@Model.BookingCode-AMOUNT-@Model.DepositAmount" 
-                         alt="QR Code" class="w-40 h-40 mx-auto rounded-lg" />
-                    <div class="mt-3 space-y-1">
-                        <span class="text-[10px] text-gray-500 block font-mono">Nội dung CK: <strong>@Model.BookingCode</strong></span>
-                        <span class="text-[10px] text-gray-500 block font-mono">Số tiền: <strong>@Model.DepositAmount.ToString("N0")đ</strong></span>
+                <!-- Khung Quét mã VietQR Napas 24/7 Ngân hàng MBBank thật -->
+                <div class="p-5 bg-gradient-to-b from-gray-50 to-white rounded-3xl border-2 border-emerald-500/30 shadow-md">
+                    <!-- Trạng thái Auto-Detection Real-time -->
+                    <div class="mb-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-bold">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                        </span>
+                        <span>SePay Webhook: Đang lắng nghe biến động số dư MBBank...</span>
+                    </div>
+
+                    <div class="relative inline-block bg-white p-3 rounded-2xl border border-gray-200 shadow-sm">
+                        <img src="@Sepay.GetVietQrUrl(Model.DepositAmount, Model.BookingCode)" 
+                             alt="VietQR MBBank" class="w-48 h-48 mx-auto rounded-xl object-contain" />
+                    </div>
+
+                    <div class="mt-4 bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Ngân hàng:</span>
+                            <strong class="text-gray-900 font-bold">@Sepay.BankName</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Số tài khoản:</span>
+                            <div class="flex items-center gap-1.5 font-mono font-bold text-gray-900">
+                                <span>@Sepay.AccountNumber</span>
+                                <button type="button" id="copyStkBtn" onclick="copyText('@Sepay.AccountNumber', 'copyStkBtn')" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Chủ tài khoản:</span>
+                            <strong class="text-gray-900 font-bold uppercase">@Sepay.AccountName</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Số tiền cọc:</span>
+                            <strong class="text-emerald-700 font-black text-sm">@Model.DepositAmount.ToString("N0") đ</strong>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-gray-200">
+                            <span class="text-gray-500">Nội dung CK:</span>
+                            <div class="flex items-center gap-1.5 font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                                <span>@Model.BookingCode</span>
+                                <button type="button" id="copyContentBtn" onclick="copyText('@Model.BookingCode', 'copyContentBtn')" class="text-[10px] text-emerald-700 hover:text-emerald-900">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Nút mô phỏng xác nhận nhanh -->
-                <form action="/Bookings/SimulatePayment" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="w-full text-xs font-bold text-gray-500 hover:text-emerald-700 py-2 border border-gray-200 hover:border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5">
-                        <i class="bi bi-lightning-charge-fill text-amber-500"></i> [Xác nhận nhanh] Đã chuyển khoản VietQR thành công
+                <!-- Nút Kiểm thử Kích hoạt Webhook SePay (Dành cho Demo không cần chuyển tiền thật) -->
+                <div class="pt-2">
+                    <button type="button" onclick="triggerTestWebhook(@Model.Id)" class="w-full text-xs font-bold text-emerald-700 hover:text-emerald-800 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="bi bi-broadcast-pin text-emerald-600 text-sm"></i> [Demo] Bắn giả lập Webhook SePay MBBank ngay
                     </button>
-                </form>
+                </div>
             </div>
         </div>
     }
@@ -335,3 +377,52 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        function copyText(val, btnId) {
+            navigator.clipboard.writeText(val);
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                const old = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check2"></i> Đã chép!';
+                setTimeout(() => btn.innerHTML = old, 2000);
+            }
+        }
+
+        async function triggerTestWebhook(bookingId) {
+            try {
+                const res = await fetch(`/api/sepay/test-webhook/${bookingId}`, { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(data.message || "Đã kích hoạt Webhook SePay MBBank thành công!");
+                    window.location.reload();
+                }
+            } catch (e) {
+                alert("Lỗi gọi webhook: " + e);
+            }
+        }
+
+        @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
+        {
+            <text>
+            // Tự động lắng nghe giao dịch thời gian thực (Real-time Polling mỗi 2.5s)
+            let pollTimer = setInterval(async () => {
+                try {
+                    let res = await fetch('/api/bookings/@Model.Id/status');
+                    if (res.ok) {
+                        let data = await res.json();
+                        if (data.isPaid || data.status === 'Confirmed') {
+                            clearInterval(pollTimer);
+                            // Tự động tải lại trang ngay khi tiền ting ting vào MBBank
+                            window.location.reload();
+                        }
+                    }
+                } catch (e) {
+                    console.log("Polling payment status...", e);
+                }
+            }, 2500);
+            </text>
+        }
+    </script>
+}

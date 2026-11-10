@@ -30,6 +30,7 @@ builder.Services.AddDbContext<MiotoDbContext>(options =>
 // Tầng Business Logic Layer (Services)
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IVnPayService, VnPayService>();
+builder.Services.AddScoped<ISepayService, SepayService>();
 builder.Services.AddSingleton<PasswordService>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 
