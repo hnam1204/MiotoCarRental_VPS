@@ -344,6 +344,63 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.False(outResult.IsSuccess);
     }
 
+    [Fact]
+    public void SepayService_SupportsMultiChannel_VPBank_And_MoMo()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"PaymentAccounts:MBBank:AccountNumber", "0901000001"},
+            {"PaymentAccounts:VPBank:AccountNumber", "0902000002"},
+            {"PaymentAccounts:MoMo:PhoneNumber", "0903000003"},
+            {"PaymentAccounts:MoMo:AccountName", "ECOBIKE VIETNAM"}
+        };
+
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var sepay = new SepayService(config);
+        var channels = sepay.GetAvailableChannels(250000, "EB-20261111-7777");
+
+        Assert.Equal(3, channels.Count);
+        Assert.Contains(channels, c => c.Key == "MBBank" && c.QrUrl.Contains("MB-0901000001"));
+        Assert.Contains(channels, c => c.Key == "VPBank" && c.QrUrl.Contains("VPB-0902000002"));
+        Assert.Contains(channels, c => c.Key == "MoMo" && c.QrUrl.Contains("MOMO-0903000003"));
+
+        var booking = new Booking
+        {
+            Id = 77,
+            BookingCode = "EB-20261111-7777",
+            DepositAmount = 250000
+        };
+
+        // Test webhook từ VPBank
+        var vpbPayload = new SepayWebhookPayload
+        {
+            Id = 555,
+            Gateway = "VPBank",
+            TransferType = "in",
+            TransferAmount = 250000,
+            Content = "EB-20261111-7777 coc xe"
+        };
+        var vpbResult = sepay.ProcessWebhook(vpbPayload, null, new[] { booking });
+        Assert.True(vpbResult.IsSuccess);
+        Assert.Equal("VPBank", vpbResult.Gateway);
+
+        // Test webhook từ MoMo
+        var momoPayload = new SepayWebhookPayload
+        {
+            Id = 666,
+            Gateway = "MoMo",
+            TransferType = "in",
+            TransferAmount = 250000,
+            Content = "EB-20261111-7777 chuyen tien momo"
+        };
+        var momoResult = sepay.ProcessWebhook(momoPayload, null, new[] { booking });
+        Assert.True(momoResult.IsSuccess);
+        Assert.Equal("MoMo", momoResult.Gateway);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

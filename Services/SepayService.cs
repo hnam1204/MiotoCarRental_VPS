@@ -20,6 +20,18 @@ namespace MiotoCarRental.Services
         public string? Description { get; set; }
     }
 
+    public class PaymentChannelInfo
+    {
+        public string Key { get; set; } = string.Empty; // "MBBank", "VPBank", "MoMo"
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string AccountNumber { get; set; } = string.Empty;
+        public string AccountName { get; set; } = string.Empty;
+        public string QrUrl { get; set; } = string.Empty;
+        public string IconClass { get; set; } = string.Empty;
+        public string BadgeColor { get; set; } = string.Empty;
+    }
+
     public class SepayProcessResult
     {
         public bool IsSuccess { get; set; }
@@ -27,6 +39,7 @@ namespace MiotoCarRental.Services
         public int BookingId { get; set; }
         public string BookingCode { get; set; } = string.Empty;
         public decimal Amount { get; set; }
+        public string Gateway { get; set; } = "MBBank";
         public string ReferenceCode { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
     }
@@ -37,7 +50,8 @@ namespace MiotoCarRental.Services
         string BankName { get; }
         string AccountNumber { get; }
         string AccountName { get; }
-        string GetVietQrUrl(decimal amount, string content);
+        string GetVietQrUrl(decimal amount, string content, string bankCode = "MB", string? accountNumber = null, string? accountName = null);
+        List<PaymentChannelInfo> GetAvailableChannels(decimal amount, string content);
         SepayProcessResult ProcessWebhook(SepayWebhookPayload payload, string? authHeader, IEnumerable<Booking> pendingBookings);
     }
 
@@ -50,19 +64,75 @@ namespace MiotoCarRental.Services
             _configuration = configuration;
         }
 
-        public string BankCode => _configuration["Sepay:BankCode"] ?? "MB";
-        public string BankName => _configuration["Sepay:BankName"] ?? "MBBank (Ngân hàng Quân Đội)";
-        public string AccountNumber => _configuration["Sepay:AccountNumber"] ?? "0901000001";
-        public string AccountName => _configuration["Sepay:AccountName"] ?? "ECOBIKE VIETNAM";
+        public string BankCode => _configuration["PaymentAccounts:MBBank:BankCode"] ?? _configuration["Sepay:BankCode"] ?? "MB";
+        public string BankName => _configuration["PaymentAccounts:MBBank:BankName"] ?? _configuration["Sepay:BankName"] ?? "MBBank (Ngân hàng Quân Đội)";
+        public string AccountNumber => _configuration["PaymentAccounts:MBBank:AccountNumber"] ?? _configuration["Sepay:AccountNumber"] ?? "0901000001";
+        public string AccountName => _configuration["PaymentAccounts:MBBank:AccountName"] ?? _configuration["Sepay:AccountName"] ?? "ECOBIKE VIETNAM";
 
-        public string GetVietQrUrl(decimal amount, string content)
+        public string GetVietQrUrl(decimal amount, string content, string bankCode = "MB", string? accountNumber = null, string? accountName = null)
         {
             long intAmount = (long)amount;
-            string cleanContent = WebUtility.UrlEncode(content.Trim());
-            string cleanName = WebUtility.UrlEncode(AccountName.Trim());
+            string targetBank = string.IsNullOrWhiteSpace(bankCode) ? "MB" : bankCode.Trim();
+            string targetAcc = string.IsNullOrWhiteSpace(accountNumber) ? AccountNumber : accountNumber.Trim();
+            string targetName = string.IsNullOrWhiteSpace(accountName) ? AccountName : accountName.Trim();
 
-            // Tạo mã VietQR chuẩn Napas 24/7 theo định dạng ngân hàng MBBank
-            return $"https://img.vietqr.io/image/{BankCode}-{AccountNumber}-compact2.png?amount={intAmount}&addInfo={cleanContent}&accountName={cleanName}";
+            string cleanContent = WebUtility.UrlEncode(content.Trim());
+            string cleanName = WebUtility.UrlEncode(targetName);
+
+            // Sinh mã QR Napas 24/7 theo từng ngân hàng / ví (MB, VPB, MOMO)
+            return $"https://img.vietqr.io/image/{targetBank}-{targetAcc}-compact2.png?amount={intAmount}&addInfo={cleanContent}&accountName={cleanName}";
+        }
+
+        public List<PaymentChannelInfo> GetAvailableChannels(decimal amount, string content)
+        {
+            var list = new List<PaymentChannelInfo>();
+
+            // 1. MBBank
+            var mbAcc = _configuration["PaymentAccounts:MBBank:AccountNumber"] ?? "0901000001";
+            var mbName = _configuration["PaymentAccounts:MBBank:AccountName"] ?? "ECOBIKE VIETNAM";
+            list.Add(new PaymentChannelInfo
+            {
+                Key = "MBBank",
+                Name = "MBBank (Quân Đội)",
+                Code = "MB",
+                AccountNumber = mbAcc,
+                AccountName = mbName,
+                QrUrl = GetVietQrUrl(amount, content, "MB", mbAcc, mbName),
+                IconClass = "bi bi-bank2",
+                BadgeColor = "blue"
+            });
+
+            // 2. VPBank
+            var vpbAcc = _configuration["PaymentAccounts:VPBank:AccountNumber"] ?? "0902000002";
+            var vpbName = _configuration["PaymentAccounts:VPBank:AccountName"] ?? "ECOBIKE VIETNAM";
+            list.Add(new PaymentChannelInfo
+            {
+                Key = "VPBank",
+                Name = "VPBank (Thịnh Vượng)",
+                Code = "VPB",
+                AccountNumber = vpbAcc,
+                AccountName = vpbName,
+                QrUrl = GetVietQrUrl(amount, content, "VPB", vpbAcc, vpbName),
+                IconClass = "bi bi-building-fill",
+                BadgeColor = "emerald"
+            });
+
+            // 3. Ví MoMo
+            var momoPhone = _configuration["PaymentAccounts:MoMo:PhoneNumber"] ?? "0901000001";
+            var momoName = _configuration["PaymentAccounts:MoMo:AccountName"] ?? "ECOBIKE VIETNAM";
+            list.Add(new PaymentChannelInfo
+            {
+                Key = "MoMo",
+                Name = "Ví Điện Tử MoMo",
+                Code = "MOMO",
+                AccountNumber = momoPhone,
+                AccountName = momoName,
+                QrUrl = GetVietQrUrl(amount, content, "MOMO", momoPhone, momoName),
+                IconClass = "bi bi-wallet2",
+                BadgeColor = "pink"
+            });
+
+            return list;
         }
 
         public SepayProcessResult ProcessWebhook(SepayWebhookPayload payload, string? authHeader, IEnumerable<Booking> pendingBookings)
@@ -137,9 +207,10 @@ namespace MiotoCarRental.Services
                 };
             }
 
+            string gateway = !string.IsNullOrEmpty(payload.Gateway) ? payload.Gateway : "MBBank";
             string refCode = !string.IsNullOrEmpty(payload.ReferenceCode) 
                 ? payload.ReferenceCode 
-                : $"MB-{payload.Id}";
+                : $"{gateway.ToUpper()}-{payload.Id}";
 
             return new SepayProcessResult
             {
@@ -147,9 +218,10 @@ namespace MiotoCarRental.Services
                 IsValidApiKey = isValidKey,
                 BookingId = matchedBooking.Id,
                 BookingCode = matchedBooking.BookingCode,
+                Gateway = gateway,
                 Amount = payload.TransferAmount,
                 ReferenceCode = refCode,
-                Message = "Xác thực giao dịch chuyển khoản MBBank thành công!"
+                Message = $"Xác thực giao dịch chuyển khoản {gateway} thành công!"
             };
         }
     }

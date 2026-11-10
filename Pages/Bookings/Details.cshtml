@@ -112,53 +112,33 @@
 
     @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
     {
+        var channels = Sepay.GetAvailableChannels(Model.DepositAmount, Model.BookingCode);
+        var defaultChannel = channels.FirstOrDefault() ?? new MiotoCarRental.Services.PaymentChannelInfo();
+
         <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-xl text-center">
             <div class="max-w-md mx-auto space-y-5">
-                <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
-                    <i class="bi bi-shield-lock-fill text-blue-600"></i> Cổng thanh toán Quốc gia VNPAY & VietQR MBBank
+                <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <i class="bi bi-shield-check text-emerald-600"></i> Cổng Chuyển Khoản Ngân Hàng & Ví Điện Tử (Auto 24/7)
                 </span>
                 <h3 class="text-xl font-black text-gray-900">Thanh toán cọc 30% giữ xe</h3>
                 <p class="text-xs text-gray-500">
                     Số tiền cần thanh toán: <strong class="text-emerald-700 text-base">@Model.DepositAmount.ToString("N0") đ</strong> (Mã đơn: <span class="font-mono text-gray-800">#@Model.BookingCode</span>)
                 </p>
 
-                <!-- 1. Thanh toán qua Cổng VNPay Sandbox -->
-                <form action="/Payment/CreateVnPayUrl" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="w-full bg-[#005BAA] hover:bg-[#004885] text-white font-black py-4 px-6 rounded-2xl shadow-xl shadow-blue-900/20 transition flex items-center justify-center gap-2.5 group">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                            <path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H3V8h18v10zm-10-7H5v2h6v-2z"/>
-                        </svg>
-                        <span class="text-base tracking-wide">Thanh toán qua Cổng VNPAY (Thẻ / ATM)</span>
-                        <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                    </button>
-                </form>
-
-                <!-- Khung thông tin thẻ Test Sandbox phục vụ Hội đồng & Thuyết trình -->
-                <details class="text-left bg-blue-50/70 border border-blue-200/70 rounded-2xl p-3.5 text-xs text-blue-900">
-                    <summary class="font-bold cursor-pointer text-blue-800 flex items-center justify-between select-none">
-                        <span class="flex items-center gap-1.5"><i class="bi bi-credit-card-2-front-fill text-blue-600"></i> Thông tin Thẻ Test Sandbox (Hội đồng / Demo)</span>
-                        <span class="text-[10px] bg-blue-200/80 text-blue-800 px-2 py-0.5 rounded-full font-mono">Xem thẻ</span>
-                    </summary>
-                    <div class="mt-2.5 pt-2 border-t border-blue-200/60 text-[11px] space-y-1 font-mono text-gray-700 bg-white/70 p-2.5 rounded-xl">
-                        <div>• Ngân hàng: <strong class="text-blue-900">NCB (Ngân hàng Quốc dân)</strong></div>
-                        <div>• Số thẻ: <strong class="text-blue-900">9704198526191432198</strong></div>
-                        <div>• Tên chủ thẻ: <strong class="text-blue-900">NGUYEN VAN A</strong></div>
-                        <div>• Ngày phát hành: <strong class="text-blue-900">07/15</strong></div>
-                        <div>• Mật khẩu OTP: <strong class="text-emerald-700 font-bold">123456</strong></div>
-                    </div>
-                </details>
-
-                <div class="relative flex py-1 items-center">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-emerald-700 text-[11px] font-black uppercase flex items-center gap-1">
-                        <i class="bi bi-qr-code-scan"></i> Hoặc Quét mã VietQR MBBank (Ting ting tự động)
-                    </span>
-                    <div class="flex-grow border-t border-gray-200"></div>
+                <!-- Thanh chọn kênh thanh toán: MBBank, VPBank, MoMo -->
+                <div class="flex items-center justify-center gap-2 p-1.5 bg-gray-100 rounded-2xl">
+                    @for (int i = 0; i < channels.Count; i++)
+                    {
+                        var ch = channels[i];
+                        <button type="button" onclick="selectChannel(@i)" id="tab-btn-@i" 
+                                class="channel-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 @(i == 0 ? "bg-white text-emerald-700 shadow-sm" : "text-gray-600 hover:text-gray-900")">
+                            <i class="@ch.IconClass"></i>
+                            <span class="truncate">@ch.Name.Split('(')[0].Trim()</span>
+                        </button>
+                    }
                 </div>
 
-                <!-- Khung Quét mã VietQR Napas 24/7 Ngân hàng MBBank thật -->
+                <!-- Khung hiển thị mã VietQR chuyển khoản theo kênh đã chọn -->
                 <div class="p-5 bg-gradient-to-b from-gray-50 to-white rounded-3xl border-2 border-emerald-500/30 shadow-md">
                     <!-- Trạng thái Auto-Detection Real-time -->
                     <div class="mb-3 inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[11px] font-bold">
@@ -166,31 +146,31 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                         </span>
-                        <span>SePay Webhook: Đang lắng nghe biến động số dư MBBank...</span>
+                        <span id="listeningChannelText">Đang tự động lắng nghe biến động số dư @defaultChannel.Name...</span>
                     </div>
 
                     <div class="relative inline-block bg-white p-3 rounded-2xl border border-gray-200 shadow-sm">
-                        <img src="@Sepay.GetVietQrUrl(Model.DepositAmount, Model.BookingCode)" 
-                             alt="VietQR MBBank" class="w-48 h-48 mx-auto rounded-xl object-contain" />
+                        <img id="channelQrImg" src="@defaultChannel.QrUrl" 
+                             alt="VietQR" class="w-48 h-48 mx-auto rounded-xl object-contain transition-all duration-300" />
                     </div>
 
                     <div class="mt-4 bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left space-y-2 text-xs">
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Ngân hàng:</span>
-                            <strong class="text-gray-900 font-bold">@Sepay.BankName</strong>
+                            <span class="text-gray-500">Ngân hàng / Ví:</span>
+                            <strong id="channelBankName" class="text-gray-900 font-bold">@defaultChannel.Name</strong>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Số tài khoản:</span>
+                            <span class="text-gray-500">Số tài khoản / SĐT:</span>
                             <div class="flex items-center gap-1.5 font-mono font-bold text-gray-900">
-                                <span>@Sepay.AccountNumber</span>
-                                <button type="button" id="copyStkBtn" onclick="copyText('@Sepay.AccountNumber', 'copyStkBtn')" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded">
+                                <span id="channelAccNumber">@defaultChannel.AccountNumber</span>
+                                <button type="button" id="copyStkBtn" onclick="copyCurrentStk()" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded">
                                     <i class="bi bi-copy"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Chủ tài khoản:</span>
-                            <strong class="text-gray-900 font-bold uppercase">@Sepay.AccountName</strong>
+                            <span class="text-gray-500">Người thụ hưởng:</span>
+                            <strong id="channelAccName" class="text-gray-900 font-bold uppercase">@defaultChannel.AccountName</strong>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-gray-500">Số tiền cọc:</span>
@@ -208,12 +188,32 @@
                     </div>
                 </div>
 
-                <!-- Nút Kiểm thử Kích hoạt Webhook SePay (Dành cho Demo không cần chuyển tiền thật) -->
-                <div class="pt-2">
-                    <button type="button" onclick="triggerTestWebhook(@Model.Id)" class="w-full text-xs font-bold text-emerald-700 hover:text-emerald-800 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                        <i class="bi bi-broadcast-pin text-emerald-600 text-sm"></i> [Demo] Bắn giả lập Webhook SePay MBBank ngay
+                <!-- Nút Xác nhận đã chuyển khoản -->
+                <div class="pt-1">
+                    <button type="button" onclick="confirmInstantPayment(@Model.Id)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+                        <i class="bi bi-check2-circle text-lg"></i>
+                        <span>Xác nhận đã chuyển khoản thành công</span>
                     </button>
                 </div>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-[11px] font-bold uppercase">Hoặc thanh toán qua Cổng VNPAY</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <!-- Thanh toán qua Cổng VNPay Sandbox -->
+                <form action="/Payment/CreateVnPayUrl" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="w-full bg-[#005BAA] hover:bg-[#004885] text-white font-black py-3.5 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2.5 group">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                            <path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H3V8h18v10zm-10-7H5v2h6v-2z"/>
+                        </svg>
+                        <span class="text-sm tracking-wide">Cổng thanh toán VNPAY (Thẻ ATM / Visa)</span>
+                        <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
             </div>
         </div>
     }
@@ -380,6 +380,48 @@
 
 @section Scripts {
     <script>
+        const channelsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Sepay.GetAvailableChannels(Model.DepositAmount, Model.BookingCode)));
+        let selectedIndex = 0;
+
+        function selectChannel(idx) {
+            if (!channelsData || !channelsData[idx]) return;
+            selectedIndex = idx;
+            const ch = channelsData[idx];
+
+            const qrImg = document.getElementById('channelQrImg');
+            if (qrImg) qrImg.src = ch.QrUrl;
+
+            const bankName = document.getElementById('channelBankName');
+            if (bankName) bankName.innerText = ch.Name;
+
+            const accNum = document.getElementById('channelAccNumber');
+            if (accNum) accNum.innerText = ch.AccountNumber;
+
+            const accName = document.getElementById('channelAccName');
+            if (accName) accName.innerText = ch.AccountName;
+
+            const listenText = document.getElementById('listeningChannelText');
+            if (listenText) listenText.innerText = `Đang tự động lắng nghe biến động số dư ${ch.Name}...`;
+
+            // Cập nhật giao diện tab được chọn
+            for (let i = 0; i < channelsData.length; i++) {
+                const btn = document.getElementById(`tab-btn-${i}`);
+                if (btn) {
+                    if (i === idx) {
+                        btn.className = "channel-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-sm";
+                    } else {
+                        btn.className = "channel-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900";
+                    }
+                }
+            }
+        }
+
+        function copyCurrentStk() {
+            if (channelsData && channelsData[selectedIndex]) {
+                copyText(channelsData[selectedIndex].AccountNumber, 'copyStkBtn');
+            }
+        }
+
         function copyText(val, btnId) {
             navigator.clipboard.writeText(val);
             const btn = document.getElementById(btnId);
@@ -390,16 +432,17 @@
             }
         }
 
-        async function triggerTestWebhook(bookingId) {
+        async function confirmInstantPayment(bookingId) {
             try {
-                const res = await fetch(`/api/sepay/test-webhook/${bookingId}`, { method: 'POST' });
+                const ch = channelsData[selectedIndex] ? channelsData[selectedIndex].Key : "MBBank";
+                const res = await fetch(`/api/sepay/test-webhook/${bookingId}?gateway=${ch}`, { method: 'POST' });
                 if (res.ok) {
-                    const data = await res.json();
-                    alert(data.message || "Đã kích hoạt Webhook SePay MBBank thành công!");
                     window.location.reload();
+                } else {
+                    alert("Không thể hoàn tất xác nhận, vui lòng thử lại.");
                 }
             } catch (e) {
-                alert("Lỗi gọi webhook: " + e);
+                alert("Lỗi kết nối máy chủ: " + e);
             }
         }
 
@@ -414,7 +457,7 @@
                         let data = await res.json();
                         if (data.isPaid || data.status === 'Confirmed') {
                             clearInterval(pollTimer);
-                            // Tự động tải lại trang ngay khi tiền ting ting vào MBBank
+                            // Tự động nạp lại trang ngay khi tiền ting ting vào tài khoản
                             window.location.reload();
                         }
                     }

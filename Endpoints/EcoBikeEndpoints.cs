@@ -488,15 +488,15 @@ namespace MiotoCarRental.Endpoints
 
                 if (result.IsSuccess)
                 {
-                    await bookingService.ConfirmDepositAsync(result.BookingId, result.ReferenceCode, "SEPAY_MBBANK", "MBBank");
-                    return Results.Ok(new { success = true, message = "Xác nhận cọc thành công", bookingId = result.BookingId });
+                    await bookingService.ConfirmDepositAsync(result.BookingId, result.ReferenceCode, $"SEPAY_{result.Gateway.ToUpper()}", result.Gateway);
+                    return Results.Ok(new { success = true, message = "Xác nhận cọc thành công", bookingId = result.BookingId, gateway = result.Gateway });
                 }
 
                 return Results.Ok(new { success = false, message = result.Message });
             });
 
             // API kiểm thử kích hoạt mô phỏng Webhook SePay (Dành cho Demo / Thuyết trình)
-            app.MapPost("/api/sepay/test-webhook/{bookingId:int}", async (int bookingId, MiotoDbContext db, IBookingService bookingService) =>
+            app.MapPost("/api/sepay/test-webhook/{bookingId:int}", async (int bookingId, HttpContext http, MiotoDbContext db, IBookingService bookingService) =>
             {
                 var booking = await db.Bookings.FindAsync(bookingId);
                 if (booking == null) return Results.NotFound();
@@ -507,9 +507,12 @@ namespace MiotoCarRental.Endpoints
                     await db.SaveChangesAsync();
                 }
 
-                var refCode = $"MB-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}";
-                await bookingService.ConfirmDepositAsync(booking.Id, refCode, "SEPAY_MBBANK", "MBBank");
-                return Results.Ok(new { success = true, message = "Đã nhận diện thanh toán từ MBBank thành công!", referenceCode = refCode });
+                string gateway = http.Request.Query["gateway"].ToString();
+                if (string.IsNullOrEmpty(gateway)) gateway = "MBBank";
+
+                var refCode = $"{gateway.ToUpper()}-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(100000, 999999)}";
+                await bookingService.ConfirmDepositAsync(booking.Id, refCode, $"SEPAY_{gateway.ToUpper()}", gateway);
+                return Results.Ok(new { success = true, message = $"Đã nhận diện thanh toán từ {gateway} thành công!", referenceCode = refCode, gateway = gateway });
             });
 
             // API mô phỏng Webhook thanh toán (dành cho Demo)
