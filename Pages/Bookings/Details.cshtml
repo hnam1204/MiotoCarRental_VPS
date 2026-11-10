@@ -112,29 +112,64 @@
     @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
     {
         <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-xl text-center">
-            <div class="max-w-md mx-auto space-y-4">
-                <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">
-                    <i class="bi bi-qr-code-scan"></i> Cổng thanh toán VietQR / PayOS
+            <div class="max-w-md mx-auto space-y-5">
+                <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <i class="bi bi-shield-lock-fill text-blue-600"></i> Cổng thanh toán Quốc gia VNPAY & VietQR
                 </span>
-                <h3 class="text-xl font-black text-gray-900">Quét mã QR để thanh toán cọc giữ chỗ</h3>
+                <h3 class="text-xl font-black text-gray-900">Thanh toán cọc 30% giữ xe</h3>
                 <p class="text-xs text-gray-500">
-                    Chuyển khoản <strong>@Model.DepositAmount.ToString("N0") đ</strong> (30% cọc) để hoàn tất giữ lịch xe.
+                    Số tiền cần thanh toán: <strong class="text-emerald-700 text-base">@Model.DepositAmount.ToString("N0") đ</strong> (Mã đơn: <span class="font-mono text-gray-800">#@Model.BookingCode</span>)
                 </p>
+
+                <!-- Nút Thanh toán qua Cổng VNPay chính thức -->
+                <form action="/Payment/CreateVnPayUrl" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="w-full bg-[#005BAA] hover:bg-[#004885] text-white font-black py-4 px-6 rounded-2xl shadow-xl shadow-blue-900/20 transition flex items-center justify-center gap-2.5 group">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                            <path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H3V8h18v10zm-10-7H5v2h6v-2z"/>
+                        </svg>
+                        <span class="text-base tracking-wide">Thanh toán cọc qua Cổng VNPAY</span>
+                        <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+
+                <!-- Khung thông tin thẻ Test Sandbox phục vụ Hội đồng & Thuyết trình -->
+                <details class="text-left bg-blue-50/70 border border-blue-200/70 rounded-2xl p-3.5 text-xs text-blue-900">
+                    <summary class="font-bold cursor-pointer text-blue-800 flex items-center justify-between select-none">
+                        <span class="flex items-center gap-1.5"><i class="bi bi-credit-card-2-front-fill text-blue-600"></i> Thông tin Thẻ Test Sandbox (Hội đồng / Demo)</span>
+                        <span class="text-[10px] bg-blue-200/80 text-blue-800 px-2 py-0.5 rounded-full font-mono">Xem thẻ</span>
+                    </summary>
+                    <div class="mt-2.5 pt-2 border-t border-blue-200/60 text-[11px] space-y-1 font-mono text-gray-700 bg-white/70 p-2.5 rounded-xl">
+                        <div>• Ngân hàng: <strong class="text-blue-900">NCB (Ngân hàng Quốc dân)</strong></div>
+                        <div>• Số thẻ: <strong class="text-blue-900">9704198526191432198</strong></div>
+                        <div>• Tên chủ thẻ: <strong class="text-blue-900">NGUYEN VAN A</strong></div>
+                        <div>• Ngày phát hành: <strong class="text-blue-900">07/15</strong></div>
+                        <div>• Mật khẩu OTP: <strong class="text-emerald-700 font-bold">123456</strong></div>
+                    </div>
+                </details>
+
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-[11px] font-bold uppercase">Hoặc Quét mã VietQR chuyển khoản</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
 
                 <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 inline-block shadow-inner">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ECOBIKE-DEPOSIT-@Model.BookingCode-AMOUNT-@Model.DepositAmount" 
-                         alt="QR Code" class="w-44 h-44 mx-auto rounded-lg" />
+                         alt="QR Code" class="w-40 h-40 mx-auto rounded-lg" />
                     <div class="mt-3 space-y-1">
-                        <span class="text-[10px] text-gray-500 block font-mono">Nội dung CK: @Model.BookingCode</span>
-                        <span class="text-[10px] text-gray-500 block font-mono">Số tiền: @Model.DepositAmount.ToString("N0")đ</span>
+                        <span class="text-[10px] text-gray-500 block font-mono">Nội dung CK: <strong>@Model.BookingCode</strong></span>
+                        <span class="text-[10px] text-gray-500 block font-mono">Số tiền: <strong>@Model.DepositAmount.ToString("N0")đ</strong></span>
                     </div>
                 </div>
 
+                <!-- Nút mô phỏng xác nhận nhanh -->
                 <form action="/Bookings/SimulatePayment" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition">
-                        <i class="bi bi-check2-circle mr-1"></i> [DEMO] Giả lập Xác nhận Đã Chuyển Khoản Thành Công
+                    <button type="submit" class="w-full text-xs font-bold text-gray-500 hover:text-emerald-700 py-2 border border-gray-200 hover:border-emerald-300 rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="bi bi-lightning-charge-fill text-amber-500"></i> [Xác nhận nhanh] Đã chuyển khoản VietQR thành công
                     </button>
                 </form>
             </div>
@@ -143,7 +178,45 @@
 
     @if (Model.Status == BookingStatus.Confirmed)
     {
-        <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-blue-100 shadow-md">
+        <!-- Thẻ Biên nhận Cọc Thanh toán Thành công -->
+        <div class="mt-8 bg-emerald-50/70 border border-emerald-200 rounded-3xl p-6 sm:p-7 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-emerald-200/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/30 text-2xl">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block">Biên nhận đặt cọc thành công</span>
+                        <h4 class="text-lg font-black text-emerald-950">Đã thanh toán 30% giữ chỗ</h4>
+                    </div>
+                </div>
+                <div class="text-right sm:text-right">
+                    <span class="text-xs text-emerald-700 block">Số tiền cọc đã thu</span>
+                    <span class="text-2xl font-black text-emerald-800">@Model.DepositAmount.ToString("N0") đ</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
+                <div>
+                    <span class="text-gray-400 block text-[11px]">Cổng thanh toán</span>
+                    <strong class="text-gray-800 font-bold">@(Model.PaymentMethod ?? "VNPAY")</strong>
+                </div>
+                <div>
+                    <span class="text-gray-400 block text-[11px]">Mã giao dịch</span>
+                    <strong class="text-gray-800 font-mono">@(Model.PaymentTransactionId ?? $"VNP-{Model.BookingCode}")</strong>
+                </div>
+                <div>
+                    <span class="text-gray-400 block text-[11px]">Ngân hàng xử lý</span>
+                    <strong class="text-gray-800 font-bold">@(Model.PaymentBankCode ?? "NCB/VietQR")</strong>
+                </div>
+                <div>
+                    <span class="text-gray-400 block text-[11px]">Thời gian xác nhận</span>
+                    <strong class="text-gray-800">@(Model.DepositPaidAt?.ToString("dd/MM/yyyy HH:mm") ?? Model.CreatedAt.ToString("dd/MM/yyyy HH:mm"))</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white rounded-3xl p-6 sm:p-8 border border-blue-100 shadow-md">
             <h3 class="text-xl font-black text-gray-900 mb-2 flex items-center gap-2">
                 <i class="bi bi-clipboard2-check-fill text-blue-600"></i> Bàn giao xe máy điện & Củ sạc (Check-in)
             </h3>

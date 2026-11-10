@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 using MiotoCarRental.Data;
 using MiotoCarRental.Models.Entities;
 using MiotoCarRental.Services;
@@ -137,6 +139,116 @@ public sealed class SecurityAndBookingTests : IDisposable
 
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Account/AccessDenied", redirect.Url);
+    }
+
+    [Fact]
+    public void VnPayService_CreatesSignedUrl_AndValidatesCallbackSuccessfully()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"VnPay:TmnCode", "TESTTMN"},
+            {"VnPay:HashSecret", "TESTSECRET1234567890"},
+            {"VnPay:BaseUrl", "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"},
+            {"VnPay:Version", "2.1.0"},
+            {"VnPay:Command", "pay"},
+            {"VnPay:CurrCode", "VND"},
+            {"VnPay:Locale", "vn"}
+        };
+
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var vnPay = new VnPayService(config);
+        var booking = new Booking
+        {
+            Id = 99,
+            BookingCode = "EB-TEST-99",
+            DepositAmount = 150000
+        };
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("ecobike.vn");
+
+        var url = vnPay.CreatePaymentUrl(booking, httpContext);
+
+        Assert.Contains("vnp_Amount=15000000", url);
+        Assert.Contains("vnp_TmnCode=TESTTMN", url);
+        Assert.Contains("vnp_SecureHash=", url);
+
+        // Test Callback Validation with valid signature
+        var hashSecret = "TESTSECRET1234567890";
+        var queryParams = new SortedDictionary<string, string>(StringComparer.Ordinal)
+        {
+            {"vnp_Amount", "15000000"},
+            {"vnp_BankCode", "NCB"},
+            {"vnp_BankTranNo", "14589230"},
+            {"vnp_CardType", "ATM"},
+            {"vnp_OrderInfo", "Thanh toan coc xe EB-TEST-99"},
+            {"vnp_PayDate", "20261111120000"},
+            {"vnp_ResponseCode", "00"},
+            {"vnp_TmnCode", "TESTTMN"},
+            {"vnp_TransactionNo", "14589230"},
+            {"vnp_TransactionStatus", "00"},
+            {"vnp_TxnRef", "99_EB-TEST-99_12345"}
+        };
+
+        var hashData = new System.Text.StringBuilder();
+        foreach (var kv in queryParams)
+        {
+            if (hashData.Length > 0) hashData.Append('&');
+            hashData.Append(System.Net.WebUtility.UrlEncode(kv.Key));
+            hashData.Append('=');
+            hashData.Append(System.Net.WebUtility.UrlEncode(kv.Value));
+        }
+
+        string secureHash = vnPay.ComputeHmacSha512(hashSecret, hashData.ToString());
+
+        var dict = queryParams.ToDictionary(
+            k => k.Key,
+            v => new StringValues(v.Value)
+        );
+        dict.Add("vnp_SecureHash", new StringValues(secureHash));
+
+        var queryCollection = new QueryCollection(dict);
+        var result = vnPay.ProcessCallback(queryCollection);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.IsValidSignature);
+        Assert.Equal(99, result.BookingId);
+        Assert.Equal("14589230", result.TransactionNo);
+        Assert.Equal("NCB", result.BankCode);
+    }
+
+    [Fact]
+    public void VnPayService_RejectsTamperedSignature()
+    {
+        var inMemorySettings = new Dictionary<string, string?>
+        {
+            {"VnPay:TmnCode", "TESTTMN"},
+            {"VnPay:HashSecret", "TESTSECRET1234567890"}
+        };
+
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings)
+            .Build();
+
+        var vnPay = new VnPayService(config);
+
+        var queryCollection = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            {"vnp_Amount", "15000000"},
+            {"vnp_ResponseCode", "00"},
+            {"vnp_TransactionStatus", "00"},
+            {"vnp_TxnRef", "99_EB-TEST-99_12345"},
+            {"vnp_SecureHash", "INVALID_HASH_VALUE_TAMPERED"}
+        });
+
+        var result = vnPay.ProcessCallback(queryCollection);
+
+        Assert.False(result.IsSuccess);
+        Assert.False(result.IsValidSignature);
     }
 
     public void Dispose()

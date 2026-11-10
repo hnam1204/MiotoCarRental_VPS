@@ -35,6 +35,12 @@ namespace MiotoCarRental.Models.Entities
 
         public BookingStatus Status { get; set; } = BookingStatus.Pending;
 
+        // Thông tin thanh toán qua Cổng thanh toán (VNPay / Ngân hàng)
+        public string? PaymentMethod { get; set; }           // "VNPAY", "VIETQR", etc.
+        public string? PaymentTransactionId { get; set; }    // Mã giao dịch ngân hàng / VNPay (vnp_TransactionNo)
+        public string? PaymentBankCode { get; set; }         // Ngân hàng thanh toán (NCB, VCB, MB...)
+        public DateTime? DepositPaidAt { get; set; }         // Thời gian thanh toán cọc thành công
+
         // Nghiệm thu số hóa khi nhận xe máy điện (Check-in)
         public int? CheckinOdo { get; set; }
         public int? CheckinBatteryPercent { get; set; }          // Phần trăm pin lúc nhận: VD 100%

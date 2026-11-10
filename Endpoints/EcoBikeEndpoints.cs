@@ -352,6 +352,101 @@ namespace MiotoCarRental.Endpoints
                 return Results.Redirect($"/Bookings/Details/{id}");
             }).DisableAntiforgery();
 
+            // API khởi tạo thanh toán qua Cổng VNPay Sandbox
+            app.MapPost("/Payment/CreateVnPayUrl", [Authorize] async (HttpContext http, MiotoDbContext db, IVnPayService vnPayService, [FromForm] int id) =>
+            {
+                var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
+                if (booking == null) return Results.NotFound();
+
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out int currentUserId);
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isRenter = booking.RenterId == currentUserId;
+
+                if (!isAdmin && !isRenter) return Results.Redirect("/Account/AccessDenied");
+
+                if (booking.Status == BookingStatus.Pending)
+                {
+                    booking.Status = BookingStatus.AwaitingPayment;
+                    await db.SaveChangesAsync();
+                }
+
+                if (booking.Status != BookingStatus.AwaitingPayment)
+                {
+                    SetTempMessage(http, "ErrorMessage", "Đơn hàng này không ở trạng thái chờ thanh toán cọc.");
+                    return Results.Redirect($"/Bookings/Details/{id}");
+                }
+
+                var paymentUrl = vnPayService.CreatePaymentUrl(booking, http);
+                return Results.Redirect(paymentUrl);
+            }).DisableAntiforgery();
+
+            // API tiếp nhận kết quả thanh toán từ Cổng VNPay (Return URL)
+            app.MapGet("/Payment/VnPayCallback", async (HttpContext http, MiotoDbContext db, IBookingService bookingService, IVnPayService vnPayService) =>
+            {
+                var result = vnPayService.ProcessCallback(http.Request.Query);
+
+                if (result.BookingId <= 0 && !string.IsNullOrEmpty(result.BookingCode))
+                {
+                    var found = await db.Bookings.FirstOrDefaultAsync(b => b.BookingCode == result.BookingCode);
+                    if (found != null) result.BookingId = found.Id;
+                }
+
+                if (result.BookingId <= 0)
+                {
+                    SetTempMessage(http, "ErrorMessage", "Không tìm thấy thông tin đơn đặt xe liên quan đến giao dịch VNPay.");
+                    return Results.Redirect("/Vehicles");
+                }
+
+                if (result.IsSuccess)
+                {
+                    var transId = !string.IsNullOrEmpty(result.TransactionNo) ? result.TransactionNo : $"VNP-{result.BookingCode}";
+                    await bookingService.ConfirmDepositAsync(result.BookingId, transId, "VNPAY", result.BankCode);
+                    SetTempMessage(http, "SuccessMessage", $"Thanh toán cọc 30% qua Cổng VNPay thành công! Mã giao dịch: {result.TransactionNo} ({result.BankCode}). Đơn hàng đã được xác nhận giữ xe.");
+                }
+                else
+                {
+                    SetTempMessage(http, "ErrorMessage", $"Thanh toán cọc qua Cổng VNPay không thành công: {result.Message}");
+                }
+
+                return Results.Redirect($"/Bookings/Details/{result.BookingId}");
+            });
+
+            // API Webhook đối soát ngầm Server-to-Server từ VNPay (IPN)
+            app.MapGet("/Payment/VnPayIPN", async (HttpContext http, MiotoDbContext db, IBookingService bookingService, IVnPayService vnPayService) =>
+            {
+                var result = vnPayService.ProcessCallback(http.Request.Query);
+
+                if (!result.IsValidSignature)
+                {
+                    return Results.Json(new { RspCode = "97", Message = "Invalid Signature" });
+                }
+
+                var booking = await db.Bookings.FindAsync(result.BookingId);
+                if (booking == null && !string.IsNullOrEmpty(result.BookingCode))
+                {
+                    booking = await db.Bookings.FirstOrDefaultAsync(b => b.BookingCode == result.BookingCode);
+                }
+
+                if (booking == null)
+                {
+                    return Results.Json(new { RspCode = "01", Message = "Order not found" });
+                }
+
+                if (booking.Status == BookingStatus.Confirmed)
+                {
+                    return Results.Json(new { RspCode = "02", Message = "Order already confirmed" });
+                }
+
+                if (result.IsSuccess)
+                {
+                    var transId = !string.IsNullOrEmpty(result.TransactionNo) ? result.TransactionNo : $"VNP-{result.BookingCode}";
+                    await bookingService.ConfirmDepositAsync(booking.Id, transId, "VNPAY", result.BankCode);
+                }
+
+                return Results.Json(new { RspCode = "00", Message = "Confirm Success" });
+            });
+
             // API mô phỏng Webhook thanh toán (dành cho Demo)
             app.MapPost("/Bookings/SimulatePayment", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id) =>
             {

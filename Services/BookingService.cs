@@ -9,7 +9,7 @@ namespace MiotoCarRental.Services
     {
         Task<bool> IsVehicleAvailableAsync(int vehicleId, DateTime startDate, DateTime endDate);
         Task<(bool Success, string Message, Booking? Booking)> CreateBookingAsync(int renterId, CreateBookingViewModel model);
-        Task<bool> ConfirmDepositAsync(int bookingId, string transactionCode);
+        Task<bool> ConfirmDepositAsync(int bookingId, string transactionCode, string? paymentMethod = "VNPAY", string? bankCode = null);
         Task<bool> CheckinVehicleAsync(int bookingId, int odo, int batteryPercent);
         Task<bool> CheckoutVehicleAsync(int bookingId, int odo, int batteryPercent);
     }
@@ -112,7 +112,7 @@ namespace MiotoCarRental.Services
             }
         }
 
-        public async Task<bool> ConfirmDepositAsync(int bookingId, string transactionCode)
+        public async Task<bool> ConfirmDepositAsync(int bookingId, string transactionCode, string? paymentMethod = "VNPAY", string? bankCode = null)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null) return false;
@@ -124,6 +124,11 @@ namespace MiotoCarRental.Services
             }
 
             booking.Status = BookingStatus.Confirmed;
+            booking.PaymentMethod = paymentMethod ?? "VNPAY";
+            booking.PaymentTransactionId = transactionCode;
+            booking.PaymentBankCode = bankCode;
+            booking.DepositPaidAt = DateTime.UtcNow;
+
             await _context.SaveChangesAsync();
             return true;
         }

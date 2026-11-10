@@ -9,6 +9,12 @@ namespace MiotoCarRental.Data
         {
             context.Database.EnsureCreated();
 
+            // Cập nhật schema SQLite tự động cho các cột thanh toán mới nếu đã có database từ trước
+            try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN PaymentMethod TEXT;"); } catch { }
+            try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN PaymentTransactionId TEXT;"); } catch { }
+            try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN PaymentBankCode TEXT;"); } catch { }
+            try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN DepositPaidAt TEXT;"); } catch { }
+
             if (context.Vehicles.Any())
             {
                 return; // Database đã có dữ liệu
