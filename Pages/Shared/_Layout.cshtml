@@ -180,20 +180,36 @@
         </div>
     </header>
 
-    <!-- Notifications -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-4">
+    <!-- Floating Toast Notifications (Top Right) -->
+    <div id="toastContainer" class="fixed top-20 right-4 sm:right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-lg mb-4 flex items-center text-sm text-emerald-800">
-                <i class="bi bi-check-circle-fill text-emerald-600 mr-2.5"></i>
-                <span>@TempData["SuccessMessage"]</span>
+            <div class="pointer-events-auto bg-white border-l-4 border-emerald-500 rounded-xl p-4 shadow-xl flex items-start gap-3 transition-all duration-300 transform translate-x-0">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <i class="bi bi-check-circle-fill text-lg"></i>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <h5 class="text-xs font-bold text-gray-900">Thành công</h5>
+                    <p class="text-xs text-gray-600 mt-0.5">@TempData["SuccessMessage"]</p>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 p-1">
+                    <i class="bi bi-x text-lg"></i>
+                </button>
             </div>
         }
         @if (TempData["ErrorMessage"] != null)
         {
-            <div class="bg-red-50 border border-red-200 p-3.5 rounded-lg mb-4 flex items-center text-sm text-red-800">
-                <i class="bi bi-exclamation-circle-fill text-red-600 mr-2.5"></i>
-                <span>@TempData["ErrorMessage"]</span>
+            <div class="pointer-events-auto bg-white border-l-4 border-rose-500 rounded-xl p-4 shadow-xl flex items-start gap-3 transition-all duration-300 transform translate-x-0">
+                <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <h5 class="text-xs font-bold text-gray-900">Thông báo</h5>
+                    <p class="text-xs text-gray-600 mt-0.5">@TempData["ErrorMessage"]</p>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 p-1">
+                    <i class="bi bi-x text-lg"></i>
+                </button>
             </div>
         }
     </div>
@@ -260,6 +276,18 @@
                 menu.classList.toggle('hidden');
             }
         }
+
+        // Tự động ẩn Toast thông báo sau 4.5 giây
+        document.addEventListener("DOMContentLoaded", function () {
+            setTimeout(() => {
+                const toasts = document.querySelectorAll('#toastContainer > div');
+                toasts.forEach(t => {
+                    t.style.opacity = '0';
+                    t.style.transform = 'translateX(100%)';
+                    setTimeout(() => t.remove(), 350);
+                });
+            }, 4500);
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

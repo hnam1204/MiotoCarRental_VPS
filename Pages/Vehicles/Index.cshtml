@@ -45,9 +45,21 @@
         </a>
     </div>
 
+    <!-- Nút mở bộ lọc trên thiết bị di động (Mobile Filter Toggle) -->
+    <div class="lg:hidden mb-4">
+        <button type="button" onclick="toggleMobileFilters()" 
+                class="w-full py-3 px-4 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 flex items-center justify-between shadow-2xs hover:bg-gray-50 transition">
+            <span class="flex items-center gap-2">
+                <i class="bi bi-funnel-fill text-emerald-600"></i>
+                <span>Bộ lọc & Phân khúc xe máy điện</span>
+            </span>
+            <i id="filterArrowIcon" class="bi bi-chevron-down text-gray-400"></i>
+        </button>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div class="lg:col-span-1">
-            <div class="bg-white p-5 rounded-xl border border-gray-200 sticky top-20 space-y-4">
+        <div id="filterSidebar" class="hidden lg:block lg:col-span-1">
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 sticky top-20 space-y-4 shadow-xs">
                 <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                     <h3 class="font-bold text-gray-900 text-sm">Bộ lọc tìm kiếm</h3>
                     <a href="/Vehicles" class="text-xs text-gray-500 hover:text-emerald-600">Đặt lại</a>
@@ -250,3 +262,19 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleMobileFilters() {
+            const sidebar = document.getElementById('filterSidebar');
+            const icon = document.getElementById('filterArrowIcon');
+            if (sidebar) {
+                sidebar.classList.toggle('hidden');
+                if (icon) {
+                    icon.classList.toggle('bi-chevron-down');
+                    icon.classList.toggle('bi-chevron-up');
+                }
+            }
+        }
+    </script>
+}
