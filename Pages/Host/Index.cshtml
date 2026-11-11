@@ -322,6 +322,13 @@
                                                 </button>
                                             </form>
                                         }
+                                        @if (b.Status == BookingStatus.Pending || b.Status == BookingStatus.AwaitingPayment)
+                                        {
+                                            <button type="button" onclick="openRejectModal(@b.Id, '@b.BookingCode', '@(b.Vehicle?.Brand ?? "") @(b.Vehicle?.Model ?? "")')"
+                                                    class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1 shadow-2xs">
+                                                <i class="bi bi-x-circle"></i> Từ chối
+                                            </button>
+                                        }
                                         <a href="/Bookings/Details/@b.Id" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition">
                                             Giao / Nhận xe
                                         </a>
@@ -480,7 +487,74 @@
     </div>
 </div>
 
+<!-- Host Reject Booking Modal -->
+<div id="rejectBookingModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-slate-200 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2 text-red-600 font-bold">
+                <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                <h3 class="text-base text-slate-900">Từ chối đơn đặt xe</h3>
+            </div>
+            <button type="button" onclick="closeRejectModal()" class="text-slate-400 hover:text-slate-600">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form action="/Host/RejectBooking" method="post" class="space-y-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="rejectBookingId" name="bookingId" value="" />
+
+            <div class="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-800 space-y-1">
+                <p>Mã đơn đặt xe: <strong id="rejectBookingCode" class="font-mono">#EB-...</strong></p>
+                <p>Xe cho thuê: <strong id="rejectVehicleName">...</strong></p>
+                <p class="text-[11px] text-red-600 font-medium">Lưu ý: Hệ thống sẽ tự động hủy đơn và giải phóng lịch để chiếc xe này có thể đón khách khác.</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Lý do từ chối:</label>
+                <select id="rejectReasonPreset" onchange="applyRejectPreset(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 mb-2">
+                    <option value="">-- Chọn lý do có sẵn hoặc tự nhập bên dưới --</option>
+                    <option value="Xe đang trong kỳ bảo dưỡng / sửa chữa kỹ thuật">Xe đang trong kỳ bảo dưỡng / sửa chữa kỹ thuật</option>
+                    <option value="Pin chưa kịp sạc đầy 100% cho chuyến đi">Pin chưa kịp sạc đầy 100% cho chuyến đi</option>
+                    <option value="Chủ xe có lịch công tác đột xuất không kịp bàn giao">Chủ xe có lịch công tác đột xuất không kịp bàn giao</option>
+                    <option value="Trùng lịch sử dụng cá nhân của chủ phương tiện">Trùng lịch sử dụng cá nhân của chủ phương tiện</option>
+                </select>
+                <textarea id="rejectReasonInput" name="reason" rows="3" placeholder="Nhập chi tiết lý do từ chối gửi đến khách thuê..." required
+                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-red-400"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeRejectModal()" class="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-600">
+                    Đóng
+                </button>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                    <i class="bi bi-x-circle-fill"></i> Xác nhận từ chối đơn
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    function openRejectModal(bookingId, code, vehicle) {
+        document.getElementById('rejectBookingId').value = bookingId;
+        document.getElementById('rejectBookingCode').innerText = '#' + code;
+        document.getElementById('rejectVehicleName').innerText = vehicle;
+        document.getElementById('rejectReasonPreset').value = '';
+        document.getElementById('rejectReasonInput').value = '';
+        document.getElementById('rejectBookingModal').classList.remove('hidden');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectBookingModal').classList.add('hidden');
+    }
+
+    function applyRejectPreset(val) {
+        if (val) {
+            document.getElementById('rejectReasonInput').value = val;
+        }
+    }
+
     function filterHostRows() {
         const q = (document.getElementById('hostQuickSearch')?.value || '').toLowerCase().trim();
         document.querySelectorAll('.host-searchable-row').forEach(row => {

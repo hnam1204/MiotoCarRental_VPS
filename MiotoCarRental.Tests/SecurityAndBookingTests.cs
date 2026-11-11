@@ -507,6 +507,75 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.Equal("456 Nguyen Hue", updatedVehicle.Address);
     }
 
+    [Fact]
+    public async Task Host_RejectBooking_ReleasesCalendarAndSetsCancelled()
+    {
+        var host = new User { FullName = "Host X", Email = "hostx@test.vn", Phone = "0908888888", Role = UserRole.Host };
+        var renter = new User { FullName = "Renter Y", Email = "rentery@test.vn", Phone = "0909999999", Role = UserRole.Renter };
+        _db.Users.AddRange(host, renter);
+        await _db.SaveChangesAsync();
+
+        var vehicle = new Vehicle
+        {
+            HostId = host.Id,
+            Brand = "VinFast",
+            Model = "Feliz S",
+            LicensePlate = "59-F1 999.99",
+            PricePerDay = 130000,
+            Address = "789 Tran Hung Dao",
+            City = "TP. Hồ Chí Minh",
+            District = "Quận 5"
+        };
+        _db.Vehicles.Add(vehicle);
+        await _db.SaveChangesAsync();
+
+        var booking = new Booking
+        {
+            BookingCode = "EB-20261111-9999",
+            RenterId = renter.Id,
+            VehicleId = vehicle.Id,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            EndTime = DateTime.UtcNow.AddDays(3),
+            TotalDays = 2,
+            TotalAmount = 290000,
+            DepositAmount = 87000,
+            Status = BookingStatus.Pending
+        };
+        _db.Bookings.Add(booking);
+        await _db.SaveChangesAsync();
+
+        var blockedDate = new CalendarBlocked
+        {
+            BookingId = booking.Id,
+            VehicleId = vehicle.Id,
+            StartDate = booking.StartTime,
+            EndDate = booking.EndTime,
+            Reason = "BOOKED"
+        };
+        _db.CalendarBlockeds.Add(blockedDate);
+        await _db.SaveChangesAsync();
+
+        // Kiểm tra trước khi reject: Calendar đang bị khóa
+        Assert.True(await _db.CalendarBlockeds.AnyAsync(c => c.BookingId == booking.Id));
+
+        // Chủ xe thực hiện Reject Booking
+        booking.Status = BookingStatus.Cancelled;
+        booking.CancellationReason = "Xe đang bảo dưỡng định kỳ";
+        var blocks = await _db.CalendarBlockeds.Where(c => c.BookingId == booking.Id).ToListAsync();
+        _db.CalendarBlockeds.RemoveRange(blocks);
+        await _db.SaveChangesAsync();
+
+        // Kiểm tra sau khi reject:
+        var updatedBooking = await _db.Bookings.FindAsync(booking.Id);
+        Assert.NotNull(updatedBooking);
+        Assert.Equal(BookingStatus.Cancelled, updatedBooking.Status);
+        Assert.Equal("Xe đang bảo dưỡng định kỳ", updatedBooking.CancellationReason);
+
+        // Lịch xe đã được giải phóng hoàn toàn
+        var hasBlocks = await _db.CalendarBlockeds.AnyAsync(c => c.BookingId == booking.Id);
+        Assert.False(hasBlocks);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

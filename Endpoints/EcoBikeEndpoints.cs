@@ -611,11 +611,58 @@ namespace MiotoCarRental.Endpoints
             app.MapPost("/Host/ApproveBooking", [Authorize(Roles = "Host,Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int id) =>
             {
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
-                if (booking != null && booking.Status == BookingStatus.Pending)
+                if (booking == null) return Results.NotFound();
+
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out int currentUserId);
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isHost = booking.Vehicle != null && booking.Vehicle.HostId == currentUserId;
+
+                if (!isAdmin && !isHost)
+                {
+                    return Results.Redirect("/Account/AccessDenied");
+                }
+
+                if (booking.Status == BookingStatus.Pending)
                 {
                     booking.Status = BookingStatus.AwaitingPayment;
                     await db.SaveChangesAsync();
-                    SetTempMessage(http, "SuccessMessage", $"Đã chấp nhận đơn đặt xe #{booking.BookingCode}.");
+                    SetTempMessage(http, "SuccessMessage", $"Đã chấp nhận đơn đặt xe #{booking.BookingCode}. Khách hàng có thể tiến hành đặt cọc.");
+                }
+                return Results.Redirect("/Host");
+            }).DisableAntiforgery();
+
+            app.MapPost("/Host/RejectBooking", [Authorize(Roles = "Host,Admin")] async (HttpContext http, MiotoDbContext db, [FromForm] int bookingId, [FromForm] string? reason) =>
+            {
+                var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == bookingId);
+                if (booking == null) return Results.NotFound();
+
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out int currentUserId);
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isHost = booking.Vehicle != null && booking.Vehicle.HostId == currentUserId;
+
+                if (!isAdmin && !isHost)
+                {
+                    return Results.Redirect("/Account/AccessDenied");
+                }
+
+                if (booking.Status == BookingStatus.Pending || booking.Status == BookingStatus.AwaitingPayment)
+                {
+                    booking.Status = BookingStatus.Cancelled;
+                    booking.CancellationReason = string.IsNullOrWhiteSpace(reason) 
+                        ? "Chủ xe bận / từ chối nhận chuyến thuê." 
+                        : reason.Trim();
+
+                    // Tự động giải phóng lịch khóa xe
+                    var blockedDates = await db.CalendarBlockeds.Where(c => c.BookingId == bookingId).ToListAsync();
+                    if (blockedDates.Any())
+                    {
+                        db.CalendarBlockeds.RemoveRange(blockedDates);
+                    }
+
+                    await db.SaveChangesAsync();
+                    SetTempMessage(http, "SuccessMessage", $"Đã từ chối đơn đặt xe #{booking.BookingCode} và giải phóng lịch xe thành công.");
                 }
                 return Results.Redirect("/Host");
             }).DisableAntiforgery();
