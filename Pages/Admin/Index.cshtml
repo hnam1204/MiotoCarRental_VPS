@@ -402,9 +402,18 @@
                             <td class="py-3.5 px-4">
                                 @if (!string.IsNullOrEmpty(u.DriverLicenseNo))
                                 {
-                                    <span class="font-mono text-xs font-bold bg-slate-100 text-slate-800 px-2.5 py-1 rounded border border-slate-300">
-                                        <i class="bi bi-card-heading mr-1 text-slate-500"></i>@u.DriverLicenseNo
-                                    </span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="font-mono text-xs font-bold bg-slate-100 text-slate-800 px-2.5 py-1 rounded border border-slate-300">
+                                            <i class="bi bi-card-heading mr-1 text-slate-500"></i>@u.DriverLicenseNo
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(u.DriverLicenseImage))
+                                        {
+                                            <a href="@u.DriverLicenseImage" target="_blank" title="Xem ảnh chụp bằng lái"
+                                               class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 hover:underline inline-flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                <i class="bi bi-image"></i> Xem ảnh
+                                            </a>
+                                        }
+                                    </div>
                                 }
                                 else
                                 {

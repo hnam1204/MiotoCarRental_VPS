@@ -630,6 +630,48 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.NotNull(validResult.Booking);
     }
 
+    [Fact]
+    public async Task Admin_ApproveAndRejectLicense_UpdatesDriverLicenseStatusCorrectly()
+    {
+        var renter = new User
+        {
+            FullName = "New Driver",
+            Email = "newdriver@test.com",
+            Phone = "0988776655",
+            PasswordHash = "hash",
+            Role = UserRole.Renter,
+            DriverLicenseNo = "79A1-12345",
+            DriverLicenseStatus = DriverLicenseStatus.Pending
+        };
+        _db.Users.Add(renter);
+        await _db.SaveChangesAsync();
+
+        // 1. Ban đầu ở trạng thái Chờ duyệt (Pending)
+        var savedUser = await _db.Users.FindAsync(renter.Id);
+        Assert.NotNull(savedUser);
+        Assert.Equal(DriverLicenseStatus.Pending, savedUser.DriverLicenseStatus);
+
+        // 2. Admin phê duyệt -> Trở thành Approved và xóa lý do từ chối
+        savedUser.DriverLicenseStatus = DriverLicenseStatus.Approved;
+        savedUser.RejectionReason = null;
+        await _db.SaveChangesAsync();
+
+        var approvedUser = await _db.Users.FindAsync(renter.Id);
+        Assert.NotNull(approvedUser);
+        Assert.Equal(DriverLicenseStatus.Approved, approvedUser.DriverLicenseStatus);
+        Assert.Null(approvedUser.RejectionReason);
+
+        // 3. Admin từ chối -> Trở thành Rejected kèm lý do
+        approvedUser.DriverLicenseStatus = DriverLicenseStatus.Rejected;
+        approvedUser.RejectionReason = "Ảnh chụp bằng lái bị mờ, không rõ số hiệu.";
+        await _db.SaveChangesAsync();
+
+        var rejectedUser = await _db.Users.FindAsync(renter.Id);
+        Assert.NotNull(rejectedUser);
+        Assert.Equal(DriverLicenseStatus.Rejected, rejectedUser.DriverLicenseStatus);
+        Assert.Equal("Ảnh chụp bằng lái bị mờ, không rõ số hiệu.", rejectedUser.RejectionReason);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

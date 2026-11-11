@@ -276,10 +276,11 @@ namespace MiotoCarRental.Endpoints
                     {
                         user.DriverLicenseNo = licenseNo.Trim();
                         user.DriverLicenseImage = licenseImageUrl ?? "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600";
-                        user.DriverLicenseStatus = DriverLicenseStatus.Approved;
+                        user.DriverLicenseStatus = DriverLicenseStatus.Pending;
+                        user.RejectionReason = null;
                         await db.SaveChangesAsync();
                         await SignInUserAsync(http, user, true);
-                        SetTempMessage(http, "SuccessMessage", "Cập nhật Giấy phép lái xe thành công! Hồ sơ đã được phê duyệt.");
+                        SetTempMessage(http, "SuccessMessage", "Đã gửi hồ sơ Giấy phép lái xe thành công! Hồ sơ đang ở trạng thái Chờ Ban Quản trị phê duyệt.");
                     }
                 }
                 return Results.Redirect("/Account/Profile");
