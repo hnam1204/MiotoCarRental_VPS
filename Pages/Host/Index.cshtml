@@ -418,6 +418,9 @@
                                         <a href="/Vehicles/Details/@car.Id" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-medium text-slate-700 transition">
                                             Chi tiết
                                         </a>
+                                        <a href="/Host/Edit/@car.Id" class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 text-xs font-semibold text-indigo-700 transition flex items-center gap-1">
+                                            <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                                        </a>
                                         <form action="/Host/ToggleStatus" method="post" class="inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@car.Id" />

@@ -436,6 +436,77 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.Equal("/Admin", redirect.Url);
     }
 
+    [Fact]
+    public async Task EditVehicle_OnlyOwnerHostOrAdminCanEdit()
+    {
+        var hostA = new User { FullName = "Host A", Email = "hosta@test.vn", Phone = "0901111111", Role = UserRole.Host };
+        var hostB = new User { FullName = "Host B", Email = "hostb@test.vn", Phone = "0902222222", Role = UserRole.Host };
+        _db.Users.AddRange(hostA, hostB);
+        await _db.SaveChangesAsync();
+
+        var vehicleA = new Vehicle
+        {
+            HostId = hostA.Id,
+            Brand = "VinFast",
+            Model = "Evo200",
+            LicensePlate = "59-A1 111.11",
+            PricePerDay = 120000,
+            Address = "123 Le Loi",
+            City = "TP. Hồ Chí Minh",
+            District = "Quận 1"
+        };
+        _db.Vehicles.Add(vehicleA);
+        await _db.SaveChangesAsync();
+
+        // Host B cố gắng chỉnh sửa xe của Host A -> Phải bị AccessDenied
+        var editModelUnauthorized = new EditVehicleViewModel(_db);
+        var httpContextB = new DefaultHttpContext();
+        httpContextB.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, hostB.Id.ToString()),
+            new Claim(ClaimTypes.Role, "Host")
+        }, "TestAuth"));
+        editModelUnauthorized.PageContext = new PageContext { HttpContext = httpContextB };
+
+        var getResult = await editModelUnauthorized.OnGetAsync(vehicleA.Id);
+        var redirectDenied = Assert.IsType<RedirectResult>(getResult);
+        Assert.Equal("/Account/AccessDenied", redirectDenied.Url);
+
+        // Host A (chủ sở hữu thật) truy cập và cập nhật giá -> Thành công
+        var editModelAuthorized = new EditVehicleViewModel(_db)
+        {
+            Category = VehicleCategory.MidRange,
+            Brand = "VinFast",
+            ModelName = "Evo200 Updated",
+            YearManufacture = 2024,
+            LicensePlate = "59-A1 111.11",
+            BatteryRangeKm = 205,
+            MaxSpeedKmH = 70,
+            BatteryType = "Pin LFP",
+            PricePerDay = 150000,
+            Address = "456 Nguyen Hue",
+            City = "TP. Hồ Chí Minh",
+            District = "Quận 1"
+        };
+        var httpContextA = new DefaultHttpContext();
+        httpContextA.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, hostA.Id.ToString()),
+            new Claim(ClaimTypes.Role, "Host")
+        }, "TestAuth"));
+        editModelAuthorized.PageContext = new PageContext { HttpContext = httpContextA };
+
+        var postResult = await editModelAuthorized.OnPostAsync(vehicleA.Id);
+        var redirectSuccess = Assert.IsType<RedirectResult>(postResult);
+        Assert.Equal("/Host", redirectSuccess.Url);
+
+        var updatedVehicle = await _db.Vehicles.FindAsync(vehicleA.Id);
+        Assert.NotNull(updatedVehicle);
+        Assert.Equal(150000, updatedVehicle.PricePerDay);
+        Assert.Equal("Evo200 Updated", updatedVehicle.Model);
+        Assert.Equal("456 Nguyen Hue", updatedVehicle.Address);
+    }
+
     public void Dispose()
     {
         _db.Dispose();
