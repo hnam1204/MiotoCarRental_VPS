@@ -536,6 +536,16 @@ namespace MiotoCarRental.Endpoints
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
                 if (booking == null) return Results.NotFound();
 
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out int currentUserId);
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isHost = booking.Vehicle != null && booking.Vehicle.HostId == currentUserId;
+
+                if (!isAdmin && !isHost)
+                {
+                    return Results.Redirect("/Account/AccessDenied");
+                }
+
                 await bookingService.CheckinVehicleAsync(id, odo, fuelLevel);
                 SetTempMessage(http, "SuccessMessage", "Bàn giao xe thành công! Chúc bạn có một hành trình an toàn.");
                 return Results.Redirect($"/Bookings/Details/{id}");
@@ -546,8 +556,18 @@ namespace MiotoCarRental.Endpoints
                 var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == id);
                 if (booking == null) return Results.NotFound();
 
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                int.TryParse(userIdStr, out int currentUserId);
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isHost = booking.Vehicle != null && booking.Vehicle.HostId == currentUserId;
+
+                if (!isAdmin && !isHost)
+                {
+                    return Results.Redirect("/Account/AccessDenied");
+                }
+
                 await bookingService.CheckoutVehicleAsync(id, odo, fuelLevel);
-                SetTempMessage(http, "SuccessMessage", "Nghiệm thu trả xe thành công! Cảm ơn bạn đã sử dụng dịch vụ.");
+                SetTempMessage(http, "SuccessMessage", "Nghiệm thu trả xe thành công! Đã tạo hóa đơn quyết toán 70% còn lại.");
                 return Results.Redirect($"/Bookings/Details/{id}");
             }).DisableAntiforgery();
 

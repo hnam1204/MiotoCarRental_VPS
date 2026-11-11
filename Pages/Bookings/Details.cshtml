@@ -314,66 +314,279 @@
 
     @if (Model.Status == BookingStatus.Completed)
     {
-        <div class="mt-8 bg-emerald-50 rounded-3xl p-6 sm:p-8 border border-emerald-200">
-            <div class="text-center mb-6">
-                <i class="bi bi-patch-check-fill text-emerald-600 text-5xl"></i>
-                <h3 class="text-2xl font-black text-emerald-950 mt-2">Chuyến đi đã hoàn thành xuất sắc!</h3>
-                <p class="text-xs text-emerald-700 mt-1">Cảm ơn bạn đã lựa chọn di chuyển xanh cùng nền tảng EcoBike.</p>
+        var finalGross = Model.TotalAmount + Model.ExtraKmFee + Model.ExtraOtherFee;
+        var remainingDue = Math.Max(0, finalGross - Model.DepositAmount);
+        var drivenKm = (Model.CheckoutOdo ?? 0) - (Model.CheckinOdo ?? 0);
+        var allowedKm = Model.Vehicle.LimitKmPerDay * Model.TotalDays;
+        var extraKm = Math.Max(0, drivenKm - allowedKm);
+        var settleChannels = Sepay.GetAvailableChannels(remainingDue, $"TT-{Model.BookingCode}");
+        var defaultSettle = settleChannels.FirstOrDefault() ?? new MiotoCarRental.Services.PaymentChannelInfo();
+
+        <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border-2 border-emerald-500/30 shadow-xl space-y-6">
+            <!-- Header Bảng Quyết Toán -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/30 text-2xl">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Hóa đơn tất toán chuyến đi</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-md">ĐÃ HOÀN TẤT</span>
+                        </div>
+                        <h3 class="text-xl font-black text-gray-900 mt-0.5">Quyết toán Hợp đồng #@Model.BookingCode</h3>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                        <i class="bi bi-printer-fill"></i> In Hóa đơn / Lưu PDF
+                    </button>
+                </div>
             </div>
 
-            @{
-                var existingReview = Model.Reviews.FirstOrDefault();
-            }
+            <!-- 1. BIÊN BẢN BÀN GIAO & ĐỒNG KIỂM TRA ODO / PIN LFP -->
+            <div class="bg-slate-50 rounded-2xl p-4 sm:p-5 border border-slate-200 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                        <i class="bi bi-speedometer2 text-emerald-600"></i> Biên bản nghiệm thu hành trình (ODO &amp; Pin LFP)
+                    </span>
+                    <span class="text-[11px] text-slate-500">Trả xe lúc: @(Model.CheckoutTime?.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"))</span>
+                </div>
 
-            @if (existingReview != null)
-            {
-                <div class="bg-white rounded-2xl p-6 border border-emerald-200 shadow-sm max-w-xl mx-auto">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Đánh giá của bạn</span>
-                        <div class="text-amber-400 text-sm">
-                            @for (int i = 0; i < existingReview.Rating; i++)
-                            {
-                                <i class="bi bi-star-fill"></i>
-                            }
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px]">ODO lúc nhận</span>
+                        <strong class="text-slate-900 font-mono text-sm">@Model.CheckinOdo.GetValueOrDefault().ToString("N0") km</strong>
+                        <div class="text-[10px] text-emerald-600 font-medium mt-0.5">Pin: @Model.CheckinBatteryPercent.GetValueOrDefault()%</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px]">ODO lúc trả</span>
+                        <strong class="text-slate-900 font-mono text-sm">@Model.CheckoutOdo.GetValueOrDefault().ToString("N0") km</strong>
+                        <div class="text-[10px] text-blue-600 font-medium mt-0.5">Pin: @Model.CheckoutBatteryPercent.GetValueOrDefault()%</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px]">Đã di chuyển</span>
+                        <strong class="text-slate-900 font-mono text-sm">@drivenKm.ToString("N0") km</strong>
+                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Thời gian: @Model.TotalDays ngày</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200">
+                        <span class="text-slate-400 block text-[11px]">Hạn mức cam kết</span>
+                        <strong class="text-slate-900 font-mono text-sm">@allowedKm.ToString("N0") km</strong>
+                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">@Model.Vehicle.LimitKmPerDay km/ngày</div>
+                    </div>
+                </div>
+
+                @if (extraKm > 0)
+                {
+                    <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-exclamation-triangle-fill text-red-600 text-base"></i>
+                            <div>
+                                <span class="font-bold">Quãng đường di chuyển vượt định mức hợp đồng: <strong>+@extraKm km</strong></span>
+                                <div class="text-[11px] text-red-600">Đơn giá phụ phí vượt quãng đường: @Model.Vehicle.OverKmFee.ToString("N0") đ/km (@extraKm x @Model.Vehicle.OverKmFee.ToString("N0") đ)</div>
+                            </div>
+                        </div>
+                        <div class="text-right sm:text-right shrink-0">
+                            <span class="text-sm font-black text-red-700">+ @Model.ExtraKmFee.ToString("N0") đ</span>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-800 italic bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        "@existingReview.Comment"
-                    </p>
+                }
+                else
+                {
+                    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-emerald-600"></i>
+                        <span>Phương tiện di chuyển trong hạn mức cho phép (<strong>@drivenKm / @allowedKm km</strong>). Không phát sinh phụ phí quãng đường.</span>
+                    </div>
+                }
+            </div>
+
+            <!-- 2. BẢNG BÓC TÁCH TÀI CHÍNH TẤT TOÁN -->
+            <div class="space-y-2.5 text-xs">
+                <h4 class="font-bold text-gray-900 text-sm mb-2 flex items-center gap-1.5">
+                    <i class="bi bi-cash-stack text-emerald-600"></i> Chi tiết các khoản quyết toán
+                </h4>
+
+                <div class="flex justify-between text-gray-600">
+                    <span>1. Tiền thuê xe máy điện (@Model.TotalDays ngày x @Model.Vehicle.PricePerDay.ToString("N0") đ):</span>
+                    <span class="font-bold text-gray-900">@Model.RentalFee.ToString("N0") đ</span>
+                </div>
+
+                <div class="flex justify-between text-gray-600">
+                    <span>2. Phí bảo hiểm xe máy điện MIC (@Model.TotalDays ngày):</span>
+                    <span class="font-bold text-gray-900">@Model.InsuranceFee.ToString("N0") đ</span>
+                </div>
+
+                @if (Model.DeliveryFee > 0)
+                {
+                    <div class="flex justify-between text-gray-600">
+                        <span>3. Phí giao nhận xe tận nơi theo yêu cầu:</span>
+                        <span class="font-bold text-gray-900">@Model.DeliveryFee.ToString("N0") đ</span>
+                    </div>
+                }
+
+                @if (Model.ExtraKmFee > 0)
+                {
+                    <div class="flex justify-between text-red-600 font-bold">
+                        <span>4. Phụ phí phát sinh vượt quãng đường (@extraKm km):</span>
+                        <span>+ @Model.ExtraKmFee.ToString("N0") đ</span>
+                    </div>
+                }
+
+                <div class="flex justify-between text-sm font-bold text-gray-900 pt-2 border-t border-gray-200">
+                    <span>TỔNG GIÁ TRỊ TOÀN BỘ CHUYẾN ĐI (Gross Total):</span>
+                    <span class="text-base font-black text-gray-900">@finalGross.ToString("N0") đ</span>
+                </div>
+
+                <div class="flex justify-between text-xs font-semibold text-emerald-700 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                    <span class="flex items-center gap-1.5">
+                        <i class="bi bi-check-circle-fill text-emerald-600"></i> Đã thanh toán đặt cọc 30% giữ xe trước đó (qua @(Model.PaymentMethod ?? "VNPAY")):
+                    </span>
+                    <span class="font-bold">- @Model.DepositAmount.ToString("N0") đ</span>
+                </div>
+
+                <!-- DÒNG QUYẾT TOÁN 70% CÒN LẠI -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl shadow-md mt-2">
+                    <div>
+                        <span class="text-[11px] text-emerald-100 uppercase font-semibold tracking-wider block">Số tiền còn lại cần thanh toán khi trả xe</span>
+                        <h4 class="text-base sm:text-lg font-black text-white">70% Tiền thuê + Phụ phí phát sinh</h4>
+                    </div>
+                    <div class="text-right sm:text-right">
+                        <span class="text-2xl sm:text-3xl font-black text-amber-300">@remainingDue.ToString("N0") đ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. MÃ VIETQR QUYẾT TOÁN 70% CÒN LẠI -->
+            @if (remainingDue > 0)
+            {
+                <div class="p-5 bg-gradient-to-b from-gray-50 to-white rounded-3xl border-2 border-emerald-500/30 text-center space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">
+                        <i class="bi bi-qr-code-scan text-emerald-600"></i> Quét mã VietQR thanh toán @remainingDue.ToString("N0") đ khi giao xe
+                    </div>
+
+                    <!-- Thanh chọn kênh thanh toán -->
+                    <div class="max-w-md mx-auto flex items-center justify-center gap-2 p-1.5 bg-gray-100 rounded-2xl">
+                        @for (int i = 0; i < settleChannels.Count; i++)
+                        {
+                            var ch = settleChannels[i];
+                            <button type="button" onclick="selectSettleChannel(@i)" id="settle-tab-btn-@i"
+                                    class="settle-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 @(i == 0 ? "bg-white text-emerald-700 shadow-sm" : "text-gray-600 hover:text-gray-900")">
+                                <i class="@ch.IconClass"></i>
+                                <span class="truncate">@ch.Name.Split('(')[0].Trim()</span>
+                            </button>
+                        }
+                    </div>
+
+                    <div class="relative inline-block bg-white p-3 rounded-2xl border border-gray-200 shadow-sm">
+                        <img id="settleQrImg" src="@defaultSettle.QrUrl"
+                             alt="VietQR Tất toán" class="w-44 h-44 mx-auto rounded-xl object-contain" />
+                    </div>
+
+                    <div class="max-w-md mx-auto bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-left space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Ngân hàng thụ hưởng:</span>
+                            <strong id="settleBankName" class="text-gray-900 font-bold">@defaultSettle.Name</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Số tài khoản:</span>
+                            <div class="flex items-center gap-1.5 font-mono font-bold text-gray-900">
+                                <span id="settleAccNumber">@defaultSettle.AccountNumber</span>
+                                <button type="button" id="copySettleStkBtn" onclick="copySettleStk()" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-1.5 py-0.5 rounded">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Người thụ hưởng:</span>
+                            <strong id="settleAccName" class="text-gray-900 font-bold uppercase">@defaultSettle.AccountName</strong>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Số tiền quyết toán:</span>
+                            <strong class="text-emerald-700 font-black text-sm">@remainingDue.ToString("N0") đ</strong>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-gray-200">
+                            <span class="text-gray-500">Nội dung CK:</span>
+                            <div class="flex items-center gap-1.5 font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                                <span>TT-@Model.BookingCode</span>
+                                <button type="button" id="copySettleContentBtn" onclick="copyText('TT-@Model.BookingCode', 'copySettleContentBtn')" class="text-[10px] text-emerald-700 hover:text-emerald-900">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             }
-            else
-            {
-                <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-lg max-w-xl mx-auto">
-                    <h4 class="text-lg font-black text-gray-900 mb-2 flex items-center gap-2">
-                        <i class="bi bi-star-fill text-amber-400"></i> Đánh giá trải nghiệm chuyến đi
-                    </h4>
-                    <form action="/Bookings/AddReview" method="post" class="space-y-4">
-                        <input type="hidden" name="bookingId" value="@Model.Id" />
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-2">Mức độ hài lòng của bạn:</label>
-                            <div class="flex items-center gap-4">
-                                @for (int star = 5; star >= 1; star--)
+
+            <!-- 4. XÁC NHẬN HOÀN TRẢ THẾ CHẤP -->
+            <div class="p-4 bg-blue-50/70 border border-blue-200 rounded-2xl flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2.5">
+                    <i class="bi bi-shield-lock-fill text-blue-600 text-lg"></i>
+                    <div>
+                        <span class="font-bold text-blue-950 block">Tài sản thế chấp nhận xe:</span>
+                        <span class="text-blue-700">@Model.CollateralType</span>
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <i class="bi bi-check-all"></i> Đã nghiệm thu &amp; hoàn trả thế chấp
+                    </span>
+                </div>
+            </div>
+
+            <!-- Đánh giá chuyến đi -->
+            <div class="pt-4 border-t border-gray-100">
+                @{
+                    var existingReview = Model.Reviews.FirstOrDefault();
+                }
+
+                @if (existingReview != null)
+                {
+                    <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Đánh giá của bạn về chuyến đi</span>
+                            <div class="text-amber-400 text-sm">
+                                @for (int i = 0; i < existingReview.Rating; i++)
                                 {
-                                    <label class="flex items-center gap-1.5 cursor-pointer bg-gray-50 hover:bg-amber-50 px-3 py-2 rounded-xl border border-gray-200 transition">
-                                        <input type="radio" name="rating" value="@star" @(star == 5 ? "checked" : "") class="text-emerald-600 focus:ring-emerald-500" />
-                                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1">
-                                            @star <i class="bi bi-star-fill text-amber-400 text-xs"></i>
-                                        </span>
-                                    </label>
+                                    <i class="bi bi-star-fill"></i>
                                 }
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Cảm nhận chi tiết:</label>
-                            <textarea id="commentBox" name="comment" rows="3" placeholder="Chia sẻ cảm nhận về xe điện..." class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white transition" required></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2">
-                            <i class="bi bi-send-fill"></i> GỬI ĐÁNH GIÁ CHUYẾN ĐI
-                        </button>
-                    </form>
-                </div>
-            }
+                        <p class="text-xs text-gray-800 italic bg-white p-3 rounded-xl border border-gray-200">
+                            "@existingReview.Comment"
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                        <h4 class="text-sm font-black text-gray-900 mb-2 flex items-center gap-1.5">
+                            <i class="bi bi-star-fill text-amber-400"></i> Đánh giá trải nghiệm phương tiện &amp; dịch vụ
+                        </h4>
+                        <form action="/Bookings/AddReview" method="post" class="space-y-3">
+                            <input type="hidden" name="bookingId" value="@Model.Id" />
+                            <div>
+                                <div class="flex items-center gap-3">
+                                    @for (int star = 5; star >= 1; star--)
+                                    {
+                                        <label class="flex items-center gap-1.5 cursor-pointer bg-white hover:bg-amber-50 px-3 py-1.5 rounded-xl border border-gray-200 transition text-xs">
+                                            <input type="radio" name="rating" value="@star" @(star == 5 ? "checked" : "") class="text-emerald-600 focus:ring-emerald-500" />
+                                            <span class="font-bold text-gray-800 flex items-center gap-1">
+                                                @star <i class="bi bi-star-fill text-amber-400 text-xs"></i>
+                                            </span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <textarea id="commentBox" name="comment" rows="2" placeholder="Chia sẻ cảm nhận về chuyến đi, độ êm của xe và thời lượng pin..." class="w-full bg-white border border-gray-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" required></textarea>
+                            </div>
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition text-xs flex items-center gap-1.5">
+                                <i class="bi bi-send-fill"></i> Gửi đánh giá
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
         </div>
     }
 </div>
@@ -420,6 +633,51 @@
             if (channelsData && channelsData[selectedIndex]) {
                 copyText(channelsData[selectedIndex].AccountNumber, 'copyStkBtn');
             }
+        }
+
+        @if (Model.Status == BookingStatus.Completed)
+        {
+            var finalGross = Model.TotalAmount + Model.ExtraKmFee + Model.ExtraOtherFee;
+            var remainingDue = Math.Max(0, finalGross - Model.DepositAmount);
+            <text>
+            const settleChannelsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Sepay.GetAvailableChannels(remainingDue, $"TT-{Model.BookingCode}")));
+            let selectedSettleIdx = 0;
+
+            function selectSettleChannel(idx) {
+                if (!settleChannelsData || !settleChannelsData[idx]) return;
+                selectedSettleIdx = idx;
+                const ch = settleChannelsData[idx];
+
+                const qrImg = document.getElementById('settleQrImg');
+                if (qrImg) qrImg.src = ch.QrUrl;
+
+                const bankName = document.getElementById('settleBankName');
+                if (bankName) bankName.innerText = ch.Name;
+
+                const accNum = document.getElementById('settleAccNumber');
+                if (accNum) accNum.innerText = ch.AccountNumber;
+
+                const accName = document.getElementById('settleAccName');
+                if (accName) accName.innerText = ch.AccountName;
+
+                settleChannelsData.forEach((chItem, i) => {
+                    const btn = document.getElementById('settle-tab-btn-' + i);
+                    if (btn) {
+                        if (i === idx) {
+                            btn.className = "settle-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-white text-emerald-700 shadow-sm";
+                        } else {
+                            btn.className = "settle-tab-btn flex-1 py-2 px-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900";
+                        }
+                    }
+                });
+            }
+
+            function copySettleStk() {
+                if (settleChannelsData && settleChannelsData[selectedSettleIdx]) {
+                    copyText(settleChannelsData[selectedSettleIdx].AccountNumber, 'copySettleStkBtn');
+                }
+            }
+            </text>
         }
 
         function copyText(val, btnId) {
