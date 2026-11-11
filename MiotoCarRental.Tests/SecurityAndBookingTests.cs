@@ -576,6 +576,60 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.False(hasBlocks);
     }
 
+    [Fact]
+    public async Task CreateBooking_RejectsPastDates_AndRejectsSelfBooking()
+    {
+        var host = new User { FullName = "Host Self", Email = "hostself@test.vn", Phone = "0907777777", Role = UserRole.Host };
+        var renter = new User { FullName = "Renter Regular", Email = "renterreg@test.vn", Phone = "0906666666", Role = UserRole.Renter };
+        _db.Users.AddRange(host, renter);
+        await _db.SaveChangesAsync();
+
+        var vehicle = new Vehicle
+        {
+            HostId = host.Id,
+            Brand = "Yadea",
+            Model = "Ocean",
+            LicensePlate = "59-Y1 888.88",
+            PricePerDay = 80000,
+            Address = "100 Vo Van Kiet",
+            City = "TP. Hồ Chí Minh",
+            District = "Quận 1",
+            RequiresLicenseA1 = false,
+            Status = VehicleStatus.Active
+        };
+        _db.Vehicles.Add(vehicle);
+        await _db.SaveChangesAsync();
+
+        var bookingService = new BookingService(_db);
+
+        // Case 1: Đặt lùi về quá khứ -> Bị từ chối
+        var pastModel = new CreateBookingViewModel
+        {
+            VehicleId = vehicle.Id,
+            StartTime = DateTime.UtcNow.AddDays(-2),
+            EndTime = DateTime.UtcNow.AddDays(1)
+        };
+        var pastResult = await bookingService.CreateBookingAsync(renter.Id, pastModel);
+        Assert.False(pastResult.Success);
+        Assert.Contains("quá khứ", pastResult.Message);
+
+        // Case 2: Chủ xe tự đặt xe của chính mình -> Bị từ chối
+        var selfModel = new CreateBookingViewModel
+        {
+            VehicleId = vehicle.Id,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            EndTime = DateTime.UtcNow.AddDays(3)
+        };
+        var selfResult = await bookingService.CreateBookingAsync(host.Id, selfModel);
+        Assert.False(selfResult.Success);
+        Assert.Contains("tự thuê", selfResult.Message);
+
+        // Case 3: Khách thuê hợp lệ đặt xe -> Thành công
+        var validResult = await bookingService.CreateBookingAsync(renter.Id, selfModel);
+        Assert.True(validResult.Success);
+        Assert.NotNull(validResult.Booking);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

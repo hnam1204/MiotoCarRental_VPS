@@ -318,9 +318,23 @@ namespace MiotoCarRental.Endpoints
                 if (!int.TryParse(userIdStr, out int renterId)) return Results.Redirect("/Account/Login");
 
                 var user = await db.Users.FindAsync(renterId);
-                if (user != null && user.DriverLicenseStatus != DriverLicenseStatus.Approved)
+                var vehicle = await db.Vehicles.FindAsync(model.VehicleId);
+                if (vehicle == null || vehicle.Status != VehicleStatus.Active)
                 {
-                    SetTempMessage(http, "ErrorMessage", "Giấy phép lái xe của bạn chưa được phê duyệt. Vui lòng cập nhật hồ sơ để đặt xe.");
+                    SetTempMessage(http, "ErrorMessage", "Xe máy điện không tồn tại hoặc tạm ngưng cho thuê.");
+                    return Results.Redirect($"/Vehicles/Details/{model.VehicleId}");
+                }
+
+                if (vehicle.HostId == renterId)
+                {
+                    SetTempMessage(http, "ErrorMessage", "Bạn là chủ sở hữu chiếc xe này, không thể tự thuê xe của chính mình.");
+                    return Results.Redirect($"/Vehicles/Details/{model.VehicleId}");
+                }
+
+                // Chỉ bắt buộc bằng lái A1 khi xe đó thực sự yêu cầu (các xe miễn A1 như Evo200 Lite, Yadea học sinh được thuê tự do)
+                if (vehicle.RequiresLicenseA1 && (user == null || user.DriverLicenseStatus != DriverLicenseStatus.Approved))
+                {
+                    SetTempMessage(http, "ErrorMessage", "Dòng xe này yêu cầu Giấy phép lái xe A1. Vui lòng cập nhật hồ sơ để được phê duyệt trước khi thuê.");
                     return Results.Redirect("/Account/Profile");
                 }
 

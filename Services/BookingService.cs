@@ -36,6 +36,11 @@ namespace MiotoCarRental.Services
 
         public async Task<(bool Success, string Message, Booking? Booking)> CreateBookingAsync(int renterId, CreateBookingViewModel model)
         {
+            if (model.StartTime < DateTime.UtcNow.AddMinutes(-10))
+            {
+                return (false, "Thời gian nhận xe không thể ở quá khứ.", null);
+            }
+
             if (model.StartTime >= model.EndTime)
             {
                 return (false, "Thời gian trả xe phải sau thời gian nhận xe.", null);
@@ -45,6 +50,12 @@ namespace MiotoCarRental.Services
             if (vehicle == null || vehicle.Status != VehicleStatus.Active)
             {
                 return (false, "Xe máy điện không tồn tại hoặc tạm ngưng cho thuê.", null);
+            }
+
+            // Chống chủ xe tự thuê xe của chính mình
+            if (vehicle.HostId == renterId)
+            {
+                return (false, "Bạn là chủ sở hữu của chiếc xe này, không thể tự thuê xe của chính mình.", null);
             }
 
             // Kiểm tra chống trùng lịch xe

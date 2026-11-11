@@ -150,25 +150,33 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1.5">
-                            <i class="bi bi-calendar-event text-emerald-600"></i> Ngày & Giờ nhận xe
+                            <i class="bi bi-calendar-event text-emerald-600"></i> Ngày &amp; Giờ nhận xe
                         </label>
-                        <input type="datetime-local" name="StartTime" 
+                        <input type="datetime-local" id="bookingStartTime" name="StartTime" 
                                value="@DateTime.Today.AddDays(1).ToString("yyyy-MM-ddT08:00")" 
+                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               oninput="calculateLivePrice()" onchange="calculateLivePrice()"
                                class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1.5">
-                            <i class="bi bi-calendar2-check text-emerald-600"></i> Ngày & Giờ trả xe
+                            <i class="bi bi-calendar2-check text-emerald-600"></i> Ngày &amp; Giờ trả xe
                         </label>
-                        <input type="datetime-local" name="EndTime" 
+                        <input type="datetime-local" id="bookingEndTime" name="EndTime" 
                                value="@DateTime.Today.AddDays(3).ToString("yyyy-MM-ddT20:00")" 
+                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                               oninput="calculateLivePrice()" onchange="calculateLivePrice()"
                                class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs font-semibold text-gray-800" required />
                     </div>
 
-                    <div class="pt-2">
+                    <div id="dateErrorMsg" class="hidden p-2.5 bg-red-50 text-red-700 text-xs rounded-xl font-semibold flex items-center gap-1.5">
+                        <i class="bi bi-exclamation-circle-fill"></i> Thời gian trả xe phải sau thời gian nhận xe ít nhất 1 giờ.
+                    </div>
+
+                    <div class="pt-1">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="NeedsDelivery" value="true" class="w-4 h-4 text-emerald-600 rounded" />
+                            <input type="checkbox" id="needsDeliveryCheckbox" name="NeedsDelivery" value="true" onchange="calculateLivePrice()" class="w-4 h-4 text-emerald-600 rounded" />
                             <span class="text-xs font-bold text-gray-700">Giao xe tận nơi (+30.000 đ)</span>
                         </label>
                     </div>
@@ -178,23 +186,36 @@
                                   class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-semibold text-gray-800 focus:outline-none"></textarea>
                     </div>
 
+                    <!-- Bảng tính toán tạm tính Real-time -->
                     <div class="pt-4 border-t border-gray-100 space-y-2 text-xs">
+                        <div class="flex justify-between text-gray-500">
+                            <span>Thời gian thuê tạm tính:</span>
+                            <strong id="liveTotalDays" class="text-emerald-700 font-bold">2 ngày</strong>
+                        </div>
                         <div class="flex justify-between text-gray-600">
-                            <span>Đơn giá ngày:</span>
-                            <span class="font-bold text-gray-800">@v.PricePerDay.ToString("N0") đ/ngày</span>
+                            <span>Tiền thuê xe:</span>
+                            <span id="liveRentalFee" class="font-bold text-gray-800">@((v.PricePerDay * 2).ToString("N0")) đ</span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Bảo hiểm xe máy điện:</span>
-                            <span class="font-bold text-gray-800">15.000 đ/ngày</span>
+                            <span id="liveInsuranceFee" class="font-bold text-gray-800">30.000 đ</span>
                         </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Cọc giữ chỗ quy định:</span>
-                            <span class="font-bold text-emerald-600">30% tổng tiền</span>
+                        <div id="liveDeliveryRow" class="hidden flex justify-between text-gray-600">
+                            <span>Phí giao xe tận nơi:</span>
+                            <span id="liveDeliveryFee" class="font-bold text-gray-800">30.000 đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-gray-900 pt-1.5 border-t border-gray-100">
+                            <span>Tổng chi phí dự kiến:</span>
+                            <span id="liveTotalAmount" class="text-sm font-black text-gray-900">@(((v.PricePerDay * 2) + 30000).ToString("N0")) đ</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                            <span>Cọc 30% giữ xe (thanh toán online):</span>
+                            <span id="liveDepositAmount" class="text-sm font-black text-emerald-700">@((Math.Round(((v.PricePerDay * 2) + 30000) * 0.3m)).ToString("N0")) đ</span>
                         </div>
                     </div>
 
-                    <div class="pt-4">
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <div class="pt-3">
+                        <button type="submit" id="submitBookingBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                             <i class="bi bi-lightning-charge-fill"></i>
                             ĐẶT THUÊ XE NGAY
                         </button>
@@ -207,3 +228,79 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const unitPricePerDay = @((long)v.PricePerDay);
+        const unitInsuranceFeePerDay = 15000;
+        const fixedDeliveryFee = 30000;
+
+        function calculateLivePrice() {
+            const startInput = document.getElementById('bookingStartTime');
+            const endInput = document.getElementById('bookingEndTime');
+            const deliveryCheckbox = document.getElementById('needsDeliveryCheckbox');
+            const errorMsg = document.getElementById('dateErrorMsg');
+            const submitBtn = document.getElementById('submitBookingBtn');
+
+            if (!startInput || !endInput) return;
+
+            const startDate = new Date(startInput.value);
+            const endDate = new Date(endInput.value);
+
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || endDate <= startDate) {
+                if (errorMsg) errorMsg.classList.remove('hidden');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                return;
+            }
+
+            if (errorMsg) errorMsg.classList.add('hidden');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            const diffMs = endDate.getTime() - startDate.getTime();
+            const diffHours = diffMs / (1000 * 60 * 60);
+            let totalDays = Math.ceil(diffHours / 24);
+            if (totalDays < 1) totalDays = 1;
+
+            const isDelivery = deliveryCheckbox ? deliveryCheckbox.checked : false;
+            const rentalFee = unitPricePerDay * totalDays;
+            const insuranceFee = unitInsuranceFeePerDay * totalDays;
+            const deliveryFee = isDelivery ? fixedDeliveryFee : 0;
+            const totalAmount = rentalFee + insuranceFee + deliveryFee;
+            const depositAmount = Math.round(totalAmount * 0.3);
+
+            const daysEl = document.getElementById('liveTotalDays');
+            if (daysEl) daysEl.innerText = totalDays + ' ngày';
+
+            const rentalEl = document.getElementById('liveRentalFee');
+            if (rentalEl) rentalEl.innerText = rentalFee.toLocaleString('vi-VN') + ' đ';
+
+            const insuranceEl = document.getElementById('liveInsuranceFee');
+            if (insuranceEl) insuranceEl.innerText = insuranceFee.toLocaleString('vi-VN') + ' đ';
+
+            const deliveryRow = document.getElementById('liveDeliveryRow');
+            if (deliveryRow) {
+                if (isDelivery) {
+                    deliveryRow.classList.remove('hidden');
+                } else {
+                    deliveryRow.classList.add('hidden');
+                }
+            }
+
+            const totalEl = document.getElementById('liveTotalAmount');
+            if (totalEl) totalEl.innerText = totalAmount.toLocaleString('vi-VN') + ' đ';
+
+            const depositEl = document.getElementById('liveDepositAmount');
+            if (depositEl) depositEl.innerText = depositAmount.toLocaleString('vi-VN') + ' đ';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            calculateLivePrice();
+        });
+    </script>
+}
