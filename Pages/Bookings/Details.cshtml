@@ -42,6 +42,11 @@
                         <i class="bi bi-flag-fill"></i> Chuyến đi đã hoàn tất
                     </span>
                     break;
+                case BookingStatus.Cancelled:
+                    <span class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full border border-red-300">
+                        <i class="bi bi-x-circle-fill text-red-600"></i> Đã hủy / Bị từ chối
+                    </span>
+                    break;
                 default:
                     <span class="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full">@Model.Status</span>
                     break;
@@ -109,6 +114,31 @@
             </div>
         </div>
     </div>
+
+    @if (Model.Status == BookingStatus.Cancelled)
+    {
+        <div class="mt-8 bg-red-50 border-2 border-red-200 rounded-3xl p-6 sm:p-8 text-center space-y-3">
+            <div class="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <i class="bi bi-calendar-x-fill"></i>
+            </div>
+            <h3 class="text-xl font-black text-red-900">Đơn đặt xe đã bị từ chối hoặc đã hủy</h3>
+            <p class="text-xs text-red-700 max-w-lg mx-auto">
+                Chủ xe hoặc hệ thống đã giải phóng lịch xe để đảm bảo quyền lợi cho khách hàng.
+            </p>
+            @if (!string.IsNullOrWhiteSpace(Model.CancellationReason))
+            {
+                <div class="inline-block bg-white border border-red-200 rounded-2xl px-5 py-3 text-xs text-red-800 shadow-sm text-left">
+                    <span class="font-bold block text-red-900 mb-0.5"><i class="bi bi-chat-quote-fill mr-1"></i> Lý do từ chối từ chủ xe:</span>
+                    <span>@Model.CancellationReason</span>
+                </div>
+            }
+            <div class="pt-2">
+                <a href="/Vehicles" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-3 rounded-2xl shadow-md transition">
+                    <i class="bi bi-search"></i> Khám phá xe máy điện khác
+                </a>
+            </div>
+        </div>
+    }
 
     @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
     {
