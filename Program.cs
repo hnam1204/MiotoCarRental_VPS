@@ -9,6 +9,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Cấu hình kiến trúc Razor Pages (MVVM PageModel) thay cho MVC truyền thống
 builder.Services.AddRazorPages();
 
+// Cấu hình Swagger / OpenAPI Documentation
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "EcoBike Platform Web APIs",
+        Version = "v1",
+        Description = "Tài liệu API hệ thống cho thuê xe máy điện EcoBike (ASP.NET Core 9 Minimal APIs)"
+    });
+});
+
 // Cấu hình Cookie Authentication & Role-Based Authorization (RBAC)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -60,6 +72,14 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// Kích hoạt Swagger UI cho tài liệu API
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EcoBike API v1");
+    c.RoutePrefix = "swagger";
+});
 
 // Thứ tự Middleware: Authentication -> Authorization
 app.UseAuthentication();
