@@ -15,47 +15,76 @@ namespace MiotoCarRental.Data
             try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN PaymentBankCode TEXT;"); } catch { }
             try { context.Database.ExecuteSqlRaw("ALTER TABLE Bookings ADD COLUMN DepositPaidAt TEXT;"); } catch { }
 
-            if (context.Vehicles.Any())
+            // 1. Seed Users (Admin, Host, Renter, PendingRenter) nếu chưa có
+            var admin = context.Users.FirstOrDefault(u => u.Email == "admin@mioto.vn");
+            if (admin == null)
             {
-                return; // Database đã có dữ liệu
+                admin = new User
+                {
+                    FullName = "Quản Trị Viên EcoBike",
+                    Email = "admin@mioto.vn",
+                    Phone = "0901000001",
+                    PasswordHash = "admin123",
+                    Role = UserRole.Admin,
+                    DriverLicenseNo = "GPLX-A1-ADMIN",
+                    DriverLicenseStatus = DriverLicenseStatus.Approved
+                };
+                context.Users.Add(admin);
             }
 
-            // 1. Seed Users
-            var admin = new User
+            var host = context.Users.FirstOrDefault(u => u.Email == "chuxe@gmail.com");
+            if (host == null)
             {
-                FullName = "Quản Trị Viên EcoBike",
-                Email = "admin@mioto.vn",
-                Phone = "0901000001",
-                PasswordHash = "admin123",
-                Role = UserRole.Admin,
-                DriverLicenseNo = "GPLX-A1-ADMIN",
-                DriverLicenseStatus = DriverLicenseStatus.Approved
-            };
+                host = new User
+                {
+                    FullName = "Nguyễn Văn Chủ Xe (Hoàng Long)",
+                    Email = "chuxe@gmail.com",
+                    Phone = "0902000002",
+                    PasswordHash = "host123",
+                    Role = UserRole.Host,
+                    DriverLicenseNo = "GPLX-A1-79A123",
+                    DriverLicenseStatus = DriverLicenseStatus.Approved
+                };
+                context.Users.Add(host);
+            }
 
-            var host = new User
+            var renter = context.Users.FirstOrDefault(u => u.Email == "khachthue@gmail.com");
+            if (renter == null)
             {
-                FullName = "Nguyễn Văn Chủ Xe (Hoàng Long)",
-                Email = "chuxe@gmail.com",
-                Phone = "0902000002",
-                PasswordHash = "host123",
-                Role = UserRole.Host,
-                DriverLicenseNo = "GPLX-A1-79A123",
-                DriverLicenseStatus = DriverLicenseStatus.Approved
-            };
+                renter = new User
+                {
+                    FullName = "Trần Khách Thuê (Minh Tuấn)",
+                    Email = "khachthue@gmail.com",
+                    Phone = "0903000003",
+                    PasswordHash = "renter123",
+                    Role = UserRole.Renter,
+                    DriverLicenseNo = "GPLX-A1-88B999",
+                    DriverLicenseStatus = DriverLicenseStatus.Approved
+                };
+                context.Users.Add(renter);
+            }
 
-            var renter = new User
+            var pendingRenter = context.Users.FirstOrDefault(u => u.Email == "khach_cho_duyet@gmail.com");
+            if (pendingRenter == null)
             {
-                FullName = "Trần Khách Thuê (Minh Tuấn)",
-                Email = "khachthue@gmail.com",
-                Phone = "0903000003",
-                PasswordHash = "renter123",
-                Role = UserRole.Renter,
-                DriverLicenseNo = "GPLX-A1-88B999",
-                DriverLicenseStatus = DriverLicenseStatus.Approved
-            };
-
-            context.Users.AddRange(admin, host, renter);
+                pendingRenter = new User
+                {
+                    FullName = "Lê Hoàng Nam (Chờ Duyệt GPLX)",
+                    Email = "khach_cho_duyet@gmail.com",
+                    Phone = "0904000004",
+                    PasswordHash = "123456",
+                    Role = UserRole.Renter,
+                    DriverLicenseNo = "GPLX-A1-99C123",
+                    DriverLicenseImage = "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600",
+                    DriverLicenseStatus = DriverLicenseStatus.Pending
+                };
+                context.Users.Add(pendingRenter);
+            }
             context.SaveChanges();
+
+            // 2. Seed Xe máy điện (12 xe phân bổ 4 nhóm) nếu chưa có
+            if (!context.Vehicles.Any())
+            {
 
             // 2. Seed Xe máy điện (12 xe phân bổ 4 nhóm: Phổ thông/Không bằng lái, Đô thị, Đường dài, Thể thao)
             
@@ -363,72 +392,166 @@ namespace MiotoCarRental.Data
                 Status = VehicleStatus.Active
             };
 
-            context.Vehicles.AddRange(v_lite, v_yadea_ocean, v_pega, v_yadea_volt, v1, v3, v_selex, v2, v4, v6, v_weaver, v_theon);
-            context.SaveChanges();
+                context.Vehicles.AddRange(v_lite, v_yadea_ocean, v_pega, v_yadea_volt, v1, v3, v_selex, v2, v4, v6, v_weaver, v_theon);
+                context.SaveChanges();
+            }
 
-            // 3. Seed Bookings mẫu hoàn tất
-            var b1 = new Booking
+            // 3. Seed Bookings mẫu phục vụ thuyết trình bảo vệ đồ án
+            if (!context.Bookings.Any(b => b.BookingCode == "EB-DEMO-PAY"))
             {
-                BookingCode = "EB-SAMPLE-001",
-                RenterId = renter.Id,
-                VehicleId = v1.Id,
-                StartTime = DateTime.UtcNow.AddDays(-7),
-                EndTime = DateTime.UtcNow.AddDays(-5),
-                TotalDays = 2,
-                RentalFee = 240000,
-                InsuranceFee = 30000,
-                TotalAmount = 270000,
-                DepositAmount = 81000,
-                Status = BookingStatus.Completed,
-                CheckinOdo = 3200,
-                CheckinBatteryPercent = 100,
-                CheckoutOdo = 3380,
-                CheckoutBatteryPercent = 45
-            };
+                var v_evo = context.Vehicles.FirstOrDefault(v => v.Model.Contains("Evo200") && v.RequiresLicenseA1) 
+                            ?? context.Vehicles.First();
+                var v_feliz = context.Vehicles.FirstOrDefault(v => v.Model.Contains("Feliz S")) 
+                              ?? context.Vehicles.First();
+                var v_quantum = context.Vehicles.FirstOrDefault(v => v.Model.Contains("Quantum")) 
+                                ?? context.Vehicles.First();
+                var v_vento = context.Vehicles.FirstOrDefault(v => v.Model.Contains("Vento S")) 
+                             ?? context.Vehicles.First();
 
-            var b2 = new Booking
-            {
-                BookingCode = "EB-SAMPLE-002",
-                RenterId = renter.Id,
-                VehicleId = v2.Id,
-                StartTime = DateTime.UtcNow.AddDays(-15),
-                EndTime = DateTime.UtcNow.AddDays(-12),
-                TotalDays = 3,
-                RentalFee = 540000,
-                InsuranceFee = 45000,
-                TotalAmount = 585000,
-                DepositAmount = 175500,
-                Status = BookingStatus.Completed,
-                CheckinOdo = 5100,
-                CheckinBatteryPercent = 100,
-                CheckoutOdo = 5450,
-                CheckoutBatteryPercent = 30
-            };
-
-            context.Bookings.AddRange(b1, b2);
-            context.SaveChanges();
-
-            // 4. Seed Reviews mẫu
-            context.Reviews.AddRange(
-                new Review
+                // Đơn 1: Chờ thanh toán cọc VietQR 30%
+                var b_pay = new Booking
                 {
-                    BookingId = b1.Id,
-                    ReviewerId = renter.Id,
-                    Rating = 5,
-                    Comment = "Xe Evo200 chạy cực kỳ êm và mượt, pin trâu đi cả 2 ngày vòng quanh Sài Gòn chưa hết nửa bình pin!",
-                    CreatedAt = DateTime.UtcNow.AddDays(-5)
-                },
-                new Review
+                    BookingCode = "EB-DEMO-PAY",
+                    RenterId = renter.Id,
+                    VehicleId = v_evo.Id,
+                    StartTime = DateTime.UtcNow.AddDays(1),
+                    EndTime = DateTime.UtcNow.AddDays(3),
+                    TotalDays = 2,
+                    RentalFee = 240000,
+                    InsuranceFee = 30000,
+                    TotalAmount = 270000,
+                    DepositAmount = 81000,
+                    Status = BookingStatus.AwaitingPayment,
+                    PaymentMethod = "VIETQR"
+                };
+
+                // Đơn 2: Đã cọc thành công -> Chờ nhận xe & Bàn giao xe (Check-in ODO, pin %)
+                var b_checkin = new Booking
                 {
-                    BookingId = b2.Id,
-                    ReviewerId = renter.Id,
-                    Rating = 5,
-                    Comment = "Dat Bike Quantum tăng tốc siêu bốc, cốp 41L bỏ vừa 2 ba lô du lịch to. Rất hài lòng!",
-                    CreatedAt = DateTime.UtcNow.AddDays(-12)
+                    BookingCode = "EB-DEMO-CHECKIN",
+                    RenterId = renter.Id,
+                    VehicleId = v_feliz.Id,
+                    StartTime = DateTime.UtcNow.AddHours(2),
+                    EndTime = DateTime.UtcNow.AddDays(2),
+                    TotalDays = 2,
+                    RentalFee = 260000,
+                    InsuranceFee = 30000,
+                    TotalAmount = 290000,
+                    DepositAmount = 87000,
+                    Status = BookingStatus.Confirmed,
+                    PaymentMethod = "VIETQR",
+                    PaymentBankCode = "MBBANK",
+                    PaymentTransactionId = "TXN-MB-98231",
+                    DepositPaidAt = DateTime.UtcNow.AddHours(-1)
+                };
+
+                // Đơn 3: Đang trong hành trình thuê -> Chờ trả xe & Quyết toán 70% (Checkout ODO, quá km)
+                var b_checkout = new Booking
+                {
+                    BookingCode = "EB-DEMO-CHECKOUT",
+                    RenterId = renter.Id,
+                    VehicleId = v_quantum.Id,
+                    StartTime = DateTime.UtcNow.AddDays(-2),
+                    EndTime = DateTime.UtcNow.AddHours(1),
+                    TotalDays = 2,
+                    RentalFee = 360000,
+                    InsuranceFee = 30000,
+                    TotalAmount = 390000,
+                    DepositAmount = 117000,
+                    Status = BookingStatus.InProgress,
+                    PaymentMethod = "VIETQR",
+                    PaymentBankCode = "VPBANK",
+                    PaymentTransactionId = "TXN-VP-87123",
+                    DepositPaidAt = DateTime.UtcNow.AddDays(-2),
+                    CheckinOdo = 4000,
+                    CheckinBatteryPercent = 100,
+                    CheckinTime = DateTime.UtcNow.AddDays(-2)
+                };
+
+                // Đơn 4: Đã hủy / Bị chủ xe từ chối kèm lý do
+                var b_cancelled = new Booking
+                {
+                    BookingCode = "EB-DEMO-CANCELLED",
+                    RenterId = renter.Id,
+                    VehicleId = v_vento.Id,
+                    StartTime = DateTime.UtcNow.AddDays(4),
+                    EndTime = DateTime.UtcNow.AddDays(6),
+                    TotalDays = 2,
+                    RentalFee = 400000,
+                    InsuranceFee = 30000,
+                    TotalAmount = 430000,
+                    DepositAmount = 129000,
+                    Status = BookingStatus.Cancelled,
+                    CancellationReason = "Xe gặp sự cố pin LFP đang chờ kỹ thuật viên bảo hành."
+                };
+
+                // Đơn 5: Đã hoàn tất và có đánh giá 5 sao
+                var b1 = new Booking
+                {
+                    BookingCode = "EB-SAMPLE-001",
+                    RenterId = renter.Id,
+                    VehicleId = v_evo.Id,
+                    StartTime = DateTime.UtcNow.AddDays(-7),
+                    EndTime = DateTime.UtcNow.AddDays(-5),
+                    TotalDays = 2,
+                    RentalFee = 240000,
+                    InsuranceFee = 30000,
+                    TotalAmount = 270000,
+                    DepositAmount = 81000,
+                    Status = BookingStatus.Completed,
+                    CheckinOdo = 3200,
+                    CheckinBatteryPercent = 100,
+                    CheckoutOdo = 3380,
+                    CheckoutBatteryPercent = 45
+                };
+
+                // Đơn 6: Đã hoàn tất
+                var b2 = new Booking
+                {
+                    BookingCode = "EB-SAMPLE-002",
+                    RenterId = renter.Id,
+                    VehicleId = v_quantum.Id,
+                    StartTime = DateTime.UtcNow.AddDays(-15),
+                    EndTime = DateTime.UtcNow.AddDays(-12),
+                    TotalDays = 3,
+                    RentalFee = 540000,
+                    InsuranceFee = 45000,
+                    TotalAmount = 585000,
+                    DepositAmount = 175500,
+                    Status = BookingStatus.Completed,
+                    CheckinOdo = 5100,
+                    CheckinBatteryPercent = 100,
+                    CheckoutOdo = 5450,
+                    CheckoutBatteryPercent = 30
+                };
+
+                context.Bookings.AddRange(b_pay, b_checkin, b_checkout, b_cancelled, b1, b2);
+                context.SaveChanges();
+
+                // 4. Seed Reviews mẫu nếu chưa có
+                if (!context.Reviews.Any())
+                {
+                    context.Reviews.AddRange(
+                        new Review
+                        {
+                            BookingId = b1.Id,
+                            ReviewerId = renter.Id,
+                            Rating = 5,
+                            Comment = "Xe Evo200 chạy cực kỳ êm và mượt, pin trâu đi cả 2 ngày vòng quanh Sài Gòn chưa hết nửa bình pin!",
+                            CreatedAt = DateTime.UtcNow.AddDays(-5)
+                        },
+                        new Review
+                        {
+                            BookingId = b2.Id,
+                            ReviewerId = renter.Id,
+                            Rating = 5,
+                            Comment = "Dat Bike Quantum tăng tốc siêu bốc, cốp 41L bỏ vừa 2 ba lô du lịch to. Rất hài lòng!",
+                            CreatedAt = DateTime.UtcNow.AddDays(-12)
+                        }
+                    );
+                    context.SaveChanges();
                 }
-            );
-
-            context.SaveChanges();
+            }
         }
     }
 }

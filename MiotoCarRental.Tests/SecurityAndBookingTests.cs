@@ -672,6 +672,36 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.Equal("Ảnh chụp bằng lái bị mờ, không rõ số hiệu.", rejectedUser.RejectionReason);
     }
 
+    [Fact]
+    public void DbInitializer_SeedsAllDemoUsersAndBookingsSuccessfully()
+    {
+        using var conn = new SqliteConnection("Data Source=:memory:");
+        conn.Open();
+        var options = new DbContextOptionsBuilder<MiotoDbContext>()
+            .UseSqlite(conn)
+            .Options;
+        using var testDb = new MiotoDbContext(options);
+        testDb.Database.EnsureCreated();
+
+        DbInitializer.Initialize(testDb);
+
+        // Kiểm tra 4 tài khoản người dùng mẫu
+        Assert.True(testDb.Users.Count() >= 4);
+        Assert.NotNull(testDb.Users.FirstOrDefault(u => u.Email == "khach_cho_duyet@gmail.com" && u.DriverLicenseStatus == DriverLicenseStatus.Pending));
+        Assert.NotNull(testDb.Users.FirstOrDefault(u => u.Email == "admin@mioto.vn" && u.Role == UserRole.Admin));
+        Assert.NotNull(testDb.Users.FirstOrDefault(u => u.Email == "chuxe@gmail.com" && u.Role == UserRole.Host));
+
+        // Kiểm tra 12 xe điện
+        Assert.Equal(12, testDb.Vehicles.Count());
+
+        // Kiểm tra 4 kịch bản đơn hàng demo
+        Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-DEMO-PAY" && b.Status == BookingStatus.AwaitingPayment));
+        Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-DEMO-CHECKIN" && b.Status == BookingStatus.Confirmed));
+        Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-DEMO-CHECKOUT" && b.Status == BookingStatus.InProgress));
+        Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-DEMO-CANCELLED" && b.Status == BookingStatus.Cancelled));
+        Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-SAMPLE-001" && b.Status == BookingStatus.Completed));
+    }
+
     public void Dispose()
     {
         _db.Dispose();
