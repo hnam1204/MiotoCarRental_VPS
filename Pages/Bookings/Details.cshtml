@@ -218,32 +218,56 @@
                     </div>
                 </div>
 
-                <!-- Nút Xác nhận đã chuyển khoản -->
-                <div class="pt-1">
-                    <button type="button" onclick="confirmInstantPayment(@Model.Id)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
-                        <i class="bi bi-check2-circle text-lg"></i>
-                        <span>Xác nhận đã chuyển khoản thành công</span>
-                    </button>
+                <!-- 1. Trạng thái lắng nghe giao dịch thời gian thực (Production Auto-Detection) -->
+                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-left space-y-1.5 text-xs">
+                    <div class="flex items-center gap-2 text-emerald-800 font-bold">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+                        </span>
+                        <span>Cổng SePay đang tự động lắng nghe giao dịch 24/7</span>
+                    </div>
+                    <p class="text-emerald-700 text-[11px] leading-relaxed">
+                        Sau khi quý khách quét mã VietQR và chuyển khoản qua App ngân hàng, hệ thống sẽ <strong>tự động nhận diện và cập nhật trạng thái "Đã cọc thành công" trong vòng 2 - 5 giây</strong> mà không cần tải lại trang.
+                    </p>
                 </div>
 
                 <div class="relative flex py-1 items-center">
                     <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-gray-400 text-[11px] font-bold uppercase">Hoặc thanh toán qua Cổng VNPAY</span>
+                    <span class="flex-shrink mx-4 text-gray-400 text-[11px] font-bold uppercase">Kênh thanh toán thẻ trực tuyến</span>
                     <div class="flex-grow border-t border-gray-200"></div>
                 </div>
 
-                <!-- Thanh toán qua Cổng VNPay Sandbox -->
+                <!-- 2. Thanh toán qua Cổng VNPay Sandbox -->
                 <form action="/Payment/CreateVnPayUrl" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="w-full bg-[#005BAA] hover:bg-[#004885] text-white font-black py-3.5 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2.5 group">
-                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <button type="submit" class="w-full bg-[#005BAA] hover:bg-[#004885] text-white font-black py-3 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2.5 group text-xs sm:text-sm">
+                        <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
                             <path d="M21 4H3c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h18c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H3V8h18v10zm-10-7H5v2h6v-2z"/>
                         </svg>
-                        <span class="text-sm tracking-wide">Cổng thanh toán VNPAY (Thẻ ATM / Visa)</span>
+                        <span>Cổng VNPAY (Thẻ ATM Nội địa / QR Napas / Visa)</span>
                         <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
+
+                <!-- 3. BẢNG ĐIỀU KHIỂN TRÌNH DIỄN ĐỒ ÁN (DÀNH CHO HỘI ĐỒNG BẢO VỆ) -->
+                <div class="mt-4 p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl border-2 border-indigo-400/40 shadow-lg text-left space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 rounded-lg">
+                            <i class="bi bi-mortarboard-fill"></i> CHẾ ĐỘ THUYẾT TRÌNH HỘI ĐỒNG (DEFENSE MODE)
+                        </span>
+                        <span class="text-[10px] text-indigo-200">Phục vụ nghiệm thu đồ án 15 phút</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                        Để thuận tiện cho Quý Thầy/Cô nghiệm thu toàn bộ luồng cọc giữ xe và giải phóng lịch xe mà không cần chuyển khoản tiền thật, bấm nút bên dưới để mô phỏng tín hiệu Webhook tức thời từ ngân hàng:
+                    </p>
+                    <button type="button" onclick="confirmInstantPayment(@Model.Id)" 
+                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-3 px-5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
+                        <i class="bi bi-lightning-charge-fill text-base text-slate-950"></i>
+                        <span>KÍCH HOẠT MÔ PHỎNG WEBHOOK SEPAY (TING TING THÀNH CÔNG)</span>
+                    </button>
+                </div>
             </div>
         </div>
     }
