@@ -16,6 +16,10 @@
     @{
         var isAuthenticated = User.Identity?.IsAuthenticated == true;
         var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Guest";
+        var currentUserName = User.Identity?.Name ?? "Người dùng";
+        var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+        var currentAvatarUrl = User.FindFirst("AvatarUrl")?.Value ?? "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100";
+        var currentLicenseStatus = User.FindFirst("DriverLicenseStatus")?.Value ?? "Unverified";
     }
     <!-- Top Navbar (Thay đổi chức năng theo đúng Vai trò: Khách thuê / Chủ xe / Admin) -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -103,33 +107,147 @@
                     {
                         @if (currentRole == "Admin")
                         {
-                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition whitespace-nowrap">
+                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition whitespace-nowrap shadow-sm">
                                 <i class="bi bi-plus-lg"></i> Thêm xe mới
                             </a>
                         }
                         else if (currentRole == "Host")
                         {
-                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition whitespace-nowrap">
+                            <a href="/Host/Create" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition whitespace-nowrap shadow-sm">
                                 <i class="bi bi-plus-lg"></i> Đăng xe mới
                             </a>
                         }
                         else
                         {
                             <a href="/Host/BecomeHost" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 border border-gray-200 transition whitespace-nowrap">
-                                Trở thành chủ xe
+                                <i class="bi bi-rocket-takeoff text-emerald-600"></i> Trở thành chủ xe
                             </a>
                         }
 
-                        <a href="/Account/Profile" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition text-sm" title="Hồ sơ cá nhân & GPLX">
-                            <i class="bi bi-person-circle text-lg @(currentRole == "Admin" ? "text-slate-800" : (currentRole == "Host" ? "text-blue-600" : "text-emerald-600"))"></i>
-                            <span class="hidden sm:inline font-medium text-gray-800 max-w-[140px] truncate">@User.Identity?.Name</span>
-                        </a>
-
-                        <form action="/Account/Logout" method="post" class="inline m-0">
-                            <button type="submit" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 transition" title="Đăng xuất">
-                                Đăng xuất
+                        <!-- Modern User Avatar Dropdown Popover -->
+                        <div class="relative" id="userMenuContainer">
+                            <button type="button" onclick="toggleUserMenu(event)" id="userMenuBtn" class="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl hover:bg-gray-100 border border-transparent hover:border-gray-200 transition focus:outline-none" aria-expanded="false" aria-haspopup="true">
+                                <img src="@currentAvatarUrl" alt="@currentUserName" class="w-8 h-8 rounded-full object-cover border @(currentRole == "Admin" ? "border-slate-800 ring-2 ring-slate-200" : (currentRole == "Host" ? "border-blue-600 ring-2 ring-blue-100" : "border-emerald-600 ring-2 ring-emerald-100"))" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100';" />
+                                <div class="hidden sm:flex flex-col text-left leading-tight">
+                                    <span class="font-bold text-gray-800 text-xs max-w-[120px] truncate">@currentUserName</span>
+                                    <span class="text-[10px] font-semibold text-gray-400">@(currentRole == "Admin" ? "Quản trị viên" : (currentRole == "Host" ? "Chủ xe" : "Khách thuê"))</span>
+                                </div>
+                                <i class="bi bi-chevron-down text-gray-400 text-xs ml-0.5 transition-transform duration-200" id="userMenuChevron"></i>
                             </button>
-                        </form>
+
+                            <!-- Popover Menu -->
+                            <div id="userMenuDropdown" class="hidden absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-200 divide-y divide-gray-100 z-50 overflow-hidden transform opacity-0 scale-95 transition-all duration-150 origin-top-right">
+                                <!-- User Info Header -->
+                                <div class="p-3.5 bg-gradient-to-br from-gray-50 to-white">
+                                    <div class="flex items-center gap-3">
+                                        <img src="@currentAvatarUrl" alt="@currentUserName" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100';" />
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-bold text-gray-900 truncate">@currentUserName</p>
+                                            <p class="text-[11px] text-gray-500 truncate">@currentUserEmail</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Badges: Role & License Status -->
+                                    <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                        @if (currentRole == "Admin")
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-slate-900 text-white text-[10px] font-bold tracking-wide uppercase">
+                                                <i class="bi bi-shield-shaded mr-0.5"></i> Admin
+                                            </span>
+                                        }
+                                        else if (currentRole == "Host")
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold tracking-wide uppercase">
+                                                <i class="bi bi-person-badge mr-0.5"></i> Đối tác Host
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold tracking-wide uppercase">
+                                                <i class="bi bi-person mr-0.5"></i> Khách thuê
+                                            </span>
+                                        }
+
+                                        @if (currentLicenseStatus == "Verified")
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold flex items-center gap-1">
+                                                <i class="bi bi-patch-check-fill text-emerald-600"></i> GPLX Đã duyệt
+                                            </span>
+                                        }
+                                        else if (currentLicenseStatus == "Pending")
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold flex items-center gap-1">
+                                                <i class="bi bi-hourglass-split text-amber-600"></i> GPLX Chờ duyệt
+                                            </span>
+                                        }
+                                        else if (currentLicenseStatus == "Rejected")
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-semibold flex items-center gap-1">
+                                                <i class="bi bi-x-circle-fill text-rose-600"></i> GPLX Bị từ chối
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-medium flex items-center gap-1">
+                                                <i class="bi bi-shield-slash text-gray-400"></i> Chưa xác thực GPLX
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Navigation Links -->
+                                <div class="py-1">
+                                    <a href="/Account/Profile" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                        <i class="bi bi-person-vcard text-emerald-600 text-sm w-4 text-center"></i>
+                                        <span>Hồ sơ & Giấy phép lái xe</span>
+                                    </a>
+                                    <a href="/Bookings/MyBookings" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition">
+                                        <i class="bi bi-calendar-check text-emerald-600 text-sm w-4 text-center"></i>
+                                        <span>Chuyến đi của tôi</span>
+                                    </a>
+
+                                    @if (currentRole == "Admin")
+                                    {
+                                        <a href="/Admin" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-slate-100 hover:text-slate-900 transition">
+                                            <i class="bi bi-speedometer2 text-slate-800 text-sm w-4 text-center"></i>
+                                            <span>Bảng điều khiển Quản trị</span>
+                                        </a>
+                                        <a href="/Admin#kyc" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-slate-100 hover:text-slate-900 transition">
+                                            <i class="bi bi-person-check text-slate-800 text-sm w-4 text-center"></i>
+                                            <span>Kiểm duyệt GPLX A1</span>
+                                        </a>
+                                    }
+                                    else if (currentRole == "Host")
+                                    {
+                                        <a href="/Host" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                                            <i class="bi bi-grid-fill text-blue-600 text-sm w-4 text-center"></i>
+                                            <span>Bảng điều khiển Chủ xe</span>
+                                        </a>
+                                        <a href="/Host/Create" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">
+                                            <i class="bi bi-plus-circle-fill text-blue-600 text-sm w-4 text-center"></i>
+                                            <span>Đăng thêm xe mới</span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Host/BecomeHost" class="flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 transition">
+                                            <i class="bi bi-stars text-emerald-600 text-sm w-4 text-center"></i>
+                                            <span>Đăng ký trở thành Chủ xe</span>
+                                        </a>
+                                    }
+                                </div>
+
+                                <!-- Logout Action -->
+                                <div class="p-1">
+                                    <form action="/Account/Logout" method="post" class="m-0">
+                                        <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition text-left">
+                                            <i class="bi bi-box-arrow-right text-rose-600 text-sm w-4 text-center"></i>
+                                            <span>Đăng xuất an toàn</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     }
                     else
                     {
@@ -157,6 +275,7 @@
                     <a href="/Admin#bookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Quản lý đơn thuê</a>
                     <a href="/Admin#users" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Phân quyền người dùng</a>
                     <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-emerald-600 hover:bg-gray-50">Xem trang thuê xe</a>
+                    <a href="/Account/Profile" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Hồ sơ cá nhân & GPLX</a>
                 }
                 else if (currentRole == "Host")
                 {
@@ -165,6 +284,7 @@
                     <a href="/Host#incoming-bookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Đơn khách đặt</a>
                     <a href="/Host/Create" class="block px-3 py-2 rounded-lg text-blue-600 font-medium hover:bg-gray-50">Đăng xe mới</a>
                     <a href="/Vehicles" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Thuê xe (Khách)</a>
+                    <a href="/Account/Profile" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Hồ sơ cá nhân & GPLX</a>
                 }
                 else
                 {
@@ -174,6 +294,7 @@
                     @if (isAuthenticated)
                     {
                         <a href="/Bookings/MyBookings" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Chuyến của tôi</a>
+                        <a href="/Account/Profile" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">Hồ sơ cá nhân & GPLX</a>
                     }
                 }
             </div>
@@ -276,6 +397,57 @@
                 menu.classList.toggle('hidden');
             }
         }
+
+        function toggleUserMenu(event) {
+            if (event) event.stopPropagation();
+            const dropdown = document.getElementById('userMenuDropdown');
+            const chevron = document.getElementById('userMenuChevron');
+            if (!dropdown) return;
+
+            const isClosed = dropdown.classList.contains('hidden');
+            if (isClosed) {
+                dropdown.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    dropdown.classList.remove('opacity-0', 'scale-95');
+                    dropdown.classList.add('opacity-100', 'scale-100');
+                });
+                if (chevron) chevron.classList.add('rotate-180');
+            } else {
+                dropdown.classList.remove('opacity-100', 'scale-100');
+                dropdown.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => dropdown.classList.add('hidden'), 150);
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        }
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', function (e) {
+            const container = document.getElementById('userMenuContainer');
+            const dropdown = document.getElementById('userMenuDropdown');
+            const chevron = document.getElementById('userMenuChevron');
+            if (container && dropdown && !container.contains(e.target)) {
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('opacity-100', 'scale-100');
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => dropdown.classList.add('hidden'), 150);
+                    if (chevron) chevron.classList.remove('rotate-180');
+                }
+            }
+        });
+
+        // Đóng dropdown khi bấm Escape
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const dropdown = document.getElementById('userMenuDropdown');
+                const chevron = document.getElementById('userMenuChevron');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('opacity-100', 'scale-100');
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => dropdown.classList.add('hidden'), 150);
+                    if (chevron) chevron.classList.remove('rotate-180');
+                }
+            }
+        });
 
         // Tự động ẩn Toast thông báo sau 4.5 giây
         document.addEventListener("DOMContentLoaded", function () {
