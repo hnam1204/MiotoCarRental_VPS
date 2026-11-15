@@ -12,7 +12,7 @@
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
     @{
         var isAuthenticated = User.Identity?.IsAuthenticated == true;
         var currentRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Guest";

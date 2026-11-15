@@ -38,7 +38,12 @@
                         <img src="@b.Vehicle.ThumbnailUrl" class="w-24 h-20 object-cover rounded-2xl" />
                         <div>
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="font-mono text-xs font-bold text-gray-400">#@b.BookingCode</span>
+                                <span class="font-mono text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-lg flex items-center gap-1.5 border border-gray-200">
+                                    #@b.BookingCode
+                                    <button type="button" onclick="copyBookingCode('@b.BookingCode', this)" class="text-gray-400 hover:text-emerald-600 transition" title="Sao chép mã đơn">
+                                        <i class="bi bi-copy text-[10px]"></i>
+                                    </button>
+                                </span>
                                 @switch (b.Status)
                                 {
                                     case BookingStatus.AwaitingPayment:
@@ -88,3 +93,45 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        function copyBookingCode(code, btn) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code);
+            } else {
+                const ta = document.createElement("textarea");
+                ta.value = code;
+                ta.style.position = "fixed";
+                ta.style.left = "-999999px";
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) {}
+                ta.remove();
+            }
+
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = 'bi bi-check2-circle text-emerald-600 font-bold';
+                    setTimeout(() => icon.className = 'bi bi-copy text-[10px]', 2000);
+                }
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 sm:right-6 z-50 bg-gray-950/90 backdrop-blur-md text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 border border-emerald-500/40 transform translate-y-[-10px] opacity-0 transition-all duration-300';
+            toast.innerHTML = `<i class="bi bi-check-circle-fill text-emerald-400 text-sm"></i> <span>Đã sao chép mã đơn: ${code}</span>`;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-10px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-10px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 350);
+            }, 2500);
+        }
+    </script>
+}
