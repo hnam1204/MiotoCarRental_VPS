@@ -5,6 +5,43 @@
 @{
     var Model = this.Model.Booking;
     ViewData["Title"] = $"Đơn đặt xe #{Model.BookingCode}";
+
+    // Xử lý thông tin mã ưu đãi (Voucher)
+    var appliedVoucher = Request.Query["voucher"].ToString().Trim().ToUpperInvariant();
+    decimal discountPercent = 0;
+    string voucherTitle = "";
+    if (appliedVoucher == "ECOBIKE10")
+    {
+        discountPercent = 0.10m;
+        voucherTitle = "Giảm 10% đơn đầu";
+    }
+    else if (appliedVoucher == "SINHVIEN15")
+    {
+        discountPercent = 0.15m;
+        voucherTitle = "Ưu đãi Học sinh - SV (Giảm 15%)";
+    }
+    else if (appliedVoucher == "XANH20")
+    {
+        discountPercent = 0.20m;
+        voucherTitle = "Thuê từ 3 ngày giảm 20%";
+    }
+
+    decimal originalRentalFee = Model.Vehicle.PricePerDay * Model.TotalDays;
+    decimal effectiveRentalFee = Model.RentalFee;
+    decimal discountAmount = 0;
+
+    if (discountPercent > 0)
+    {
+        discountAmount = Math.Round(originalRentalFee * discountPercent, 0);
+        effectiveRentalFee = Math.Max(0, originalRentalFee - discountAmount);
+    }
+    else if (originalRentalFee > Model.RentalFee)
+    {
+        discountAmount = originalRentalFee - Model.RentalFee;
+    }
+
+    decimal effectiveTotalAmount = effectiveRentalFee + Model.InsuranceFee + Model.DeliveryFee + Model.ExtraKmFee;
+    decimal effectiveDepositAmount = Math.Round(effectiveTotalAmount * 0.3m, 0);
 }
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -83,9 +120,19 @@
         <div class="space-y-2 text-xs">
             <h4 class="font-bold text-gray-900 text-sm mb-3">Chi tiết thanh toán</h4>
             <div class="flex justify-between text-gray-600">
-                <span>Tiền thuê xe (@Model.TotalDays ngày):</span>
-                <span class="font-bold text-gray-800">@Model.RentalFee.ToString("N0") đ</span>
+                <span>Tiền thuê xe gốc (@Model.TotalDays ngày):</span>
+                <span class="font-bold text-gray-800">@originalRentalFee.ToString("N0") đ</span>
             </div>
+            @if (discountAmount > 0)
+            {
+                <div class="flex justify-between text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl font-bold border border-emerald-200">
+                    <span class="flex items-center gap-1.5">
+                        <i class="bi bi-tag-fill text-emerald-600"></i>
+                        Giảm giá ưu đãi @(!string.IsNullOrEmpty(voucherTitle) ? $"({voucherTitle})" : ""):
+                    </span>
+                    <span class="text-sm font-black text-emerald-700">-@discountAmount.ToString("N0") đ</span>
+                </div>
+            }
             <div class="flex justify-between text-gray-600">
                 <span>Phí bảo hiểm chuyến đi (MIC):</span>
                 <span class="font-bold text-gray-800">@Model.InsuranceFee.ToString("N0") đ</span>
@@ -106,13 +153,65 @@
             }
             <div class="flex justify-between text-sm font-black text-gray-900 pt-2 border-t border-gray-100">
                 <span>Tổng giá trị đơn:</span>
-                <span class="text-emerald-600 text-base">@((Model.TotalAmount + Model.ExtraKmFee).ToString("N0")) đ</span>
+                <span class="text-emerald-600 text-base">@effectiveTotalAmount.ToString("N0") đ</span>
             </div>
-            <div class="flex justify-between text-xs font-bold text-emerald-700 bg-emerald-50 p-3 rounded-xl mt-2">
+            <div class="flex justify-between text-xs font-bold text-emerald-700 bg-emerald-50 p-3 rounded-xl mt-2 border border-emerald-200">
                 <span>Tiền cọc giữ chỗ (30%):</span>
-                <span>@Model.DepositAmount.ToString("N0") đ</span>
+                <span class="text-sm font-black text-emerald-700">@effectiveDepositAmount.ToString("N0") đ</span>
             </div>
         </div>
+
+        <!-- Khung Chọn & Sử Dụng Mã Ưu Đãi Đã Lưu -->
+        @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
+        {
+            <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-white border border-emerald-200 shadow-sm space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-gray-900 text-xs sm:text-sm flex items-center gap-1.5">
+                        <i class="bi bi-ticket-perforated-fill text-emerald-600 text-base"></i>
+                        Mã khuyến mãi &amp; Ưu đãi
+                    </span>
+                    @if (discountAmount > 0)
+                    {
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                            <i class="bi bi-check-circle-fill text-emerald-600"></i> Đã áp dụng mã
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-xs text-gray-500 font-medium">Chưa chọn mã</span>
+                    }
+                </div>
+
+                <!-- Form nhập mã trực tiếp -->
+                <form action="/Bookings/ApplyVoucher" method="post" class="flex gap-2">
+                    <input type="hidden" name="bookingId" value="@Model.Id" />
+                    <input type="text" id="voucherCodeInput" name="voucherCode" value="@appliedVoucher" placeholder="Nhập mã voucher (ECOBIKE10, SINHVIEN15...)" 
+                           class="flex-1 uppercase font-mono font-bold text-xs bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-gray-800 focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-500 shadow-xs" required />
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-xs shrink-0 flex items-center gap-1">
+                        <i class="bi bi-tag-fill"></i> Áp dụng
+                    </button>
+                    @if (discountAmount > 0)
+                    {
+                        <a href="/Bookings/Details/@Model.Id" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs px-3 py-2.5 rounded-xl transition shadow-xs flex items-center shrink-0" title="Bỏ áp dụng mã voucher">
+                            Hủy mã
+                        </a>
+                    }
+                </form>
+
+                <!-- Khu vực hiển thị các mã ưu đãi đã lưu trong ví -->
+                <div class="pt-2 border-t border-emerald-200/60">
+                    <div class="text-xs font-bold text-gray-700 mb-2 flex items-center justify-between">
+                        <span class="flex items-center gap-1 text-emerald-900">
+                            <i class="bi bi-wallet2 text-emerald-600"></i> Mã ưu đãi trong ví của bạn:
+                        </span>
+                        <span class="text-[11px] text-gray-400 font-normal">Bấm "Dùng mã" để giảm giá trực tiếp</span>
+                    </div>
+                    <div id="savedVouchersPaymentList" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <!-- Danh sách voucher sẽ được hiển thị bằng JavaScript từ localStorage -->
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 
     @if (Model.Status == BookingStatus.Cancelled)
@@ -142,7 +241,7 @@
 
     @if (Model.Status == BookingStatus.AwaitingPayment || Model.Status == BookingStatus.Pending)
     {
-        var channels = Sepay.GetAvailableChannels(Model.DepositAmount, Model.BookingCode);
+        var channels = Sepay.GetAvailableChannels(effectiveDepositAmount, Model.BookingCode);
         var defaultChannel = channels.FirstOrDefault() ?? new MiotoCarRental.Services.PaymentChannelInfo();
 
         <div class="mt-8 bg-white rounded-3xl p-6 sm:p-8 border border-emerald-100 shadow-xl text-center">
@@ -152,7 +251,7 @@
                 </span>
                 <h3 class="text-xl font-black text-gray-900">Thanh toán cọc 30% giữ xe</h3>
                 <p class="text-xs text-gray-500">
-                    Số tiền cần thanh toán: <strong class="text-emerald-700 text-base">@Model.DepositAmount.ToString("N0") đ</strong> (Mã đơn: <span class="font-mono text-gray-800">#@Model.BookingCode</span>)
+                    Số tiền cần thanh toán: <strong class="text-emerald-700 text-base">@effectiveDepositAmount.ToString("N0") đ</strong> (Mã đơn: <span class="font-mono text-gray-800">#@Model.BookingCode</span>)
                 </p>
 
                 <!-- Thanh chọn kênh thanh toán: MBBank, VPBank, MoMo -->
@@ -204,7 +303,7 @@
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-gray-500">Số tiền cọc:</span>
-                            <strong class="text-emerald-700 font-black text-sm">@Model.DepositAmount.ToString("N0") đ</strong>
+                            <strong class="text-emerald-700 font-black text-sm">@effectiveDepositAmount.ToString("N0") đ</strong>
                         </div>
                         <div class="flex items-center justify-between pt-1 border-t border-gray-200">
                             <span class="text-gray-500">Nội dung CK:</span>
@@ -250,24 +349,6 @@
                         <i class="bi bi-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
-
-                <!-- 3. BẢNG ĐIỀU KHIỂN TRÌNH DIỄN ĐỒ ÁN (DÀNH CHO HỘI ĐỒNG BẢO VỆ) -->
-                <div class="mt-4 p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-2xl border-2 border-indigo-400/40 shadow-lg text-left space-y-2.5">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 rounded-lg">
-                            <i class="bi bi-mortarboard-fill"></i> CHẾ ĐỘ THUYẾT TRÌNH HỘI ĐỒNG (DEFENSE MODE)
-                        </span>
-                        <span class="text-[10px] text-indigo-200">Phục vụ nghiệm thu đồ án 15 phút</span>
-                    </div>
-                    <p class="text-[11px] text-slate-300 leading-relaxed">
-                        Để thuận tiện cho Quý Thầy/Cô nghiệm thu toàn bộ luồng cọc giữ xe và giải phóng lịch xe mà không cần chuyển khoản tiền thật, bấm nút bên dưới để mô phỏng tín hiệu Webhook tức thời từ ngân hàng:
-                    </p>
-                    <button type="button" onclick="confirmInstantPayment(@Model.Id)" 
-                            class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-3 px-5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
-                        <i class="bi bi-lightning-charge-fill text-base text-slate-950"></i>
-                        <span>KÍCH HOẠT MÔ PHỎNG WEBHOOK SEPAY (TING TING THÀNH CÔNG)</span>
-                    </button>
-                </div>
             </div>
         </div>
     }
@@ -778,35 +859,63 @@
             showCopyToast("Đã sao chép: " + val);
         }
 
-        async function confirmInstantPayment(bookingId) {
-            const btn = event.currentTarget || event.target.closest('button');
-            const oldHtml = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.classList.add('opacity-75', 'cursor-not-allowed');
-                btn.innerHTML = '<span class="inline-block animate-spin mr-2"><i class="bi bi-arrow-repeat text-base"></i></span> Đang mô phỏng giao dịch ngân hàng...';
-            }
+        // Hiển thị danh sách các mã ưu đãi đã lưu trong ví của người dùng
+        document.addEventListener('DOMContentLoaded', function () {
+            const listEl = document.getElementById('savedVouchersPaymentList');
+            if (!listEl) return;
+
+            let saved = [];
             try {
-                const ch = channelsData[selectedIndex] ? channelsData[selectedIndex].Key : "MBBank";
-                const res = await fetch(`/api/sepay/test-webhook/${bookingId}?gateway=${ch}`, { method: 'POST' });
-                if (res.ok) {
-                    showCopyToast("Ting ting! Đã nhận diện thanh toán thành công!");
-                    setTimeout(() => window.location.reload(), 800);
-                } else {
-                    alert("Không thể hoàn tất xác nhận, vui lòng thử lại.");
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                        btn.innerHTML = oldHtml;
-                    }
-                }
-            } catch (e) {
-                alert("Lỗi kết nối máy chủ: " + e);
-                if (btn) {
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                    btn.innerHTML = oldHtml;
-                }
+                saved = JSON.parse(localStorage.getItem('ecobike_saved_vouchers') || '[]');
+            } catch (e) {}
+
+            const voucherInfo = {
+                'ECOBIKE10': { title: 'Giảm 10% đơn đầu', desc: 'Mọi dòng xe điện', rate: '10%' },
+                'SINHVIEN15': { title: 'Ưu đãi Học sinh - SV', desc: 'Xe <50km/h miễn A1', rate: '15%' },
+                'XANH20': { title: 'Thuê từ 3 ngày giảm 20%', desc: 'Miễn phí đổi pin', rate: '20%' }
+            };
+
+            const allCodes = ['ECOBIKE10', 'SINHVIEN15', 'XANH20'];
+            const currentVoucher = '@appliedVoucher';
+
+            listEl.innerHTML = '';
+            allCodes.forEach(code => {
+                const info = voucherInfo[code];
+                const isSaved = saved.includes(code);
+                const isCurrent = currentVoucher === code;
+
+                const card = document.createElement('div');
+                card.className = `p-2.5 rounded-xl border transition shadow-xs flex flex-col justify-between ${
+                    isCurrent 
+                    ? 'bg-emerald-100/70 border-emerald-500 ring-2 ring-emerald-500/20' 
+                    : (isSaved ? 'bg-white border-emerald-300 hover:border-emerald-500' : 'bg-white border-gray-200 hover:border-emerald-300')
+                }`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-1 mb-1">
+                            <span class="px-2 py-0.5 rounded font-mono font-bold text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">${code}</span>
+                            ${isSaved ? '<span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded"><i class="bi bi-bookmark-check-fill"></i> Đã lưu</span>' : ''}
+                        </div>
+                        <div class="font-bold text-xs text-gray-900 truncate">${info.title}</div>
+                        <div class="text-[10px] text-gray-500 truncate">${info.desc}</div>
+                    </div>
+                    <div class="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-xs font-black text-emerald-600">-${info.rate}</span>
+                        ${isCurrent 
+                            ? '<span class="text-[11px] font-bold text-emerald-800 flex items-center gap-1"><i class="bi bi-check2"></i> Đang dùng</span>' 
+                            : `<button type="button" onclick="applyQuickVoucher('${code}')" class="text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 rounded-lg transition shadow-xs">Dùng mã</button>`}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        });
+
+        function applyQuickVoucher(code) {
+            const input = document.getElementById('voucherCodeInput');
+            if (input) {
+                input.value = code;
+                input.form.submit();
             }
         }
 

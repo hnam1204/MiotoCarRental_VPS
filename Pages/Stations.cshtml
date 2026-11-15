@@ -35,19 +35,19 @@
     <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
             <button type="button" onclick="filterStations('all', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-emerald-600 text-white transition">
-                Tất cả trạm (6)
+                Tất cả trạm (11)
             </button>
             <button type="button" onclick="filterStations('TP.HCM', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                TP. Hồ Chí Minh
+                TP. Hồ Chí Minh (4)
             </button>
             <button type="button" onclick="filterStations('Hà Nội', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                Hà Nội
+                Hà Nội (4)
             </button>
             <button type="button" onclick="filterStations('Đà Nẵng', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                Đà Nẵng
+                Đà Nẵng (3)
             </button>
             <button type="button" onclick="filterStations('Đổi pin', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                Tủ đổi pin 2 phút
+                Tủ đổi pin 2 phút (4)
             </button>
         </div>
 
@@ -60,75 +60,83 @@
     </div>
 
     <!-- Main Content: Station Cards + Interactive Map Preview -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Left 7 Cols: Station Cards -->
-        <div id="stationsGrid" class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Card 1 -->
-            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left 7 Cols: Station Cards (Aligns to top, no stretching) -->
+        <div id="stationsGrid" class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start content-start">
+            <!-- Card 1 (TP.HCM) -->
+            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Trạm sạc V-GREEN
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
                         <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 24/7
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
                         </span>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">VinFast Landmark 81 Central Park</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> Hầm B2, Vinhomes Central Park, Bình Thạnh, TP.HCM
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 8 / 12 cổng</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 8 / 12 cổng</strong></div>
                         <div class="flex justify-between"><span class="text-slate-500">Dòng xe hỗ trợ:</span> <strong class="text-slate-800">Evo200, Feliz S, Theon S</strong></div>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> Hầm xe an ninh</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-p-square text-blue-600"></i> Miễn phí 30p</span>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('Landmark 81 Vinhomes Central Park Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('Landmark 81 Vinhomes Central Park Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
 
-            <!-- Card 2 -->
-            <div data-city="TP.HCM" data-type="Đổi pin" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <!-- Card 2 (TP.HCM) -->
+            <div data-city="TP.HCM" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Tủ đổi pin tự động
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin tự động
                         </span>
                         <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 24/7
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
                         </span>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Tủ đổi pin EcoBike Chợ Bến Thành</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 45 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Pin đầy sẵn sàng:</span> <strong class="text-blue-700">6 hộc pin đầy 100%</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin đầy sẵn sàng:</span> <strong class="text-blue-700 font-bold">6 hộc pin đầy 100%</strong></div>
                         <div class="flex justify-between"><span class="text-slate-500">Thời gian thao tác:</span> <strong class="text-slate-800">Chỉ ~90 giây</strong></div>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Thao tác 2 phút</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-qr-code text-blue-600"></i> Quét mã App</span>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('45 Le Loi Ben Thanh Quan 1 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('45 Le Loi Ben Thanh Quan 1 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
 
-            <!-- Card 3 -->
-            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <!-- Card 3 (TP.HCM) -->
+            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Dat Bike SuperCharge
+                        <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-speedometer text-amber-600"></i> Dat Bike SuperCharge
                         </span>
                         <span class="text-slate-600 font-semibold text-xs">07:30 - 22:00</span>
                     </div>
@@ -136,100 +144,292 @@
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 234 Điện Biên Phủ, Phường 15, Bình Thạnh, TP.HCM
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Số trụ sạc nhanh:</span> <strong class="text-amber-700">4 trụ (Trống 3)</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Tốc độ sạc:</span> <strong class="text-slate-800">Đi 100 km chỉ 20 phút sạc</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Số trụ sạc nhanh:</span> <strong class="text-amber-700 font-bold">4 trụ (Trống 3)</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Tốc độ sạc:</span> <strong class="text-slate-800">100 km chỉ 20 phút</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-cup-hot text-amber-600"></i> Phòng chờ & cafe</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-wifi text-emerald-600"></i> Wi-Fi miễn phí</span>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('234 Dien Bien Phu Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('234 Dien Bien Phu Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
 
-            <!-- Card 4 -->
-            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <!-- Card 4 (TP.HCM) -->
+            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Trạm sạc V-GREEN
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">VinFast Crescent Mall Quận 7</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 101 Tôn Dật Tiên, Tân Phú, Quận 7, TP.HCM
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 10 / 16 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất sạc:</span> <strong class="text-slate-800">1.2 kW - 7.2 kW</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-bag-check text-purple-600"></i> TTTM Crescent Mall</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> Bảo vệ 24/7</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('Crescent Mall 101 Ton Dat Tien Quan 7 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=Crescent+Mall+Quan+7" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 5 (Hà Nội) -->
+            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Trạm sạc V-GREEN Royal City</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 72A Nguyễn Trãi, Thượng Đình, Thanh Xuân, Hà Nội
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 14 / 20 cổng</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Công suất:</span> <strong class="text-slate-800">1.2 kW - 3.5 kW</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 14 / 20 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất sạc:</span> <strong class="text-slate-800">1.2 kW - 3.5 kW</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-building text-blue-600"></i> Hầm B2 Royal City</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> An ninh 24/7</span>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('Royal City 72A Nguyen Trai Thanh Xuan Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('Royal City 72A Nguyen Trai Thanh Xuan Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
 
-            <!-- Card 5 -->
-            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <!-- Card 6 (Hà Nội) -->
+            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Tủ đổi pin Selex
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Trạm đổi pin Selex Cầu Giấy</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 144 Xuân Thủy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Pin sạc đầy có sẵn:</span> <strong class="text-blue-700">9 viên pin LFP</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin sạc đầy có sẵn:</span> <strong class="text-blue-700 font-bold">9 viên pin LFP</strong></div>
                         <div class="flex justify-between"><span class="text-slate-500">Dòng xe hỗ trợ:</span> <strong class="text-slate-800">Selex Camel 1 &amp; 2</strong></div>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-mortarboard text-indigo-600"></i> Gần ĐH Quốc Gia</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Đổi pin 2 phút</span>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('144 Xuan Thuy Cau Giay Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('144 Xuan Thuy Cau Giay Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
 
-            <!-- Card 6 -->
-            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between space-y-4">
+            <!-- Card 7 (Hà Nội) -->
+            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded">
-                            Trạm sạc V-GREEN
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs">24/7</span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">VinFast Times City Hai Bà Trưng</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 458 Minh Khai, Vĩnh Tuy, Hai Bà Trưng, Hà Nội
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 12 / 18 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất sạc:</span> <strong class="text-slate-800">1.2 kW - 7.2 kW</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-building text-blue-600"></i> Hầm B2 Times City</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> An ninh 24/7</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('Times City 458 Minh Khai Hai Ba Trung Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=Times+City+458+Minh+Khai+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 8 (Hà Nội) -->
+            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Trạm đổi pin Selex Phố Huế</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 54 Phố Huế, Hàng Bài, Hoàn Kiếm, Hà Nội
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin sạc đầy có sẵn:</span> <strong class="text-blue-700 font-bold">8 viên pin LFP</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Thời gian đổi pin:</span> <strong class="text-slate-800">Chỉ ~90 giây</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-geo text-rose-600"></i> Trung tâm Phố Cổ</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Hoạt động 24/7</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('54 Pho Hue Hoan Kiem Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=54+Pho+Hue+Hoan+Kiem+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 9 (Đà Nẵng) -->
+            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Vincom Plaza Ngô Quyền Đà Nẵng</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 910A Ngô Quyền, An Hải Bắc, Sơn Trà, Đà Nẵng
                     </p>
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700">Trống 11 / 16 cổng</strong></div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 11 / 16 cổng</strong></div>
                         <div class="flex justify-between"><span class="text-slate-500">Hỗ trợ du lịch:</span> <strong class="text-slate-800">Gần cầu Rồng &amp; Sơn Trà</strong></div>
                     </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-compass text-teal-600"></i> Gần bãi biển Mỹ Khê</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> Bảo vệ 24/7</span>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="focusStationMap('Vincom Plaza 910A Ngo Quyen Son Tra Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-lg transition">
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('Vincom Plaza 910A Ngo Quyen Son Tra Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
                         Xem bản đồ
                     </button>
-                    <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition">
+                    <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 10 (Đà Nẵng) -->
+            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">VinFast Sân bay Quốc tế Đà Nẵng</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> Bãi đỗ xe T1, Đường Duy Tân, Hải Châu, Đà Nẵng
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 6 / 10 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất sạc:</span> <strong class="text-slate-800">1.2 kW - 3.5 kW</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-airplane text-blue-600"></i> Ngay cổng sân bay</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> Camera an ninh</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('San bay quoc te Da Nang Duy Tan')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=San+bay+quoc+te+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
+                        Chỉ đường
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 11 (Đà Nẵng) -->
+            <div data-city="Đà Nẵng" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                            <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
+                        </span>
+                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Tủ đổi pin Selex Ngũ Hành Sơn</h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 284 Võ Nguyên Giáp, Mỹ An, Ngũ Hành Sơn, Đà Nẵng
+                    </p>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
+                        <div class="flex justify-between"><span class="text-slate-500">Pin đầy sẵn sàng:</span> <strong class="text-blue-700 font-bold">7 viên pin LFP</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Dòng xe hỗ trợ:</span> <strong class="text-slate-800">Selex Camel 1 &amp; 2</strong></div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-water text-cyan-600"></i> Tuyến đường ven biển</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Đổi pin 2 phút</span>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-1 border-t border-slate-100">
+                    <button type="button" onclick="focusStationMap('284 Vo Nguyen Giap Ngu Hanh Son Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
+                        Xem bản đồ
+                    </button>
+                    <a href="https://maps.google.com/?q=284+Vo+Nguyen+Giap+Ngu+Hanh+Son+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>

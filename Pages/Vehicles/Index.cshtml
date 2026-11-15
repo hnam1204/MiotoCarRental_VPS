@@ -1,6 +1,7 @@
 @page "/Vehicles"
 @model MiotoCarRental.ViewModels.VehicleSearchViewModel
 @using MiotoCarRental.Models.Entities
+@using MiotoCarRental.Helpers
 @{
     ViewData["Title"] = "Danh sách xe máy điện cho thuê";
 }
@@ -339,7 +340,7 @@
                     {
                         <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-full group">
                             <div class="relative h-52 bg-gray-100 overflow-hidden">
-                                <img src="@car.ThumbnailUrl" alt="@car.Brand @car.Model" 
+                                <img src="@EcoBikeImageHelper.GetVehicleThumbnail(car.Model, car.ThumbnailUrl)" alt="@car.Brand @car.Model" 
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 
                                 <div class="absolute top-3 left-3 flex flex-col gap-1.5">

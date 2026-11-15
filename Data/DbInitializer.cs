@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MiotoCarRental.Models.Entities;
+using MiotoCarRental.Helpers;
 
 namespace MiotoCarRental.Data
 {
@@ -108,7 +109,7 @@ namespace MiotoCarRental.Data
                 District = "TP. Thủ Đức",
                 Latitude = 10.8494,
                 Longitude = 106.7725,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981359-219d6364c9c8?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Evo200 Lite"),
                 Description = "Dòng xe quốc dân cho học sinh, sinh viên! Giới hạn tốc độ 49 km/h nên KHÔNG CẦN BẰNG LÁI A1. Pin LFP siêu an toàn đi 205km một lần sạc, giá thuê cực rẻ.",
                 FeaturesJson = "[\"Không cần bằng lái A1\", \"Giá rẻ học sinh\", \"Pin LFP 205km\", \"Tiết kiệm chi phí\"]",
                 Status = VehicleStatus.Active
@@ -133,7 +134,7 @@ namespace MiotoCarRental.Data
                 District = "Quận 1",
                 Latitude = 10.7744,
                 Longitude = 106.7032,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Ocean"),
                 Description = "Yadea Ocean nhỏ nhắn, tôn dáng, thiết kế thanh lịch siêu dễ lái. Thích hợp cho các bạn nữ dạo phố, đi học nhẹ nhàng trong nội thành, không cần bằng lái A1.",
                 FeaturesJson = "[\"Miễn bằng lái A1\", \"Tôn dáng nữ sinh\", \"Nhỏ gọn dễ dắt\", \"Đèn LED tròn\"]",
                 Status = VehicleStatus.Active
@@ -158,7 +159,7 @@ namespace MiotoCarRental.Data
                 District = "Cầu Giấy",
                 Latitude = 21.0333,
                 Longitude = 105.7958,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981420-87aa9dad1c89?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Aura S"),
                 Description = "Dáng xe tay ga Vespa sang chảnh, sàn để chân rộng rãi tha hồ để balo túi xách, đồng hồ điện tử sắc nét, học sinh cấp 3 và sinh viên đi học tự tin.",
                 FeaturesJson = "[\"Miễn bằng lái A1\", \"Dáng Vespa sang\", \"Cốp rộng để mũ\", \"Êm ái lướt phố\"]",
                 Status = VehicleStatus.Active
@@ -183,7 +184,7 @@ namespace MiotoCarRental.Data
                 District = "Hải Châu",
                 Latitude = 16.0612,
                 Longitude = 108.2185,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Voltguard"),
                 Description = "Yadea Voltguard thiết kế góc cạnh, gầm cao, phuộc nhún êm ái, chống nước IPX7 thoải mái đi mưa ngập, phù hợp sinh viên đi làm thêm.",
                 FeaturesJson = "[\"Miễn bằng lái A1\", \"Chống nước IPX7\", \"Khung sườn thép\", \"Tiết kiệm tối đa\"]",
                 Status = VehicleStatus.Active
@@ -209,7 +210,7 @@ namespace MiotoCarRental.Data
                 District = "Quận 1",
                 Latitude = 10.7744,
                 Longitude = 106.7032,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Evo200 (Pin"),
                 Description = "Xe máy điện quốc dân VinFast Evo200 bản chuẩn 70km/h, pin LFP chống cháy nổ đi 203km/lần sạc, cốp 22L, kèm củ sạc nhanh và 2 nón bảo hiểm.",
                 FeaturesJson = "[\"Pin LFP 203km\", \"Cốp 22L\", \"Chống nước IP67\", \"Kèm củ sạc di động\", \"Cung cấp 2 nón BH\"]",
                 Status = VehicleStatus.Active
@@ -234,7 +235,7 @@ namespace MiotoCarRental.Data
                 District = "Cầu Giấy",
                 Latitude = 21.0333,
                 Longitude = 105.7958,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Feliz S"),
                 Description = "VinFast Feliz S thanh lịch, gầm cao, phanh đĩa an toàn, cốp 25L đựng vừa 2 mũ bảo hiểm cùng laptop, phù hợp tuyệt đối cho dân công sở đi làm.",
                 FeaturesJson = "[\"Pin LFP 198km\", \"Cốp rộng 25L\", \"Đèn Full LED\", \"Chống nước IP67\", \"Kèm áo mưa\"]",
                 Status = VehicleStatus.Active
@@ -259,7 +260,7 @@ namespace MiotoCarRental.Data
                 District = "Bình Thạnh",
                 Latitude = 10.7981,
                 Longitude = 106.7088,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558980394-4c7c9299fe96?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Camel"),
                 Description = "Selex Camel chuyên dụng chở hàng, chuyển trọ, chạy dịch vụ. Cơ chế đổi 3 pack pin chỉ trong 2 phút tại mạng lưới trạm tự động, không lo chờ sạc.",
                 FeaturesJson = "[\"Đổi pin nhanh 2 phút\", \"Khung tải 225kg\", \"Thùng hàng thông minh\", \"Siêu bền bỉ\"]",
                 Status = VehicleStatus.Active
@@ -285,7 +286,7 @@ namespace MiotoCarRental.Data
                 District = "Bình Thạnh",
                 Latitude = 10.7981,
                 Longitude = 106.7088,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Quantum"),
                 Description = "Dat Bike Quantum chuyên cơ điện đường dài! Đi 270km một lần sạc, cốp khổng lồ 41L đựng cả vali, sạc siêu nhanh 4 giờ đầy pin, động cơ 7000W bốc lửa đi phượt Vũng Tàu - Đà Lạt.",
                 FeaturesJson = "[\"Đi 270km/sạc\", \"Cốp khổng lồ 41L\", \"Cruise Control\", \"Sạc nhanh 4h\", \"Động cơ 7000W\"]",
                 Status = VehicleStatus.Active
@@ -310,7 +311,7 @@ namespace MiotoCarRental.Data
                 District = "Hải Châu",
                 Latitude = 16.0612,
                 Longitude = 108.2185,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981420-87aa9dad1c89?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Klara S"),
                 Description = "Klara S thiết kế tinh tế đậm chất Ý, sàn để chân rộng rãi, thích hợp thuê dạo phố biển Đà Nẵng, đèo Hải Vân cực êm, pin LFP tuổi thọ cao.",
                 FeaturesJson = "[\"Phong cách Ý\", \"Pin LFP 194km\", \"Phanh ABS\", \"Kết nối thông minh\", \"Kèm 2 nón BH\"]",
                 Status = VehicleStatus.Active
@@ -336,7 +337,7 @@ namespace MiotoCarRental.Data
                 District = "Quận 7",
                 Latitude = 10.7328,
                 Longitude = 106.7214,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558980664-769d59546b3d?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Vento S"),
                 Description = "Xe máy điện cao cấp trang bị công nghệ Smartkey điều khiển từ xa, phanh ABS chống bó cứng an toàn, động cơ Side Motor 5200W uy lực bốc như xe 150cc.",
                 FeaturesJson = "[\"Phanh ABS\", \"Smartkey thông minh\", \"Động cơ Side Motor 5200W\", \"Tốc độ 89km/h\"]",
                 Status = VehicleStatus.Active
@@ -361,7 +362,7 @@ namespace MiotoCarRental.Data
                 District = "Quận 1",
                 Latitude = 10.7744,
                 Longitude = 106.7032,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Weaver++"),
                 Description = "Thiết kế Cafe Racer cổ điển phong trần, động cơ 7000W gia tốc cực đại từ 0-50km/h chỉ trong 3 giây. Sạc nhanh 3 giờ đầy pin, phong cách biker cực ngầu.",
                 FeaturesJson = "[\"Cafe Racer\", \"Động cơ 7000W\", \"Tăng tốc 3s\", \"Sạc siêu tốc 3h\"]",
                 Status = VehicleStatus.Active
@@ -386,7 +387,7 @@ namespace MiotoCarRental.Data
                 District = "Cầu Giấy",
                 Latitude = 21.0333,
                 Longitude = 105.7958,
-                ThumbnailUrl = "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80",
+                ThumbnailUrl = EcoBikeImageHelper.GetVehicleThumbnail("Theon S"),
                 Description = "Flagship đỉnh cao nhất của VinFast! Động cơ Center Motor 7100W truyền động dây curoa, phanh đĩa ABS 2 kênh Continental, giảm xóc Showa, PAAK mở khóa qua điện thoại.",
                 FeaturesJson = "[\"Công suất khủng 7100W\", \"ABS 2 kênh Continental\", \"Giảm xóc Showa\", \"Tốc độ 99km/h\"]",
                 Status = VehicleStatus.Active
@@ -394,6 +395,51 @@ namespace MiotoCarRental.Data
 
                 context.Vehicles.AddRange(v_lite, v_yadea_ocean, v_pega, v_yadea_volt, v1, v3, v_selex, v2, v4, v6, v_weaver, v_theon);
                 context.SaveChanges();
+            }
+
+            // Luôn tự động làm sạch và đồng bộ hình ảnh xe máy điện chính hãng chất lượng cao (loại bỏ triệt để ảnh rác Unsplash)
+            var allVehicles = context.Vehicles.Include(v => v.Images).ToList();
+            if (allVehicles.Any())
+            {
+                bool hasImageUpdate = false;
+                foreach (var v in allVehicles)
+                {
+                    // Cập nhật Thumbnail chuẩn xác từ EcoBikeImageHelper
+                    var correctThumb = EcoBikeImageHelper.GetVehicleThumbnail(v.Model, null);
+                    if (v.ThumbnailUrl != correctThumb)
+                    {
+                        v.ThumbnailUrl = correctThumb;
+                        hasImageUpdate = true;
+                    }
+
+                    // Đồng bộ chuẩn xác 100% bộ 2 ảnh nổi bật nhất cho từng dòng xe (1 Thumbnail + 1 ảnh chi tiết nổi bật)
+                    var dedicatedGallery = EcoBikeImageHelper.GetDedicatedVehicleGallery(v.Brand, v.Model, correctThumb);
+                    var expectedUrls = dedicatedGallery.Skip(1).Select(x => x.Url).ToList();
+                    var currentUrls = v.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>();
+
+                    bool needsRefresh = !currentUrls.SequenceEqual(expectedUrls);
+                    if (needsRefresh)
+                    {
+                        if (v.Images != null && v.Images.Any())
+                        {
+                            context.VehicleImages.RemoveRange(v.Images);
+                        }
+                        foreach (var item in dedicatedGallery.Skip(1))
+                        {
+                            context.VehicleImages.Add(new VehicleImage
+                            {
+                                VehicleId = v.Id,
+                                ImageUrl = item.Url,
+                                IsThumbnail = false
+                            });
+                        }
+                        hasImageUpdate = true;
+                    }
+                }
+                if (hasImageUpdate)
+                {
+                    context.SaveChanges();
+                }
             }
 
             // 3. Seed Bookings mẫu phục vụ thuyết trình bảo vệ đồ án

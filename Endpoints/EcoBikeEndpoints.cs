@@ -71,6 +71,12 @@ namespace MiotoCarRental.Endpoints
                 return Results.Ok(list.OrderBy(v => v.PricePerDay));
             });
 
+            api.MapGet("/sync-vehicle-images", (MiotoDbContext db) =>
+            {
+                DbInitializer.Initialize(db);
+                return Results.Ok(new { success = true, message = "Đã làm sạch và cập nhật hình ảnh chính hãng 100% cho toàn bộ xe máy điện!" });
+            });
+
             api.MapGet("/vehicles/{id:int}", async (int id, MiotoDbContext db) =>
             {
                 var v = await db.Vehicles.Include(x => x.Host).FirstOrDefaultAsync(x => x.Id == id);
@@ -210,8 +216,22 @@ namespace MiotoCarRental.Endpoints
             // =========================================================================
             // 2. ACCOUNT & AUTHENTICATION ENDPOINTS
             // =========================================================================
-            app.MapPost("/Account/Login", async (HttpContext http, MiotoDbContext db, IPasswordService passwordService, [FromForm] string? email, [FromForm] string? password, [FromForm] bool rememberMe, [FromForm] string? returnUrl) =>
+            app.MapPost("/Account/Login", async (HttpContext http, MiotoDbContext db, IPasswordService passwordService) =>
             {
+                var form = await http.Request.ReadFormAsync();
+                string? email = form["email"].FirstOrDefault() ?? form["Email"].FirstOrDefault();
+                string? password = form["password"].FirstOrDefault() ?? form["Password"].FirstOrDefault();
+                string? returnUrl = form["returnUrl"].FirstOrDefault() ?? form["ReturnUrl"].FirstOrDefault();
+
+                // Xử lý an toàn checkbox rememberMe (tránh lỗi binding "true,false" từ form HTML/Razor)
+                string rememberMeRaw = form["rememberMe"].ToString();
+                if (string.IsNullOrWhiteSpace(rememberMeRaw))
+                {
+                    rememberMeRaw = form["RememberMe"].ToString();
+                }
+                bool rememberMe = rememberMeRaw.Contains("true", StringComparison.OrdinalIgnoreCase) || 
+                                  rememberMeRaw.Equals("on", StringComparison.OrdinalIgnoreCase);
+
                 if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 {
                     SetTempMessage(http, "ErrorMessage", "Vui lòng nhập đầy đủ Email và Mật khẩu!");
@@ -346,8 +366,92 @@ namespace MiotoCarRental.Endpoints
                     return Results.Redirect($"/Vehicles/Details/{model.VehicleId}");
                 }
 
+                var promoCode = (http.Request.HasFormContentType && http.Request.Form.ContainsKey("PromoCode")) 
+                    ? http.Request.Form["PromoCode"].ToString().Trim().ToUpperInvariant() 
+                    : "";
+
+                decimal discountPercent = 0;
+                if (promoCode == "ECOBIKE10") discountPercent = 0.10m;
+                else if (promoCode == "SINHVIEN15") discountPercent = 0.15m;
+                else if (promoCode == "XANH20") discountPercent = 0.20m;
+
+                if (discountPercent > 0)
+                {
+                    var dbBooking = await db.Bookings.FindAsync(result.Booking.Id);
+                    if (dbBooking != null)
+                    {
+                        decimal discountAmount = Math.Round(dbBooking.RentalFee * discountPercent, 0);
+                        dbBooking.RentalFee = Math.Max(0, dbBooking.RentalFee - discountAmount);
+                        dbBooking.TotalAmount = dbBooking.RentalFee + dbBooking.InsuranceFee + dbBooking.DeliveryFee;
+                        dbBooking.DepositAmount = Math.Round(dbBooking.TotalAmount * 0.3m, 0);
+                        await db.SaveChangesAsync();
+                    }
+                    SetTempMessage(http, "SuccessMessage", $"Tạo đơn thành công và áp dụng mã ưu đãi {promoCode}! Vui lòng thanh toán cọc giữ chỗ.");
+                    return Results.Redirect($"/Bookings/Details/{result.Booking.Id}?voucher={promoCode}");
+                }
+
                 SetTempMessage(http, "SuccessMessage", "Tạo đơn đặt xe thành công! Vui lòng thanh toán cọc giữ chỗ.");
                 return Results.Redirect($"/Bookings/Details/{result.Booking.Id}");
+            }).DisableAntiforgery();
+
+            // API Áp dụng mã Voucher khuyến mãi cho đơn đặt xe
+            app.MapPost("/Bookings/ApplyVoucher", [Authorize] async (HttpContext http, MiotoDbContext db, [FromForm] int bookingId, [FromForm] string? voucherCode) =>
+            {
+                var userIdStr = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(userIdStr, out int currentUserId)) return Results.Redirect("/Account/Login");
+
+                var booking = await db.Bookings.Include(b => b.Vehicle).FirstOrDefaultAsync(b => b.Id == bookingId);
+                if (booking == null) return Results.NotFound();
+
+                bool isAdmin = http.User.IsInRole("Admin");
+                bool isRenter = booking.RenterId == currentUserId;
+                if (!isAdmin && !isRenter) return Results.Redirect("/Account/AccessDenied");
+
+                if (booking.Status != BookingStatus.Pending && booking.Status != BookingStatus.AwaitingPayment)
+                {
+                    SetTempMessage(http, "ErrorMessage", "Đơn hàng đã thanh toán hoặc đã hoàn tất, không thể thay đổi mã ưu đãi.");
+                    return Results.Redirect($"/Bookings/Details/{bookingId}");
+                }
+
+                var code = (voucherCode ?? "").Trim().ToUpperInvariant();
+                decimal discountPercent = 0;
+                string discountTitle = "";
+
+                if (code == "ECOBIKE10")
+                {
+                    discountPercent = 0.10m;
+                    discountTitle = "Giảm 10% đơn thuê đầu";
+                }
+                else if (code == "SINHVIEN15")
+                {
+                    discountPercent = 0.15m;
+                    discountTitle = "Ưu đãi Học sinh - SV (Giảm 15%)";
+                }
+                else if (code == "XANH20")
+                {
+                    discountPercent = 0.20m;
+                    discountTitle = "Thuê từ 3 ngày giảm 20%";
+                }
+                else
+                {
+                    SetTempMessage(http, "ErrorMessage", $"Mã ưu đãi '{voucherCode}' không hợp lệ hoặc đã hết hạn.");
+                    return Results.Redirect($"/Bookings/Details/{bookingId}");
+                }
+
+                // Tính toán giá trị chiết khấu dựa trên đơn giá ngày & số ngày thuê gốc
+                decimal originalRentalFee = booking.Vehicle.PricePerDay * booking.TotalDays;
+                decimal discountAmount = Math.Round(originalRentalFee * discountPercent, 0);
+                decimal newRentalFee = Math.Max(0, originalRentalFee - discountAmount);
+                decimal newTotalAmount = newRentalFee + booking.InsuranceFee + booking.DeliveryFee;
+                decimal newDepositAmount = Math.Round(newTotalAmount * 0.3m, 0);
+
+                booking.RentalFee = newRentalFee;
+                booking.TotalAmount = newTotalAmount;
+                booking.DepositAmount = newDepositAmount;
+                await db.SaveChangesAsync();
+
+                SetTempMessage(http, "SuccessMessage", $"Áp dụng thành công mã {code} ({discountTitle})! Tiền cọc giữ chỗ đã giảm còn {newDepositAmount:N0} đ.");
+                return Results.Redirect($"/Bookings/Details/{bookingId}?voucher={code}");
             }).DisableAntiforgery();
 
             app.MapPost("/Bookings/ConfirmPayment", [Authorize] async (HttpContext http, MiotoDbContext db, IBookingService bookingService, [FromForm] int id) =>

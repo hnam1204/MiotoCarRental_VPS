@@ -1,6 +1,7 @@
 @page "/"
 @model MiotoCarRental.ViewModels.HomeIndexPageModel
 @using MiotoCarRental.Models.Entities
+@using MiotoCarRental.Helpers
 @{
     ViewData["Title"] = "Trang chủ - Thuê xe máy điện tự lái";
     var featuredCars = Model.FeaturedCars;
@@ -188,7 +189,7 @@
                     <p class="text-xs text-slate-500 truncate">Áp dụng mọi dòng xe điện</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('ECOBIKE10')" class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+            <button type="button" data-voucher="ECOBIKE10" onclick="copyVoucher('ECOBIKE10', this)" class="shrink-0 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
@@ -209,7 +210,7 @@
                     <p class="text-xs text-slate-500 truncate">Xe &lt;50km/h miễn bằng A1</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('SINHVIEN15')" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+            <button type="button" data-voucher="SINHVIEN15" onclick="copyVoucher('SINHVIEN15', this)" class="shrink-0 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border border-blue-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
@@ -230,7 +231,7 @@
                     <p class="text-xs text-slate-500 truncate">Miễn phí đổi pin tại trạm</p>
                 </div>
             </div>
-            <button type="button" onclick="copyVoucher('XANH20')" class="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-600 hover:text-white border border-amber-200 px-3.5 py-2 rounded-xl transition shadow-xs">
+            <button type="button" data-voucher="XANH20" onclick="copyVoucher('XANH20', this)" class="shrink-0 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-600 hover:text-white border border-amber-200 px-3.5 py-2 rounded-xl transition shadow-xs">
                 Lưu mã
             </button>
         </div>
@@ -337,7 +338,7 @@
         {
             <div class="bg-white rounded-xl overflow-hidden border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition flex flex-col justify-between group">
                 <div class="relative h-52 bg-slate-100 overflow-hidden">
-                    <img src="@car.ThumbnailUrl" alt="@car.Brand @car.Model" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <img src="@EcoBikeImageHelper.GetVehicleThumbnail(car.Model, car.ThumbnailUrl)" alt="@car.Brand @car.Model" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
                         @if (!car.RequiresLicenseA1)
                         {
@@ -570,13 +571,73 @@
 </section>
 
 <script>
-    function copyVoucher(code) {
+    const isUserLoggedIn = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+
+    function markVoucherSaved(btnElem) {
+        if (!btnElem) return;
+        btnElem.innerHTML = '<i class="bi bi-check2 mr-1 text-emerald-600 font-bold text-sm"></i> Đã lưu';
+        btnElem.className = 'shrink-0 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-xl transition shadow-xs cursor-default flex items-center';
+        btnElem.setAttribute('data-saved', 'true');
+    }
+
+    function initSavedVouchers() {
+        if (!isUserLoggedIn) return;
+        try {
+            const saved = JSON.parse(localStorage.getItem('ecobike_saved_vouchers') || '[]');
+            saved.forEach(code => {
+                const btn = document.querySelector(`[data-voucher="${code}"]`);
+                if (btn) {
+                    markVoucherSaved(btn);
+                }
+            });
+        } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', initSavedVouchers);
+
+    function copyVoucher(code, btnElem) {
+        if (!isUserLoggedIn) {
+            // Khi chưa đăng nhập: Hiển thị thông báo ở góc yêu cầu đăng nhập
+            if (typeof window.showToast === 'function') {
+                window.showToast(
+                    'warning',
+                    'Thông báo',
+                    'Vui lòng đăng nhập để lưu mã!',
+                    '/Account/Login?returnUrl=/',
+                    'Đăng nhập ngay'
+                );
+            } else {
+                alert('Vui lòng đăng nhập để lưu mã!');
+            }
+            return;
+        }
+
+        // Đã đăng nhập: Lưu & sao chép mã
         if (navigator.clipboard) {
             navigator.clipboard.writeText(code);
         }
+
+        // Lưu vào danh sách mã đã lưu
+        try {
+            const saved = JSON.parse(localStorage.getItem('ecobike_saved_vouchers') || '[]');
+            if (!saved.includes(code)) {
+                saved.push(code);
+                localStorage.setItem('ecobike_saved_vouchers', JSON.stringify(saved));
+            }
+        } catch (e) {}
+
+        // Đổi trạng thái sang Đã lưu với dấu tick và GIỮ NGUYÊN (không chuyển lại)
+        if (btnElem) {
+            markVoucherSaved(btnElem);
+        }
+
+        if (typeof window.showToast === 'function') {
+            window.showToast('success', 'Thành công', 'Đã lưu mã ' + code + ' thành công!');
+        }
+
         const toast = document.getElementById('copyToast');
         if (toast) {
-            toast.textContent = 'Đã sao chép mã: ' + code;
+            toast.textContent = 'Đã lưu mã: ' + code;
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
