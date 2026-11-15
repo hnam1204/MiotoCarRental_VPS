@@ -21,6 +21,9 @@ namespace MiotoCarRental.ViewModels
         }
 
         [BindProperty(SupportsGet = true)]
+        public string? Keyword { get; set; }
+
+        [BindProperty(SupportsGet = true)]
         public VehicleCategory? Category { get; set; }
 
         [BindProperty(SupportsGet = true)]
@@ -57,6 +60,17 @@ namespace MiotoCarRental.ViewModels
             var query = _context.Vehicles
                 .Where(v => v.Status == VehicleStatus.Active)
                 .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(Keyword))
+            {
+                var kw = Keyword.Trim().ToLower();
+                query = query.Where(v => v.Brand.ToLower().Contains(kw) 
+                                      || v.Model.ToLower().Contains(kw) 
+                                      || (v.Description != null && v.Description.ToLower().Contains(kw))
+                                      || v.City.ToLower().Contains(kw)
+                                      || v.District.ToLower().Contains(kw)
+                                      || v.Address.ToLower().Contains(kw));
+            }
 
             if (Category.HasValue)
                 query = query.Where(v => v.Category == Category.Value);

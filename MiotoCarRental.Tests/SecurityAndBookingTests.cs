@@ -702,6 +702,53 @@ public sealed class SecurityAndBookingTests : IDisposable
         Assert.NotNull(testDb.Bookings.FirstOrDefault(b => b.BookingCode == "EB-SAMPLE-001" && b.Status == BookingStatus.Completed));
     }
 
+    [Fact]
+    public async Task VehicleSearch_FiltersByKeyword_AndCategory_Correctly()
+    {
+        using var conn = new SqliteConnection("Data Source=:memory:");
+        conn.Open();
+        var options = new DbContextOptionsBuilder<MiotoDbContext>()
+            .UseSqlite(conn)
+            .Options;
+        using var testDb = new MiotoDbContext(options);
+        testDb.Database.EnsureCreated();
+
+        DbInitializer.Initialize(testDb);
+
+        // 1. Tìm kiếm theo từ khóa 'Quantum'
+        var searchModel = new VehicleSearchViewModel(testDb) { Keyword = "Quantum" };
+        await searchModel.OnGetAsync();
+        Assert.NotEmpty(searchModel.Results);
+        Assert.All(searchModel.Results, v => Assert.Contains("Quantum", v.Model, StringComparison.OrdinalIgnoreCase));
+
+        // 2. Tìm kiếm theo từ khóa địa điểm 'Quận 1'
+        searchModel.Keyword = "Quận 1";
+        await searchModel.OnGetAsync();
+        Assert.NotEmpty(searchModel.Results);
+        Assert.All(searchModel.Results, v => Assert.True(
+            v.District.Contains("Quận 1", StringComparison.OrdinalIgnoreCase) ||
+            v.Address.Contains("Quận 1", StringComparison.OrdinalIgnoreCase) ||
+            v.City.Contains("Quận 1", StringComparison.OrdinalIgnoreCase)
+        ));
+
+        // 3. Lọc theo Phân khúc Economy (Miễn bằng A1)
+        searchModel.Keyword = null;
+        searchModel.Category = VehicleCategory.Economy;
+        await searchModel.OnGetAsync();
+        Assert.NotEmpty(searchModel.Results);
+        Assert.All(searchModel.Results, v => Assert.Equal(VehicleCategory.Economy, v.Category));
+
+        // 4. Kết hợp Từ khóa 'VinFast' + Phân khúc Economy
+        searchModel.Keyword = "VinFast";
+        searchModel.Category = VehicleCategory.Economy;
+        await searchModel.OnGetAsync();
+        Assert.NotEmpty(searchModel.Results);
+        Assert.All(searchModel.Results, v => {
+            Assert.Equal("VinFast", v.Brand);
+            Assert.Equal(VehicleCategory.Economy, v.Category);
+        });
+    }
+
     public void Dispose()
     {
         _db.Dispose();
