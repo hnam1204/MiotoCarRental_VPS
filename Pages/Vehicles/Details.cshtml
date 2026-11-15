@@ -4,9 +4,31 @@
 @{
     ViewData["Title"] = $"{Model.Vehicle.Brand} {Model.Vehicle.Model} - Chi tiết xe máy điện";
     var v = Model.Vehicle;
+
+    var mainImage = !string.IsNullOrWhiteSpace(v.ThumbnailUrl) 
+        ? v.ThumbnailUrl 
+        : "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=1000";
+
+    var gallery = new List<(string Url, string Label, string Icon)>();
+    gallery.Add((mainImage, "Góc nghiêng 3/4 thân xe", "bi-bicycle"));
+
+    if (v.Images != null && v.Images.Any())
+    {
+        foreach (var img in v.Images.Where(i => !string.IsNullOrWhiteSpace(i.ImageUrl) && i.ImageUrl != mainImage))
+        {
+            gallery.Add((img.ImageUrl, "Ảnh chi tiết xe thực tế", "bi-camera"));
+        }
+    }
+
+    if (gallery.Count < 4)
+    {
+        gallery.Add(("https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1000", "Góc nghiêng trực diện & Đèn LED", "bi-eye"));
+        gallery.Add(("https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=1000", "Đồng hồ LCD & Ghi đông tay lái", "bi-speedometer2"));
+        gallery.Add(("https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=1000", "Khung gầm & Cụm pin LFP an toàn", "bi-battery-charging"));
+    }
 }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8">
     <nav class="text-xs font-bold text-gray-400 mb-6 flex items-center gap-2">
         <a href="/" class="hover:text-emerald-600">Trang chủ</a>
         <i class="bi bi-chevron-right text-[10px]"></i>
@@ -17,20 +39,90 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-8">
-            <div class="rounded-3xl overflow-hidden bg-gray-100 shadow-md h-96 relative">
-                <img src="@v.ThumbnailUrl" alt="@v.Brand @v.Model" class="w-full h-full object-cover" />
-                @if (!v.RequiresLicenseA1)
-                {
-                    <span class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-extrabold uppercase px-3 py-1.5 rounded-full shadow flex items-center gap-1.5">
-                        <i class="bi bi-check-circle-fill"></i> Miễn bằng lái A1
-                    </span>
-                }
-                else
-                {
-                    <span class="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-extrabold uppercase px-3 py-1.5 rounded-full shadow flex items-center gap-1.5">
-                        <i class="bi bi-lightning-fill"></i> Đặt xe nhanh
-                    </span>
-                }
+            <!-- Modern Photo Gallery with Thumbnails -->
+            <div class="space-y-3">
+                <!-- Khung hiển thị ảnh chính -->
+                <div class="relative rounded-3xl overflow-hidden bg-gray-950 shadow-xl h-80 sm:h-96 md:h-[420px] group select-none">
+                    <img id="mainVehicleImage" 
+                         src="@gallery[0].Url" 
+                         alt="@v.Brand @v.Model" 
+                         class="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 cursor-pointer" 
+                         onclick="openLightbox()" 
+                         title="Bấm để xem ảnh phóng to toàn màn hình" />
+
+                    <!-- Lớp phủ Gradient mờ ở chân ảnh -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none"></div>
+
+                    <!-- Huy hiệu phía trên bên trái -->
+                    <div class="absolute top-4 left-4 flex flex-wrap items-center gap-2 pointer-events-none">
+                        @if (!v.RequiresLicenseA1)
+                        {
+                            <span class="bg-blue-600/90 backdrop-blur-md text-white text-xs font-black uppercase px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                <i class="bi bi-patch-check-fill text-yellow-300"></i> Miễn bằng lái A1
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="bg-emerald-600/90 backdrop-blur-md text-white text-xs font-black uppercase px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                <i class="bi bi-shield-check"></i> Cần bằng A1
+                            </span>
+                        }
+
+                        @if (v.InstantBooking)
+                        {
+                            <span class="bg-amber-500/90 backdrop-blur-md text-white text-xs font-bold uppercase px-2.5 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                                <i class="bi bi-lightning-fill"></i> Đặt xe nhanh
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Nút xem toàn màn hình (Fullscreen) phía trên bên phải -->
+                    <div class="absolute top-4 right-4 flex items-center gap-2">
+                        <button type="button" onclick="openLightbox()" class="bg-black/40 hover:bg-black/70 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-xl border border-white/20 shadow-md transition flex items-center gap-1.5">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                            <span class="hidden sm:inline">Phóng to</span>
+                        </button>
+                    </div>
+
+                    <!-- Mũi tên điều hướng Trước / Sau -->
+                    <button type="button" onclick="prevGalleryImage(event)" aria-label="Ảnh trước" 
+                            class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 shadow-xl flex items-center justify-center transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95">
+                        <i class="bi bi-chevron-left text-base font-bold"></i>
+                    </button>
+                    <button type="button" onclick="nextGalleryImage(event)" aria-label="Ảnh tiếp theo" 
+                            class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/85 hover:bg-white text-gray-800 shadow-xl flex items-center justify-center transition-all opacity-80 sm:opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95">
+                        <i class="bi bi-chevron-right text-base font-bold"></i>
+                    </button>
+
+                    <!-- Chú thích góc chụp & Bộ đếm ảnh phía dưới -->
+                    <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white pointer-events-none text-xs">
+                        <span id="currentImageLabel" class="bg-black/50 backdrop-blur-md px-3 py-1 rounded-xl font-bold flex items-center gap-1.5 border border-white/10">
+                            <i class="bi bi-bicycle text-emerald-400"></i> @gallery[0].Label
+                        </span>
+                        <span id="galleryCounter" class="bg-black/50 backdrop-blur-md px-3 py-1 rounded-xl font-bold border border-white/10">
+                            1 / @gallery.Count ảnh
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Dải ảnh nhỏ Thumbnails -->
+                <div class="grid grid-cols-4 gap-2 sm:gap-3" id="galleryThumbnailsContainer">
+                    @for (int i = 0; i < gallery.Count; i++)
+                    {
+                        var item = gallery[i];
+                        var isFirst = i == 0;
+                        <button type="button" 
+                                onclick="selectGalleryImage(this, '@item.Url', '@item.Label', @i)" 
+                                class="gallery-thumb-btn relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-100 border-2 transition-all duration-200 group focus:outline-none @(isFirst ? "border-emerald-600 ring-2 ring-emerald-500/30 scale-[1.02] shadow-md" : "border-transparent opacity-70 hover:opacity-100 hover:border-gray-300")">
+                            <img src="@item.Url" alt="@item.Label" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                            <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
+                            <span class="hidden sm:flex absolute bottom-1 left-1 right-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-1.5 py-0.5 rounded truncate items-center gap-1">
+                                <i class="bi @item.Icon text-[9px] text-emerald-300"></i>
+                                <span class="truncate">@item.Label</span>
+                            </span>
+                        </button>
+                    }
+                </div>
             </div>
 
             <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm">
@@ -142,7 +234,7 @@
         </div>
 
         <div class="lg:col-span-1">
-            <div class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl sticky top-28">
+            <div id="bookingFormCard" class="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl sticky top-28 transition-all">
                 <h3 class="text-xl font-black text-gray-900 mb-6">Đặt thuê xe máy điện</h3>
 
                 <form action="/Bookings/Create" method="post" class="space-y-4">
@@ -229,11 +321,168 @@
     </div>
 </div>
 
+<!-- Sticky Mobile Booking Bar (Ghim cố định đáy màn hình trên điện thoại di động) -->
+<div id="stickyMobileBookingBar" class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 z-40 shadow-[0_-4px_25px_rgba(0,0,0,0.12)] flex items-center justify-between transition-transform duration-300">
+    <div class="flex flex-col">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đơn giá thuê</span>
+        <div class="flex items-baseline gap-1">
+            <span class="text-xl font-black text-emerald-600">@v.PricePerDay.ToString("N0") đ</span>
+            <span class="text-xs text-gray-500 font-semibold">/ ngày</span>
+        </div>
+        <span class="text-[10px] text-gray-500 font-medium flex items-center gap-1">
+            <i class="bi bi-shield-check text-emerald-600"></i> @(v.RequiresLicenseA1 ? "Cần bằng A1" : "Miễn bằng A1")
+        </span>
+    </div>
+    <div class="flex items-center gap-2">
+        <button type="button" onclick="scrollToBookingForm()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs px-5 py-3 rounded-2xl shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 whitespace-nowrap">
+            <i class="bi bi-lightning-charge-fill text-yellow-300"></i>
+            <span>ĐẶT XE NGAY</span>
+        </button>
+    </div>
+</div>
+
+<!-- Lightbox Modal Phóng to ảnh xe máy điện -->
+<div id="imageLightboxModal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 select-none" onclick="closeLightbox(event)">
+    <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center" onclick="event.stopPropagation()">
+        <!-- Thanh công cụ Lightbox -->
+        <div class="w-full flex items-center justify-between text-white mb-3 px-2">
+            <span id="lightboxTitle" class="text-sm font-bold text-gray-200">@v.Brand @v.Model</span>
+            <div class="flex items-center gap-3">
+                <span id="lightboxCounter" class="text-xs text-gray-400 font-semibold">1 / @gallery.Count ảnh</span>
+                <button type="button" onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition focus:outline-none">
+                    <i class="bi bi-x-lg text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Ảnh phóng to trung tâm -->
+        <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black">
+            <img id="lightboxImage" src="@gallery[0].Url" alt="@v.Brand @v.Model" class="w-full max-h-[75vh] object-contain mx-auto transition-opacity duration-200" />
+            
+            <button type="button" onclick="prevGalleryImage(event)" class="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-md transition focus:outline-none hover:scale-105 active:scale-95">
+                <i class="bi bi-chevron-left text-lg"></i>
+            </button>
+            <button type="button" onclick="nextGalleryImage(event)" class="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center backdrop-blur-md transition focus:outline-none hover:scale-105 active:scale-95">
+                <i class="bi bi-chevron-right text-lg"></i>
+            </button>
+        </div>
+
+        <p id="lightboxCaption" class="text-xs text-gray-300 mt-2.5 text-center font-medium">@gallery[0].Label</p>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         const unitPricePerDay = @((long)v.PricePerDay);
         const unitInsuranceFeePerDay = 15000;
         const fixedDeliveryFee = 30000;
+
+        // Dữ liệu bộ sưu tập hình ảnh xe
+        const galleryData = [
+            @for (int i = 0; i < gallery.Count; i++)
+            {
+                <text>{ url: '@gallery[i].Url', label: '@gallery[i].Label' }@(i < gallery.Count - 1 ? "," : "")</text>
+            }
+        ];
+
+        let currentGalleryIndex = 0;
+
+        function selectGalleryImage(btn, url, label, index) {
+            const mainImg = document.getElementById('mainVehicleImage');
+            const labelEl = document.getElementById('currentImageLabel');
+            const counterEl = document.getElementById('galleryCounter');
+            const lightboxImg = document.getElementById('lightboxImage');
+            const lightboxCaption = document.getElementById('lightboxCaption');
+            const lightboxCounter = document.getElementById('lightboxCounter');
+
+            if (!mainImg) return;
+
+            // Hiệu ứng mờ dần và chuyển ảnh
+            mainImg.style.opacity = '0.35';
+            setTimeout(() => {
+                mainImg.src = url;
+                mainImg.style.opacity = '1';
+            }, 120);
+
+            if (labelEl) labelEl.innerHTML = `<i class="bi bi-camera text-emerald-400"></i> ${label}`;
+            if (counterEl) counterEl.textContent = `${index + 1} / ${galleryData.length} ảnh`;
+            if (lightboxImg) lightboxImg.src = url;
+            if (lightboxCaption) lightboxCaption.textContent = label;
+            if (lightboxCounter) lightboxCounter.textContent = `${index + 1} / ${galleryData.length} ảnh`;
+
+            currentGalleryIndex = index;
+
+            // Cập nhật trạng thái viền thumbnail
+            const buttons = document.querySelectorAll('.gallery-thumb-btn');
+            buttons.forEach((b, i) => {
+                if (i === index) {
+                    b.classList.remove('border-transparent', 'opacity-70');
+                    b.classList.add('border-emerald-600', 'ring-2', 'ring-emerald-500/30', 'scale-[1.02]', 'opacity-100', 'shadow-md');
+                } else {
+                    b.classList.remove('border-emerald-600', 'ring-2', 'ring-emerald-500/30', 'scale-[1.02]', 'opacity-100', 'shadow-md');
+                    b.classList.add('border-transparent', 'opacity-70');
+                }
+            });
+        }
+
+        function nextGalleryImage(e) {
+            if (e) e.stopPropagation();
+            let nextIdx = (currentGalleryIndex + 1) % galleryData.length;
+            const buttons = document.querySelectorAll('.gallery-thumb-btn');
+            if (buttons[nextIdx]) buttons[nextIdx].click();
+        }
+
+        function prevGalleryImage(e) {
+            if (e) e.stopPropagation();
+            let prevIdx = (currentGalleryIndex - 1 + galleryData.length) % galleryData.length;
+            const buttons = document.querySelectorAll('.gallery-thumb-btn');
+            if (buttons[prevIdx]) buttons[prevIdx].click();
+        }
+
+        function openLightbox() {
+            const modal = document.getElementById('imageLightboxModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeLightbox(e) {
+            if (e && e.target !== e.currentTarget && !e.target.closest('button')) return;
+            const modal = document.getElementById('imageLightboxModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function scrollToBookingForm() {
+            const formCard = document.getElementById('bookingFormCard');
+            if (formCard) {
+                formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const startInput = document.getElementById('bookingStartTime');
+                if (startInput) {
+                    setTimeout(() => {
+                        startInput.focus();
+                        startInput.classList.add('ring-2', 'ring-emerald-500');
+                        setTimeout(() => startInput.classList.remove('ring-2', 'ring-emerald-500'), 1500);
+                    }, 500);
+                }
+            }
+        }
+
+        // Bấm phím Escape để đóng Lightbox và phím mũi tên để chuyển ảnh
+        document.addEventListener('keydown', function (e) {
+            const modal = document.getElementById('imageLightboxModal');
+            const isModalOpen = modal && !modal.classList.contains('hidden');
+            if (e.key === 'Escape' && isModalOpen) {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight') {
+                nextGalleryImage();
+            } else if (e.key === 'ArrowLeft') {
+                prevGalleryImage();
+            }
+        });
 
         function calculateLivePrice() {
             const startInput = document.getElementById('bookingStartTime');
