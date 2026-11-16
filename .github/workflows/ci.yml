@@ -29,9 +29,9 @@ jobs:
           cache: npm
           cache-dependency-path: ClientApp/package-lock.json
 
-      - name: Install frontend dependencies from lockfile
+      - name: Install frontend dependencies
         working-directory: ClientApp
-        run: npm ci
+        run: npm install --no-audit
 
       - name: Build React frontend
         working-directory: ClientApp
