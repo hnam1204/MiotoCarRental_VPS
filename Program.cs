@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Cấu hình kiến trúc Razor Pages (MVVM PageModel) thay cho MVC truyền thống
 builder.Services.AddRazorPages();
 
+// Cấu hình Health Checks phục vụ kiểm tra trạng thái ứng dụng khi triển khai VPS
+builder.Services.AddHealthChecks();
+
 // Cấu hình Swagger / OpenAPI Documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -36,6 +39,22 @@ builder.Services.AddAuthorization();
 
 // Tầng Data Access Layer: Entity Framework Core với SQLite
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=mioto.db";
+
+// Đảm bảo thư mục lưu trữ cơ sở dữ liệu SQLite tồn tại (cho môi trường VPS / Linux)
+try
+{
+    var builderConn = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
+    if (!string.IsNullOrEmpty(builderConn.DataSource) && builderConn.DataSource != ":memory:" && !builderConn.DataSource.StartsWith(":"))
+    {
+        var dir = Path.GetDirectoryName(builderConn.DataSource);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+    }
+}
+catch { }
+
 builder.Services.AddDbContext<MiotoDbContext>(options =>
     options.UseSqlite(connectionString));
 
@@ -64,12 +83,33 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Cấu hình Forwarded Headers cho môi trường Nginx Reverse Proxy trên Linux VPS
+var forwardedOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+};
+forwardedOptions.KnownNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedOptions);
+
+// Health check endpoint phục vụ kiểm tra tự động khi deploy (Zero-downtime health-check)
+app.MapHealthChecks("/health");
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "EcoBike", timestamp = DateTime.UtcNow })).AllowAnonymous();
+app.MapGet("/healthz", () => Results.Ok(new { status = "Healthy", service = "EcoBike", timestamp = DateTime.UtcNow })).AllowAnonymous();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Chỉ chuyển hướng HTTPS nếu được bật trong cấu hình (tránh xung đột với Nginx SSL Termination và Kestrel HTTP 5081)
+var httpsRedirectionEnabled = builder.Configuration.GetValue<bool>("HttpsRedirection:Enabled", true);
+if (httpsRedirectionEnabled && !app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 app.UseRouting();
 

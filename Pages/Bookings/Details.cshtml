@@ -4,6 +4,7 @@
 @inject MiotoCarRental.Services.ISepayService Sepay
 @{
     var Model = this.Model.Booking;
+    var v = Model.Vehicle;
     ViewData["Title"] = $"Đơn đặt xe #{Model.BookingCode}";
 
     // Xử lý thông tin mã ưu đãi (Voucher)
@@ -26,7 +27,7 @@
         voucherTitle = "Thuê từ 3 ngày giảm 20%";
     }
 
-    decimal originalRentalFee = Model.Vehicle.PricePerDay * Model.TotalDays;
+    decimal originalRentalFee = Model.Vehicle != null ? Model.Vehicle.PricePerDay * Model.TotalDays : Model.RentalFee;
     decimal effectiveRentalFee = Model.RentalFee;
     decimal discountAmount = 0;
 
@@ -92,15 +93,18 @@
     </div>
 
     <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
-        <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl">
-            <img src="@Model.Vehicle.ThumbnailUrl" class="w-24 h-20 object-cover rounded-xl" />
-            <div>
-                <span class="text-xs font-bold text-gray-400 uppercase">@Model.Vehicle.Brand</span>
-                <h3 class="text-lg font-black text-gray-900">@Model.Vehicle.Brand @Model.Vehicle.Model</h3>
-                <span class="text-xs text-gray-500 block">Biển số: <strong class="text-gray-800">@Model.Vehicle.LicensePlate</strong></span>
-                <span class="text-xs text-gray-500 block">Địa chỉ nhận xe: @Model.Vehicle.Address, @Model.Vehicle.City</span>
+        @if (v != null)
+        {
+            <div class="flex items-center gap-5 p-4 bg-gray-50 rounded-2xl">
+                <img src="@v.ThumbnailUrl" class="w-24 h-20 object-cover rounded-xl" />
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase">@v.Brand</span>
+                    <h3 class="text-lg font-black text-gray-900">@v.Brand @v.Model</h3>
+                    <span class="text-xs text-gray-500 block">Biển số: <strong class="text-gray-800">@v.LicensePlate</strong></span>
+                    <span class="text-xs text-gray-500 block">Địa chỉ nhận xe: @v.Address, @v.City</span>
+                </div>
             </div>
-        </div>
+        }
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-y border-gray-100 py-4 text-xs">
             <div>
@@ -425,7 +429,7 @@
                 <i class="bi bi-flag-fill text-amber-600"></i> Nghiệm thu trả xe máy điện (Check-out)
             </h3>
             <p class="text-xs text-gray-500 mb-6">
-                ODO lúc nhận: <strong>@Model.CheckinOdo km</strong>. Định mức cho phép: <strong>@(Model.Vehicle.LimitKmPerDay * Model.TotalDays) km</strong>.
+                ODO lúc nhận: <strong>@Model.CheckinOdo km</strong>. Định mức cho phép: <strong>@((v?.LimitKmPerDay ?? 100) * Model.TotalDays) km</strong>.
             </p>
 
             <form action="/Bookings/Checkout" method="post" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -452,7 +456,7 @@
         var finalGross = Model.TotalAmount + Model.ExtraKmFee + Model.ExtraOtherFee;
         var remainingDue = Math.Max(0, finalGross - Model.DepositAmount);
         var drivenKm = (Model.CheckoutOdo ?? 0) - (Model.CheckinOdo ?? 0);
-        var allowedKm = Model.Vehicle.LimitKmPerDay * Model.TotalDays;
+        var allowedKm = (v?.LimitKmPerDay ?? 100) * Model.TotalDays;
         var extraKm = Math.Max(0, drivenKm - allowedKm);
         var settleChannels = Sepay.GetAvailableChannels(remainingDue, $"TT-{Model.BookingCode}");
         var defaultSettle = settleChannels.FirstOrDefault() ?? new MiotoCarRental.Services.PaymentChannelInfo();
@@ -507,7 +511,7 @@
                     <div class="bg-white p-3 rounded-xl border border-slate-200">
                         <span class="text-slate-400 block text-[11px]">Hạn mức cam kết</span>
                         <strong class="text-slate-900 font-mono text-sm">@allowedKm.ToString("N0") km</strong>
-                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">@Model.Vehicle.LimitKmPerDay km/ngày</div>
+                        <div class="text-[10px] text-slate-500 font-medium mt-0.5">@((v?.LimitKmPerDay ?? 100)) km/ngày</div>
                     </div>
                 </div>
 
@@ -518,7 +522,7 @@
                             <i class="bi bi-exclamation-triangle-fill text-red-600 text-base"></i>
                             <div>
                                 <span class="font-bold">Quãng đường di chuyển vượt định mức hợp đồng: <strong>+@extraKm km</strong></span>
-                                <div class="text-[11px] text-red-600">Đơn giá phụ phí vượt quãng đường: @Model.Vehicle.OverKmFee.ToString("N0") đ/km (@extraKm x @Model.Vehicle.OverKmFee.ToString("N0") đ)</div>
+                                <div class="text-[11px] text-red-600">Đơn giá phụ phí vượt quãng đường: @((v?.OverKmFee ?? 5000).ToString("N0")) đ/km (@extraKm x @((v?.OverKmFee ?? 5000).ToString("N0")) đ)</div>
                             </div>
                         </div>
                         <div class="text-right sm:text-right shrink-0">
@@ -542,7 +546,7 @@
                 </h4>
 
                 <div class="flex justify-between text-gray-600">
-                    <span>1. Tiền thuê xe máy điện (@Model.TotalDays ngày x @Model.Vehicle.PricePerDay.ToString("N0") đ):</span>
+                    <span>1. Tiền thuê xe máy điện (@Model.TotalDays ngày x @((v?.PricePerDay ?? 0).ToString("N0")) đ):</span>
                     <span class="font-bold text-gray-900">@Model.RentalFee.ToString("N0") đ</span>
                 </div>
 
