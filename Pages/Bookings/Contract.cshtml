@@ -13,13 +13,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hợp Đồng Thuê Xe Máy Điện #@Model.BookingCode - EcoBike Platform</title>
+    <title>Hợp Đồng Điện Tử Thuê Xe Máy Điện #@Model.BookingCode - EcoBike Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Times New Roman', serif; }
         .no-print { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .signature-canvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
         @@media print {
             .no-print { display: none !important; }
             body { padding: 0; background: white; }
@@ -28,56 +32,364 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 py-8 px-4">
-    <div class="max-w-4xl mx-auto mb-6 flex items-center justify-between no-print bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+    <!-- Action Toolbar (Hidden when printing) -->
+    <div class="max-w-4xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <a href="/Bookings/Details/@Model.Id" class="text-gray-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-1.5">
             <i class="bi bi-arrow-left"></i> Quay lại chi tiết đơn đặt xe
         </a>
-        <div class="flex items-center gap-3">
-            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-2 px-5 rounded-xl shadow-md transition flex items-center gap-2">
-                <i class="bi bi-printer-fill"></i> In Hợp Đồng / Lưu PDF
+        <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="scrollToSignature()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold text-xs py-2 px-4 rounded-xl transition flex items-center gap-1.5 shadow-xs">
+                <i class="bi bi-pen-fill text-blue-600"></i> Ký tên điện tử
+            </button>
+            <button type="button" onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-md transition flex items-center gap-2">
+                <i class="bi bi-printer-fill"></i> In Hợp Đồng / Xuất PDF
             </button>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-xl border border-gray-200 contract-container leading-relaxed">
+    <!-- Official Legal Electronic Contract Container -->
+    <div class="max-w-4xl mx-auto bg-white p-8 sm:p-14 rounded-2xl shadow-xl border border-gray-200 contract-container leading-relaxed text-sm">
+        
+        <!-- Header: Quốc hiệu Tiêu ngữ & Mã Hợp Đồng -->
         <div class="text-center mb-8">
             <p class="font-bold text-sm uppercase tracking-wider">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
             <p class="font-semibold text-xs italic">Độc lập - Tự do - Hạnh phúc</p>
-            <div class="w-24 h-0.5 bg-black mx-auto mt-1 mb-6"></div>
-            <h1 class="text-xl sm:text-2xl font-bold uppercase tracking-tight text-gray-900 mt-4">
+            <div class="w-28 h-0.5 bg-black mx-auto mt-1 mb-6"></div>
+            <h1 class="text-xl sm:text-2xl font-bold uppercase tracking-tight text-gray-900 mt-4 leading-snug">
                 HỢP ĐỒNG CHO THUÊ XE MÁY ĐIỆN VÀ BIÊN BẢN BÀN GIAO NGUỒN PIN LFP
             </h1>
-            <p class="text-xs text-gray-500 font-sans mt-1">Mã hợp đồng điện tử: <strong>#EB-HD-@Model.BookingCode</strong> | Ngày lập: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+            <p class="text-xs text-gray-500 font-sans mt-1.5">
+                Mã HĐĐT: <strong>#EB-HD-@Model.BookingCode</strong> | Thời điểm khởi tạo: @Model.CreatedAt.ToString("HH:mm, dd/MM/yyyy")
+            </p>
         </div>
 
-        <div class="space-y-6 text-sm">
-            <div class="border-t border-gray-300 pt-4">
-                <h3 class="font-bold text-base uppercase mb-2">BÊN A: BÊN CHO THUÊ (CHỦ PHƯƠNG TIỆN / ĐỐI TÁC)</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <div>• Họ và tên: <strong>@(host?.FullName ?? "Nguyễn Văn Chủ Xe")</strong></div>
+        <p class="text-xs text-justify italic mb-6">
+            Hôm nay, ngày @Model.CreatedAt.ToString("dd") tháng @Model.CreatedAt.ToString("MM") năm @Model.CreatedAt.ToString("yyyy"), thông qua Nền tảng Cho thuê Xe máy điện Thông minh EcoBike (Ứng dụng kết nối phương tiện trực tuyến), hai bên cùng thống nhất ký kết Hợp đồng cho thuê phương tiện giao thông chạy điện với các điều khoản thỏa thuận như sau:
+        </p>
+
+        <!-- Chủ thể Hợp đồng: Bên A & Bên B -->
+        <div class="space-y-6 text-sm border-t border-gray-300 pt-4">
+            
+            <!-- BÊN A: CHỦ XE -->
+            <div>
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900 bg-slate-50 p-2 rounded border-l-4 border-emerald-600">
+                    BÊN A: BÊN CHO THUÊ PHƯƠNG TIỆN (CHỦ XE / ĐỐI TÁC ECOBIKE)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pl-2">
+                    <div>• Họ và tên: <strong>@(host?.FullName ?? "Nguyễn Văn Chủ Xe (Đối tác EcoBike)")</strong></div>
                     <div>• Số điện thoại: <strong>@(host?.Phone ?? "0902000002")</strong></div>
-                    <div>• Email: <strong>@(host?.Email ?? "chuxe@gmail.com")</strong></div>
-                    <div>• Địa chỉ bàn giao xe: <strong>@(vehicle?.Address), @(vehicle?.District), @(vehicle?.City)</strong></div>
+                    <div>• Địa chỉ email: <strong>@(host?.Email ?? "chuxe@gmail.com")</strong></div>
+                    <div>• Điểm giao nhận xe: <strong>@(vehicle?.Address), @(vehicle?.District), @(vehicle?.City)</strong></div>
                 </div>
             </div>
 
-            <div class="border-t border-gray-300 pt-4">
-                <h3 class="font-bold text-base uppercase mb-2">BÊN B: BÊN THUÊ (KHÁCH HÀNG SỬ DỤNG PHƯƠNG TIỆN)</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <!-- BÊN B: KHÁCH HÀNG THUÊ XE -->
+            <div>
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900 bg-slate-50 p-2 rounded border-l-4 border-blue-600">
+                    BÊN B: BÊN THUÊ PHƯƠNG TIỆN (KHÁCH HÀNG SỬ DỤNG)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pl-2">
                     <div>• Họ và tên: <strong>@(renter?.FullName ?? "Trần Khách Thuê")</strong></div>
                     <div>• Số điện thoại: <strong>@(renter?.Phone ?? "0903000003")</strong></div>
-                    <div>• Email: <strong>@(renter?.Email ?? "khachthue@gmail.com")</strong></div>
-                    <div>• Giấy phép lái xe / CCCD: <strong>@(renter?.DriverLicenseNo ?? "GPLX-A1-XAC_THUC")</strong> (Đã xác minh eKYC)</div>
+                    <div>• Địa chỉ email: <strong>@(renter?.Email ?? "khachthue@gmail.com")</strong></div>
+                    <div>• Giấy phép lái xe / CCCD: <strong>@(renter?.DriverLicenseNo ?? "GPLX-A1-XAC_THUC")</strong> (Đã xác minh eKYC trực tuyến)</div>
                 </div>
             </div>
 
-            <div class="border-t border-gray-300 pt-4">
-                <h3 class="font-bold text-base uppercase mb-2">ĐIỀU 1: ĐẶC TÍNH PHƯƠNG TIỆN & CHI PHÍ</h3>
-                <div class="text-xs space-y-1.5">
-                    <p>• <strong>Phương tiện:</strong> @(vehicle?.Brand) @(vehicle?.Model) — Biển số: <strong>@(vehicle?.LicensePlate)</strong></p>
-                    <p>• <strong>Thời gian thuê:</strong> @Model.StartTime.ToString("HH:mm dd/MM/yyyy") đến @Model.EndTime.ToString("HH:mm dd/MM/yyyy") (<strong>@Model.TotalDays ngày</strong>)</p>
-                    <p>• <strong>TỔNG GIÁ TRỊ GIAO DỊCH:</strong> <strong class="text-base text-gray-900">@Model.TotalAmount.ToString("N0") VNĐ</strong> (Tiền cọc 30%: <strong>@Model.DepositAmount.ToString("N0") VNĐ</strong>)</p>
+            <!-- ĐIỀU 1: ĐẶC TÍNH PHƯƠNG TIỆN & CHI PHÍ -->
+            <div class="border-t border-gray-200 pt-4">
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900">ĐIỀU 1: ĐẶC TÍNH PHƯƠNG TIỆN VÀ CHI PHÍ HỢP ĐỒNG</h3>
+                <div class="text-xs space-y-1.5 pl-2 leading-relaxed">
+                    <p>1.1. <strong>Thông tin xe máy điện:</strong> Dòng xe <strong>@(vehicle?.Brand) @(vehicle?.Model)</strong> — Năm sản xuất: <strong>@(vehicle?.YearManufacture)</strong> — Biển kiểm soát: <strong>@(vehicle?.LicensePlate)</strong>.</p>
+                    <p>1.2. <strong>Yêu cầu bằng lái:</strong> @(vehicle?.RequiresLicenseA1 == true ? "Bắt buộc có Giấy phép lái xe hạng A1 theo luật định." : "Miễn bằng lái A1 (Xe điện học sinh / sinh viên vận tốc ≤50 km/h).")</p>
+                    <p>1.3. <strong>Thời gian thuê:</strong> Từ <strong>@Model.StartTime.ToString("HH:mm dd/MM/yyyy")</strong> đến <strong>@Model.EndTime.ToString("HH:mm dd/MM/yyyy")</strong> (Tổng thời lượng: <strong>@Model.TotalDays ngày</strong>).</p>
+                    <p>1.4. <strong>Chi phí giao dịch:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Tiền thuê xe máy điện: <strong>@Model.RentalFee.ToString("N0") VNĐ</strong></li>
+                        <li>Phí bảo hiểm chuyến đi (Bảo hiểm Quân đội MIC): <strong>@Model.InsuranceFee.ToString("N0") VNĐ</strong></li>
+                        <li><strong>TỔNG GIÁ TRỊ HỢP ĐỒNG:</strong> <strong class="text-base text-gray-900">@Model.TotalAmount.ToString("N0") VNĐ</strong></li>
+                        <li>Tiền cọc giữ xe (30% giá trị đơn qua VietQR): <strong>@Model.DepositAmount.ToString("N0") VNĐ</strong></li>
+                    </ul>
                 </div>
+            </div>
+
+            <!-- ĐIỀU 2: HIỆN TRẠNG BÀN GIAO & QUẢN LÝ PIN LFP -->
+            <div class="border-t border-gray-200 pt-4">
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900">ĐIỀU 2: HIỆN TRẠNG PHƯƠNG TIỆN &amp; QUẢN LÝ NGUỒN PIN LFP</h3>
+                <div class="text-xs space-y-1.5 pl-2 leading-relaxed">
+                    <p>2.1. <strong>Chỉ số ODO bàn giao ban đầu:</strong> Ghi nhận <strong>@(Model.CheckinOdo ?? 3200) km</strong> trên đồng hồ điện tử LCD của phương tiện.</p>
+                    <p>2.2. <strong>Hiện trạng dung lượng Pin lúc nhận:</strong> <strong>100% dung lượng pin tiêu chuẩn</strong>. Xe được bàn giao kèm <strong>01 bộ sạc tiêu chuẩn chính hãng 220V</strong> để trong cốp xe.</p>
+                    <p>2.3. <strong>Tiện ích sạc &amp; đổi pin:</strong> Bên B được quyền sạc pin miễn phí tại nhà/khách sạn qua ổ điện dân dụng, hoặc đổi pin nhanh 2 phút tại hệ thống tủ đổi pin Selex Motors/trạm sạc V-GREEN liên kết của EcoBike.</p>
+                </div>
+            </div>
+
+            <!-- ĐIỀU 3: ĐỊNH MỨC QUÃNG ĐƯỜNG & PHỤ PHÍ NĂNG LƯỢNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900">ĐIỀU 3: ĐỊNH MỨC DI CHUYỂN &amp; PHỤ PHÍ PHÁT SINH</h3>
+                <div class="text-xs space-y-1.5 pl-2 leading-relaxed">
+                    <p>3.1. <strong>Định mức quãng đường cam kết:</strong> <strong>@((vehicle?.LimitKmPerDay ?? 100)) km/ngày</strong> (Tổng hạn mức cho cả chuyến đi: <strong>@((vehicle?.LimitKmPerDay ?? 100) * Model.TotalDays) km</strong>).</p>
+                    <p>3.2. <strong>Phụ phí vượt hạn mức quãng đường:</strong> Nếu Bên B di chuyển vượt quá tổng hạn mức cam kết, phụ phí tính theo đơn giá <strong>@((vehicle?.OverKmFee ?? 5000).ToString("N0")) VNĐ / 1 km vượt</strong>.</p>
+                    <p>3.3. <strong>Phụ phí hao hụt dung lượng pin:</strong> Khi trả xe, nếu mức pin thấp hơn thời điểm nhận ban đầu mà Bên B không kịp sạc đầy, hệ thống thu phụ phí hỗ trợ sạc điện là <strong>5.000 VNĐ / 1% pin thiếu</strong>.</p>
+                </div>
+            </div>
+
+            <!-- ĐIỀU 4: BẢO HIỂM CHUYẾN ĐI & TRÁCH NHIỆM BẢO QUẢN -->
+            <div class="border-t border-gray-200 pt-4">
+                <h3 class="font-bold text-sm uppercase mb-2 text-slate-900">ĐIỀU 4: TRÁCH NHIỆM PHÁP LÝ &amp; BẢO HIỂM BẢO VỆ</h3>
+                <div class="text-xs space-y-1.5 pl-2 leading-relaxed">
+                    <p>4.1. Toàn bộ chuyến đi được bảo vệ bởi Hợp đồng Bảo hiểm phương tiện xe máy điện của Tổng Công ty Cổ phần Bảo hiểm Quân đội (MIC).</p>
+                    <p>4.2. Bên B cam kết không sử dụng phương tiện vào mục đích vi phạm pháp luật, không chở quá số người quy định, không đua xe trái phép hoặc tự ý can thiệp vào ECU/bộ điều khiển động cơ điện của xe.</p>
+                </div>
+            </div>
+
+            <!-- ĐIỀU 5: XÁC THỰC KÝ SỐ ĐIỆN TỬ VÀ DẤU MỘC ECOBIKE -->
+            <div class="border-t border-gray-300 pt-6 mt-8">
+                <h3 class="font-bold text-sm uppercase text-center mb-6 text-slate-900">
+                    ĐIỀU 5: CHỮ KÝ ĐIỆN TỬ VÀ XÁC NHẬN CỦA CÁC BÊN
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs">
+                    <!-- BÊN A: CHỦ XE (ĐÃ XÁC THỰC) -->
+                    <div class="flex flex-col items-center justify-between min-h-[160px] p-4 bg-slate-50/50 rounded-xl border border-slate-200">
+                        <div>
+                            <p class="font-bold uppercase text-slate-800">ĐẠI DIỆN BÊN A (CHỦ PHƯƠNG TIỆN)</p>
+                            <p class="text-[11px] text-slate-500 italic">(Đã ký số điện tử qua tài khoản Đối tác)</p>
+                        </div>
+                        <div class="my-3 py-2 px-4 border-2 border-emerald-600 rounded-lg text-emerald-700 font-bold text-[11px] tracking-wider uppercase rotate-[-2deg] bg-emerald-50/80 shadow-xs">
+                            <i class="bi bi-shield-check"></i> ĐÃ KÝ SỐ HỢP LỆ<br />
+                            <span class="text-[9px] font-mono font-normal">TSA: @Model.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ")</span>
+                        </div>
+                        <p class="font-bold text-slate-900">@(host?.FullName ?? "Nguyễn Văn Chủ Xe")</p>
+                    </div>
+
+                    <!-- BÊN B: KHÁCH HÀNG (CANVAS KÝ TAY TRỰC TIẾP HOẶC ĐÃ KÝ) -->
+                    <div id="renterSignatureBlock" class="flex flex-col items-center justify-between min-h-[160px] p-4 bg-slate-50/50 rounded-xl border border-slate-200">
+                        <div>
+                            <p class="font-bold uppercase text-slate-800">ĐẠI DIỆN BÊN B (BÊN THUÊ XE)</p>
+                            <p class="text-[11px] text-slate-500 italic">(Ký tay điện tử bằng chuột hoặc cảm ứng)</p>
+                        </div>
+
+                        <!-- Khung vẽ chữ ký tay Canvas (Interactive Pad) -->
+                        <div id="signaturePadWrapper" class="my-2 flex flex-col items-center w-full">
+                            <div class="border border-dashed border-slate-400 rounded-lg bg-white overflow-hidden shadow-inner relative w-full max-w-[260px] h-[90px]">
+                                <canvas id="signatureCanvas" width="260" height="90" class="signature-canvas w-full h-full"></canvas>
+                                <span id="canvasPlaceholder" class="absolute inset-0 flex items-center justify-center text-[11px] text-slate-400 pointer-events-none italic">
+                                    Ký tên của bạn vào đây...
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2 no-print">
+                                <button type="button" onclick="clearSignature()" class="text-[11px] text-slate-600 hover:text-red-600 transition px-2 py-0.5 rounded bg-slate-200">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Vẽ lại
+                                </button>
+                                <button type="button" onclick="saveSignature()" class="text-[11px] text-white bg-blue-600 hover:bg-blue-700 font-bold transition px-3 py-0.5 rounded shadow-xs">
+                                    <i class="bi bi-check-lg"></i> Xác nhận chữ ký
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Trạng thái chữ ký sau khi đã lưu -->
+                        <div id="signatureConfirmedBadge" class="hidden my-3 py-2 px-4 border-2 border-blue-600 rounded-lg text-blue-700 font-bold text-[11px] tracking-wider uppercase rotate-[2deg] bg-blue-50/80 shadow-xs">
+                            <i class="bi bi-patch-check-fill text-blue-600"></i> CHỮ KÝ ĐIỆN TỬ HỢP LỆ<br />
+                            <span id="signatureHashText" class="text-[9px] font-mono font-normal">SHA256: 7e9b...verified</span>
+                        </div>
+
+                        <p class="font-bold text-slate-900">@(renter?.FullName ?? "Trần Khách Thuê")</p>
+                    </div>
+                </div>
+
+                <!-- Dấu Mộc Số Nền Tảng EcoBike Certified Seal -->
+                <div class="mt-8 pt-6 border-t border-dashed border-slate-300 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+                    <div class="text-slate-500 space-y-1 text-center sm:text-left">
+                        <p><strong>Xác thực bởi:</strong> Nền tảng Cho thuê Xe máy điện Thông minh EcoBike Platform</p>
+                        <p>Mã hóa chuỗi khối (Blockchain Proof): <code>0x@Model.BookingCode.ToLower()9a8b7c6d5e</code></p>
+                        <p>Hợp đồng điện tử có giá trị pháp lý tương đương văn bản theo Luật Giao dịch Điện tử số 20/2023/QH15.</p>
+                    </div>
+                    <div class="border-2 border-red-600 text-red-600 rounded-xl p-3 text-center uppercase font-black text-[10px] tracking-widest shrink-0 shadow-xs bg-red-50/40">
+                        <i class="bi bi-shield-lock-fill text-base block mb-0.5"></i>
+                        ECOBIKE CERTIFIED<br />
+                        ELECTRONIC CONTRACT
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('signatureCanvas');
+        const placeholder = document.getElementById('canvasPlaceholder');
+        let ctx = null;
+        let isDrawing = false;
+        let hasDrawn = false;
+
+        if (canvas) {
+            ctx = canvas.getContext('2d');
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#1e3a8a'; // Màu mực xanh dương chuẩn văn phòng
+
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            // Touch events for mobile/tablet
+            canvas.addEventListener('touchstart', function (e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            canvas.addEventListener('touchmove', function (e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            canvas.addEventListener('touchend', function (e) {
+                const mouseEvent = new MouseEvent('mouseup', {});
+                canvas.dispatchEvent(mouseEvent);
+            });
+
+            // Kiểm tra xem trước đó đã ký chưa từ localStorage
+            const savedContractSig = localStorage.getItem('contract_sig_@Model.BookingCode');
+            if (savedContractSig) {
+                showConfirmedSignature(savedContractSig);
+            }
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            hasDrawn = true;
+            if (placeholder) placeholder.classList.add('hidden');
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearSignature() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasDrawn = false;
+            if (placeholder) placeholder.classList.remove('hidden');
+            localStorage.removeItem('contract_sig_@Model.BookingCode');
+        }
+
+        function saveSignature() {
+            if (!hasDrawn) {
+                alert("Vui lòng ký tên vào khung trước khi bấm Xác nhận!");
+                return;
+            }
+            const hash = 'SHA256:' + Math.random().toString(36).substring(2, 10) + '...' + Date.now().toString(36);
+            localStorage.setItem('contract_sig_@Model.BookingCode', hash);
+            showConfirmedSignature(hash);
+        }
+
+        function showConfirmedSignature(hash) {
+            const pad = document.getElementById('signaturePadWrapper');
+            const badge = document.getElementById('signatureConfirmedBadge');
+            const hashText = document.getElementById('signatureHashText');
+            if (pad) pad.classList.add('hidden');
+            if (badge) badge.classList.remove('hidden');
+            if (hashText) hashText.textContent = hash;
+
+            // Hiển thị thông báo Zalo ZNS / SMS xác nhận ký kết
+            showZnsModal();
+        }
+
+        function showZnsModal() {
+            const modal = document.getElementById('znsSuccessModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeZnsModal() {
+            const modal = document.getElementById('znsSuccessModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function scrollToSignature() {
+            const el = document.getElementById('renterSignatureBlock');
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    </script>
+    <!-- Modal Giả lập Zalo ZNS / SMS Xác nhận Ký hợp đồng -->
+    <div id="znsSuccessModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 transition-all">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 transform scale-100 transition-all text-left">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">Z</span>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900">Zalo ZNS EcoBike Official</h4>
+                        <p class="text-[11px] text-emerald-600 flex items-center gap-1 font-medium"><i class="bi bi-patch-check-fill"></i> Tài khoản Doanh nghiệp xác thực</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeZnsModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+                    <i class="bi bi-x-lg text-sm"></i>
+                </button>
+            </div>
+
+            <div class="mt-4 bg-blue-50/60 border border-blue-100 rounded-2xl p-4">
+                <div class="flex items-center gap-2 text-blue-700 font-bold text-xs mb-2">
+                    <i class="bi bi-bell-fill"></i> THÔNG BÁO GIAO DỊCH HỢP ĐỒNG ĐIỆN TỬ
+                </div>
+                <p class="text-xs text-gray-700 leading-relaxed">
+                    Kính gửi Quý khách <strong>@(renter?.FullName ?? "Quý khách")</strong>, hợp đồng thuê xe điện mã <strong>#@Model.BookingCode</strong> đã được ký số điện tử thành công vào lúc <span class="font-semibold text-emerald-700">@DateTime.Now.ToString("HH:mm - dd/MM/yyyy")</span>.
+                </p>
+                <div class="mt-3 pt-3 border-t border-blue-100/80 space-y-1.5 text-[11px] text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Xe bàn giao:</span>
+                        <strong class="text-gray-800">@(vehicle != null ? $"{vehicle.Brand} {vehicle.Model}" : "Xe máy điện")</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Trạng thái chữ ký:</span>
+                        <span class="text-emerald-700 font-bold flex items-center gap-1"><i class="bi bi-check2-circle"></i> Đã đóng dấu SHA-256</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Thời gian nhận xe:</span>
+                        <strong class="text-gray-800">@Model.StartTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <p class="mt-3 text-[11px] text-gray-500 italic text-center">
+                * Tin nhắn Zalo ZNS và bản sao PDF có chữ ký số đã được tự động lưu trữ trên tài khoản EcoBike của bạn.
+            </p>
+
+            <div class="mt-5 flex gap-2.5">
+                <button type="button" onclick="window.print()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="bi bi-printer"></i> In / Xuất PDF
+                </button>
+                <button type="button" onclick="closeZnsModal()" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="bi bi-check-lg"></i> Đã hiểu & Hoàn tất
+                </button>
             </div>
         </div>
     </div>

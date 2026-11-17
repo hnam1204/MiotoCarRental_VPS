@@ -3,6 +3,30 @@
     ViewData["Title"] = "Bản đồ Trạm sạc & Tủ đổi pin - EcoBike";
 }
 
+<!-- Leaflet CSS for High-Performance Interactive Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    .leaflet-popup-content-wrapper {
+        border-radius: 1rem;
+        padding: 0.25rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+    .user-pulse-marker {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #059669;
+        border: 3px solid #ffffff;
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.35);
+        animation: pulseRadar 2s infinite;
+    }
+    @@keyframes pulseRadar {
+        0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6); }
+        70% { box-shadow: 0 0 0 14px rgba(5, 150, 105, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+    }
+</style>
+
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 space-y-6">
     <!-- Top Banner (Bright Emerald-Teal) -->
     <div class="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-700 rounded-2xl p-6 text-white border border-emerald-500 shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -12,7 +36,7 @@
             </span>
             <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Hệ thống Trạm sạc nhanh &amp; Tủ đổi pin</h1>
             <p class="mt-1 text-xs sm:text-sm text-emerald-50 max-w-2xl font-medium">
-                Tra cứu vị trí trạm sạc V-GREEN (VinFast), trạm sạc siêu tốc Dat Bike Charge và tủ đổi pin tự động Selex Motors tại TP.HCM, Hà Nội và Đà Nẵng.
+                Bản đồ tương tác trực tiếp Leaflet tra cứu vị trí trạm sạc V-GREEN (VinFast), trạm siêu tốc Dat Bike Charge và tủ đổi pin tự động Selex Motors với tính năng định vị GPS tìm trạm gần nhất.
             </p>
         </div>
         <div class="grid grid-cols-3 gap-3 text-center shrink-0">
@@ -31,8 +55,8 @@
         </div>
     </div>
 
-    <!-- Filter Toolbar -->
-    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <!-- Filter Toolbar & GPS Nearest Locator -->
+    <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div class="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
             <button type="button" onclick="filterStations('all', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-emerald-600 text-white transition">
                 Tất cả trạm (11)
@@ -49,9 +73,16 @@
             <button type="button" onclick="filterStations('Đổi pin', this)" class="station-filter-btn px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
                 Tủ đổi pin 2 phút (4)
             </button>
+
+            <!-- Nút Định vị GPS tìm trạm gần nhất -->
+            <button type="button" id="btnGpsFind" onclick="findNearestStations()"
+                    class="ml-auto sm:ml-0 px-3.5 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold transition flex items-center gap-1.5 shadow-sm">
+                <i class="bi bi-crosshair text-amber-300"></i>
+                <span id="btnGpsText">Tìm trạm gần tôi nhất</span>
+            </button>
         </div>
 
-        <div class="relative w-full md:w-72">
+        <div class="relative w-full lg:w-72">
             <i class="bi bi-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
             <input id="stationSearchInput" type="text" oninput="searchStations()"
                    placeholder="Tìm tên đường, quận, thương hiệu..."
@@ -59,20 +90,25 @@
         </div>
     </div>
 
-    <!-- Main Content: Station Cards + Interactive Map Preview -->
+    <!-- Main Content: Station Cards + Interactive Leaflet Map -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Left 7 Cols: Station Cards (Aligns to top, no stretching) -->
         <div id="stationsGrid" class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start content-start">
+            
             <!-- Card 1 (TP.HCM) -->
-            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="1" data-lat="10.7950" data-lng="106.7218" data-name="VinFast Landmark 81 Central Park" data-city="TP.HCM" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">VinFast Landmark 81 Central Park</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -88,8 +124,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('Landmark 81 Vinhomes Central Park Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(1)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=Landmark+81+Vinhomes+Central+Park" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -98,15 +134,19 @@
             </div>
 
             <!-- Card 2 (TP.HCM) -->
-            <div data-city="TP.HCM" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="2" data-lat="10.7725" data-lng="106.6980" data-name="Tủ đổi pin EcoBike Chợ Bến Thành" data-city="TP.HCM" data-type="Đổi pin"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin tự động
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Tủ đổi pin EcoBike Chợ Bến Thành</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -122,8 +162,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('45 Le Loi Ben Thanh Quan 1 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(2)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=45+Le+Loi+Quan+1" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -132,13 +172,17 @@
             </div>
 
             <!-- Card 3 (TP.HCM) -->
-            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="3" data-lat="10.8012" data-lng="106.7115" data-name="Dat Bike Hub Điện Biên Phủ" data-city="TP.HCM" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-speedometer text-amber-600"></i> Dat Bike SuperCharge
                         </span>
-                        <span class="text-slate-600 font-semibold text-xs">07:30 - 22:00</span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-slate-600 font-semibold text-xs">07:30 - 22:00</span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Dat Bike Hub Điện Biên Phủ</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -149,13 +193,13 @@
                         <div class="flex justify-between"><span class="text-slate-500">Tốc độ sạc:</span> <strong class="text-slate-800">100 km chỉ 20 phút</strong></div>
                     </div>
                     <div class="flex flex-wrap gap-1.5 mt-2.5">
-                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-cup-hot text-amber-600"></i> Phòng chờ & cafe</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-cup-hot text-amber-600"></i> Phòng chờ &amp; cafe</span>
                         <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-wifi text-emerald-600"></i> Wi-Fi miễn phí</span>
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('234 Dien Bien Phu Binh Thanh TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(3)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=234+Dien+Bien+Phu+Binh+Thanh" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -164,15 +208,19 @@
             </div>
 
             <!-- Card 4 (TP.HCM) -->
-            <div data-city="TP.HCM" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="4" data-lat="10.7290" data-lng="106.7215" data-name="VinFast Crescent Mall Quận 7" data-city="TP.HCM" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">VinFast Crescent Mall Quận 7</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -188,8 +236,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('Crescent Mall 101 Ton Dat Tien Quan 7 TPHCM')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(4)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=Crescent+Mall+Quan+7" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -198,15 +246,19 @@
             </div>
 
             <!-- Card 5 (Hà Nội) -->
-            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="5" data-lat="21.0028" data-lng="105.8166" data-name="Trạm sạc V-GREEN Royal City" data-city="Hà Nội" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Trạm sạc V-GREEN Royal City</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -222,8 +274,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('Royal City 72A Nguyen Trai Thanh Xuan Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(5)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=Royal+City+72A+Nguyen+Trai+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -232,15 +284,19 @@
             </div>
 
             <!-- Card 6 (Hà Nội) -->
-            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="6" data-lat="21.0366" data-lng="105.7836" data-name="Trạm đổi pin Selex Cầu Giấy" data-city="Hà Nội" data-type="Đổi pin"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Trạm đổi pin Selex Cầu Giấy</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -256,8 +312,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('144 Xuan Thuy Cau Giay Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(6)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=144+Xuan+Thuy+Cau+Giay+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -266,15 +322,19 @@
             </div>
 
             <!-- Card 7 (Hà Nội) -->
-            <div data-city="Hà Nội" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="7" data-lat="20.9950" data-lng="105.8675" data-name="VinFast Times City Hai Bà Trưng" data-city="Hà Nội" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">VinFast Times City Hai Bà Trưng</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -290,8 +350,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('Times City 458 Minh Khai Hai Ba Trung Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(7)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=Times+City+458+Minh+Khai+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -300,15 +360,19 @@
             </div>
 
             <!-- Card 8 (Hà Nội) -->
-            <div data-city="Hà Nội" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="8" data-lat="21.0165" data-lng="105.8522" data-name="Trạm đổi pin Selex Phố Huế" data-city="Hà Nội" data-type="Đổi pin"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Trạm đổi pin Selex Phố Huế</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -319,13 +383,13 @@
                         <div class="flex justify-between"><span class="text-slate-500">Thời gian đổi pin:</span> <strong class="text-slate-800">Chỉ ~90 giây</strong></div>
                     </div>
                     <div class="flex flex-wrap gap-1.5 mt-2.5">
-                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-geo text-rose-600"></i> Trung tâm Phố Cổ</span>
-                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Hoạt động 24/7</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-geo-alt text-red-500"></i> Trung tâm Hoàn Kiếm</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-clock-history text-emerald-600"></i> Đổi pin 2 phút</span>
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('54 Pho Hue Hoan Kiem Ha Noi')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(8)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=54+Pho+Hue+Hoan+Kiem+Ha+Noi" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -334,32 +398,36 @@
             </div>
 
             <!-- Card 9 (Đà Nẵng) -->
-            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="9" data-lat="16.0712" data-lng="108.2315" data-name="VinFast Vincom Plaza Ngô Quyền" data-city="Đà Nẵng" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
-                    <h3 class="font-bold text-slate-900 text-base">Vincom Plaza Ngô Quyền Đà Nẵng</h3>
+                    <h3 class="font-bold text-slate-900 text-base">VinFast Vincom Plaza Ngô Quyền</h3>
                     <p class="text-xs text-slate-500 mt-1">
                         <i class="bi bi-geo-alt-fill text-emerald-600 mr-1"></i> 910A Ngô Quyền, An Hải Bắc, Sơn Trà, Đà Nẵng
                     </p>
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 mt-3">
-                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 11 / 16 cổng</strong></div>
-                        <div class="flex justify-between"><span class="text-slate-500">Hỗ trợ du lịch:</span> <strong class="text-slate-800">Gần cầu Rồng &amp; Sơn Trà</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Trạng thái cổng:</span> <strong class="text-emerald-700 font-bold">Trống 8 / 14 cổng</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Công suất sạc:</span> <strong class="text-slate-800">1.2 kW - 7.2 kW</strong></div>
                     </div>
                     <div class="flex flex-wrap gap-1.5 mt-2.5">
-                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-compass text-teal-600"></i> Gần bãi biển Mỹ Khê</span>
-                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-shield-check text-emerald-600"></i> Bảo vệ 24/7</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-building text-blue-600"></i> TTTM Vincom</span>
+                        <span class="text-[10px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md"><i class="bi bi-p-square text-emerald-600"></i> Miễn phí gửi xe sạc</span>
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('Vincom Plaza 910A Ngo Quyen Son Tra Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(9)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=Vincom+Plaza+Ngo+Quyen+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -368,15 +436,19 @@
             </div>
 
             <!-- Card 10 (Đà Nẵng) -->
-            <div data-city="Đà Nẵng" data-type="Sạc nhanh" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="10" data-lat="16.0538" data-lng="108.2022" data-name="VinFast Sân bay Quốc tế Đà Nẵng" data-city="Đà Nẵng" data-type="Sạc nhanh"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-lightning-charge-fill text-emerald-600"></i> Trạm sạc V-GREEN
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">VinFast Sân bay Quốc tế Đà Nẵng</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -392,8 +464,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('San bay quoc te Da Nang Duy Tan')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(10)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=San+bay+quoc+te+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
@@ -402,15 +474,19 @@
             </div>
 
             <!-- Card 11 (Đà Nẵng) -->
-            <div data-city="Đà Nẵng" data-type="Đổi pin" class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
+            <div data-id="11" data-lat="16.0465" data-lng="108.2435" data-name="Tủ đổi pin Selex Ngũ Hành Sơn" data-city="Đà Nẵng" data-type="Đổi pin"
+                 class="station-card bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-md transition flex flex-col justify-between h-auto gap-3.5 shadow-2xs">
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold px-2.5 py-0.5 rounded-lg flex items-center gap-1">
                             <i class="bi bi-arrow-repeat text-blue-600"></i> Tủ đổi pin Selex
                         </span>
-                        <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="distance-badge hidden bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                            <span class="text-emerald-600 font-semibold text-xs flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 24/7
+                            </span>
+                        </div>
                     </div>
                     <h3 class="font-bold text-slate-900 text-base">Tủ đổi pin Selex Ngũ Hành Sơn</h3>
                     <p class="text-xs text-slate-500 mt-1">
@@ -426,40 +502,44 @@
                     </div>
                 </div>
                 <div class="flex gap-2 pt-1 border-t border-slate-100">
-                    <button type="button" onclick="focusStationMap('284 Vo Nguyen Giap Ngu Hanh Son Da Nang')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition">
-                        Xem bản đồ
+                    <button type="button" onclick="focusStationLeaflet(11)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-1">
+                        <i class="bi bi-geo-alt"></i> Xem bản đồ
                     </button>
                     <a href="https://maps.google.com/?q=284+Vo+Nguyen+Giap+Ngu+Hanh+Son+Da+Nang" target="_blank" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition">
                         Chỉ đường
                     </a>
                 </div>
             </div>
+
         </div>
 
-        <!-- Right 5 Cols: Interactive Embedded Map & Charging Guide -->
+        <!-- Right 5 Cols: Interactive Leaflet Map & Charging Guide -->
         <div class="lg:col-span-5 space-y-4">
-            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs sticky top-20">
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm sticky top-20">
                 <div class="p-4 border-b border-slate-100 flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Bản đồ định vị Trạm sạc</h3>
-                        <p id="selectedStationLabel" class="text-xs text-emerald-700 font-medium">Đang xem: VinFast Landmark 81 Central Park</p>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold text-slate-900">Bản đồ Leaflet trực quan</h3>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">Thời gian thực</span>
+                        </div>
+                        <p id="selectedStationLabel" class="text-xs text-emerald-700 font-medium mt-0.5">VinFast Landmark 81 Central Park</p>
                     </div>
-                    <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded">Trực tuyến</span>
+                    <button type="button" onclick="resetMapView()" title="Xem toàn cảnh bản đồ" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                        <i class="bi bi-arrows-fullscreen"></i> Toàn cảnh
+                    </button>
                 </div>
 
-                <div class="h-72 bg-slate-100">
-                    <iframe id="stationMapFrame"
-                            src="https://www.google.com/maps?q=Landmark+81+Vinhomes+Central+Park+TPHCM&output=embed"
-                            class="w-full h-full border-0"
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
+                <!-- Leaflet Interactive Container -->
+                <div id="leafletStationMap" class="w-full h-80 sm:h-96 bg-slate-100 z-10"></div>
 
-                <div class="p-4 bg-slate-50 text-xs space-y-2">
-                    <div class="font-bold text-slate-800">Lưu ý về chính sách Pin khi trả xe tại EcoBike:</div>
-                    <p class="text-slate-600 leading-relaxed">
-                        &bull; Mỗi xe khi bàn giao đều đi kèm <strong>01 bộ sạc tiêu chuẩn theo xe</strong> trong cốp để bạn có thể sạc tại nhà/khách sạn qua ổ điện 220V.<br />
-                        &bull; Nếu trả xe bị hụt mức % pin so với lúc nhận ban đầu, hệ thống chỉ thu phụ phí sạc hộ <strong>5.000đ / 1% pin thiếu</strong>.
+                <div class="p-4 bg-slate-50 text-xs space-y-2 border-t border-slate-100">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="bi bi-shield-check text-emerald-600"></i> Chính sách sạc pin &amp; Hoàn cọc tại EcoBike:
+                    </div>
+                    <p class="text-slate-600 leading-relaxed text-[11px]">
+                        &bull; Mỗi xe khi bàn giao đều kèm <strong>01 bộ sạc tiêu chuẩn</strong> trong cốp để sạc tại nhà qua điện 220V.<br />
+                        &bull; Trả xe hụt pin so với lúc nhận ban đầu: chỉ tính phụ phí hỗ trợ sạc <strong>5.000đ / 1% pin thiếu</strong>.<br />
+                        &bull; Sử dụng trạm đổi pin Selex: <strong>Đổi pin đầy 100% chỉ trong 90 giây</strong> miễn phí trong gói thuê.
                     </p>
                 </div>
             </div>
@@ -467,18 +547,209 @@
     </div>
 </div>
 
+<!-- Leaflet JS Library -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>
-    function focusStationMap(query) {
-        const frame = document.getElementById('stationMapFrame');
+    let stationMap = null;
+    let markers = {};
+    let userMarker = null;
+
+    // Danh sách tọa độ và thông số 11 trạm sạc & đổi pin chuẩn
+    const STATIONS_DATA = [
+        { id: 1, name: "VinFast Landmark 81 Central Park", lat: 10.7950, lng: 106.7218, city: "TP.HCM", type: "Sạc nhanh", slots: "Trống 8 / 12 cổng", address: "Hầm B2, Vinhomes Central Park, Bình Thạnh" },
+        { id: 2, name: "Tủ đổi pin EcoBike Chợ Bến Thành", lat: 10.7725, lng: 106.6980, city: "TP.HCM", type: "Đổi pin", slots: "6 hộc pin đầy 100%", address: "45 Lê Lợi, Phường Bến Thành, Quận 1" },
+        { id: 3, name: "Dat Bike Hub Điện Biên Phủ", lat: 10.8012, lng: 106.7115, city: "TP.HCM", type: "Sạc nhanh", slots: "Trống 3 / 4 trụ", address: "234 Điện Biên Phủ, Phường 15, Bình Thạnh" },
+        { id: 4, name: "VinFast Crescent Mall Quận 7", lat: 10.7290, lng: 106.7215, city: "TP.HCM", type: "Sạc nhanh", slots: "Trống 10 / 16 cổng", address: "101 Tôn Dật Tiên, Tân Phú, Quận 7" },
+        { id: 5, name: "Trạm sạc V-GREEN Royal City", lat: 21.0028, lng: 105.8166, city: "Hà Nội", type: "Sạc nhanh", slots: "Trống 14 / 20 cổng", address: "72A Nguyễn Trãi, Thượng Đình, Thanh Xuân" },
+        { id: 6, name: "Trạm đổi pin Selex Cầu Giấy", lat: 21.0366, lng: 105.7836, city: "Hà Nội", type: "Đổi pin", slots: "9 viên pin LFP", address: "144 Xuân Thủy, Cầu Giấy" },
+        { id: 7, name: "VinFast Times City Hai Bà Trưng", lat: 20.9950, lng: 105.8675, city: "Hà Nội", type: "Sạc nhanh", slots: "Trống 12 / 18 cổng", address: "458 Minh Khai, Hai Bà Trưng" },
+        { id: 8, name: "Trạm đổi pin Selex Phố Huế", lat: 21.0165, lng: 105.8522, city: "Hà Nội", type: "Đổi pin", slots: "8 viên pin LFP", address: "54 Phố Huế, Hoàn Kiếm" },
+        { id: 9, name: "VinFast Vincom Plaza Ngô Quyền", lat: 16.0712, lng: 108.2315, city: "Đà Nẵng", type: "Sạc nhanh", slots: "Trống 8 / 14 cổng", address: "910A Ngô Quyền, Sơn Trà" },
+        { id: 10, name: "VinFast Sân bay Quốc tế Đà Nẵng", lat: 16.0538, lng: 108.2022, city: "Đà Nẵng", type: "Sạc nhanh", slots: "Trống 6 / 10 cổng", address: "Bãi đỗ xe T1, Đường Duy Tân, Hải Châu" },
+        { id: 11, name: "Tủ đổi pin Selex Ngũ Hành Sơn", lat: 16.0465, lng: 108.2435, city: "Đà Nẵng", type: "Đổi pin", slots: "7 viên pin LFP", address: "284 Võ Nguyên Giáp, Ngũ Hành Sơn" }
+    ];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initLeafletMap();
+    });
+
+    function initLeafletMap() {
+        if (typeof L === 'undefined') return;
+
+        // Khởi tạo bản đồ với vị trí mặc định tại Landmark 81 TP.HCM
+        stationMap = L.map('leafletStationMap', {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([10.7950, 106.7218], 13);
+
+        // Nạp lớp bản đồ OpenStreetMap mượt mà
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap &amp; EcoBike'
+        }).addTo(stationMap);
+
+        // Thêm markers cho toàn bộ 11 trạm sạc
+        STATIONS_DATA.forEach(st => {
+            const isSwap = st.type === "Đổi pin";
+            const colorClass = isSwap ? "bg-blue-600" : (st.name.includes("Dat Bike") ? "bg-amber-600" : "bg-emerald-600");
+            const iconSymbol = isSwap ? "bi-arrow-repeat" : "bi-lightning-charge-fill";
+
+            const customIcon = L.divIcon({
+                className: 'custom-pin',
+                html: `<div class="${colorClass} text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white transform hover:scale-110 transition cursor-pointer text-sm">
+                           <i class="bi ${iconSymbol}"></i>
+                       </div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            });
+
+            const marker = L.marker([st.lat, st.lng], { icon: customIcon }).addTo(stationMap);
+
+            const popupContent = `
+                <div class="p-1 space-y-1.5 text-xs text-slate-800">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold ${isSwap ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}">${st.type}</span>
+                    <h4 class="font-bold text-sm text-slate-900 leading-snug">${st.name}</h4>
+                    <p class="text-slate-500 text-[11px]"><i class="bi bi-geo-alt-fill text-emerald-600"></i> ${st.address}</p>
+                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 font-semibold text-emerald-700">${st.slots}</div>
+                    <a href="https://maps.google.com/?q=${encodeURIComponent(st.name + ' ' + st.address)}" target="_blank" class="block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 rounded-lg transition text-[11px]">
+                        <i class="bi bi-compass"></i> Chỉ đường Google Maps
+                    </a>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+            markers[st.id] = marker;
+        });
+    }
+
+    function focusStationLeaflet(id) {
+        const st = STATIONS_DATA.find(s => s.id === id);
+        if (!st || !stationMap) return;
+
         const label = document.getElementById('selectedStationLabel');
-        if (frame) {
-            frame.src = 'https://www.google.com/maps?q=' + encodeURIComponent(query) + '&output=embed';
+        if (label) label.textContent = st.name;
+
+        stationMap.flyTo([st.lat, st.lng], 16, { duration: 1.2 });
+        if (markers[id]) {
+            setTimeout(() => markers[id].openPopup(), 600);
         }
-        if (label) {
-            label.textContent = 'Đang xem: ' + query;
+
+        // Highlight thẻ trạm tương ứng
+        document.querySelectorAll('.station-card').forEach(c => c.classList.remove('ring-2', 'ring-emerald-500'));
+        const activeCard = document.querySelector(`.station-card[data-id="${id}"]`);
+        if (activeCard) {
+            activeCard.classList.add('ring-2', 'ring-emerald-500');
         }
     }
 
+    function resetMapView() {
+        if (!stationMap) return;
+        const group = L.featureGroup(Object.values(markers));
+        stationMap.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    // =========================================================================
+    // TÍNH NĂNG NÂNG CẤP: ĐỊNH VỊ GPS VÀ TÌM TRẠM SẠC GẦN NHẤT
+    // =========================================================================
+    function deg2rad(deg) {
+        return deg * (Math.PI / 180);
+    }
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Bán kính trái đất (km)
+        const dLat = deg2rad(lat2 - lat1);
+        const dLon = deg2rad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round((R * c) * 10) / 10;
+    }
+
+    function findNearestStations() {
+        const btnText = document.getElementById('btnGpsText');
+        if (btnText) btnText.textContent = "Đang định vị...";
+
+        if (!navigator.geolocation) {
+            alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+            if (btnText) btnText.textContent = "Tìm trạm gần tôi nhất";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                handleUserLocation(userLat, userLng);
+            },
+            function (err) {
+                // Fallback mô phỏng vị trí trung tâm TP.HCM nếu người dùng chặn quyền định vị
+                console.warn("Geolocation denied or error, using default center:", err);
+                const fallbackLat = 10.7769;
+                const fallbackLng = 106.7009;
+                handleUserLocation(fallbackLat, fallbackLng, true);
+            },
+            { timeout: 7000, enableHighAccuracy: true }
+        );
+    }
+
+    function handleUserLocation(userLat, userLng, isSimulated = false) {
+        const btnText = document.getElementById('btnGpsText');
+        if (btnText) btnText.textContent = isSimulated ? "Trạm gần vị trí của bạn" : "Đã xác định vị trí!";
+
+        // Thêm hoặc cập nhật User Marker trên bản đồ Leaflet
+        if (stationMap) {
+            if (userMarker) stationMap.removeLayer(userMarker);
+
+            const userIcon = L.divIcon({
+                className: 'user-pulse-marker',
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+            });
+            userMarker = L.marker([userLat, userLng], { icon: userIcon }).addTo(stationMap);
+            userMarker.bindPopup(`<b><i class="bi bi-person-fill text-emerald-600"></i> Vị trí của bạn</b>${isSimulated ? ' (Mặc định)' : ''}`).openPopup();
+        }
+
+        // Tính khoảng cách cho từng trạm và gán badge
+        const cards = Array.from(document.querySelectorAll('.station-card'));
+        const distanceMap = [];
+
+        cards.forEach(card => {
+            const lat = parseFloat(card.getAttribute('data-lat'));
+            const lng = parseFloat(card.getAttribute('data-lng'));
+            const dist = getDistanceKm(userLat, userLng, lat, lng);
+            const id = parseInt(card.getAttribute('data-id'));
+
+            distanceMap.push({ card, dist, id, lat, lng });
+
+            const badge = card.querySelector('.distance-badge');
+            if (badge) {
+                badge.innerHTML = `<i class="bi bi-geo-alt-fill"></i> Cách ${dist} km`;
+                badge.classList.remove('hidden');
+            }
+        });
+
+        // Sắp xếp các thẻ trạm từ gần nhất đến xa nhất
+        distanceMap.sort((a, b) => a.dist - b.dist);
+        const grid = document.getElementById('stationsGrid');
+        if (grid) {
+            distanceMap.forEach(item => grid.appendChild(item.card));
+        }
+
+        // Highlight trạm gần nhất và zoom bản đồ bao quát
+        const nearest = distanceMap[0];
+        if (nearest && stationMap) {
+            focusStationLeaflet(nearest.id);
+            if (typeof window.showToast === 'function') {
+                window.showToast(`Trạm gần bạn nhất: ${STATIONS_DATA.find(s => s.id === nearest.id)?.name} (Cách ${nearest.dist} km)`, 'success');
+            }
+        }
+    }
+
+    // =========================================================================
+    // LỌC VÀ TÌM KIẾM TRẠM
+    // =========================================================================
     function filterStations(criteria, btn) {
         document.querySelectorAll('.station-filter-btn').forEach(b => {
             b.classList.remove('bg-emerald-600', 'text-white');
@@ -488,22 +759,48 @@
             btn.classList.remove('bg-slate-100', 'text-slate-700');
             btn.classList.add('bg-emerald-600', 'text-white');
         }
+
+        const visibleBounds = [];
+
         document.querySelectorAll('.station-card').forEach(card => {
             const city = card.getAttribute('data-city') || '';
             const type = card.getAttribute('data-type') || '';
-            if (criteria === 'all' || city === criteria || type === criteria) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
+            const id = parseInt(card.getAttribute('data-id'));
+            const isMatch = (criteria === 'all' || city === criteria || type === criteria);
+
+            card.style.display = isMatch ? '' : 'none';
+
+            if (markers[id]) {
+                if (isMatch) {
+                    markers[id].addTo(stationMap);
+                    visibleBounds.push(markers[id].getLatLng());
+                } else {
+                    stationMap.removeLayer(markers[id]);
+                }
             }
         });
+
+        if (stationMap && visibleBounds.length > 0) {
+            const group = L.featureGroup(visibleBounds.map(ll => L.marker(ll)));
+            stationMap.fitBounds(group.getBounds().pad(0.15));
+        }
     }
 
     function searchStations() {
         const q = (document.getElementById('stationSearchInput')?.value || '').toLowerCase().trim();
         document.querySelectorAll('.station-card').forEach(card => {
             const text = card.innerText.toLowerCase();
-            card.style.display = (!q || text.includes(q)) ? '' : 'none';
+            const id = parseInt(card.getAttribute('data-id'));
+            const isMatch = (!q || text.includes(q));
+
+            card.style.display = isMatch ? '' : 'none';
+            if (markers[id]) {
+                if (isMatch) {
+                    markers[id].addTo(stationMap);
+                } else {
+                    stationMap.removeLayer(markers[id]);
+                }
+            }
         });
     }
 </script>
